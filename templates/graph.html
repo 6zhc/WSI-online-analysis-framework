@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="static/bootstrap.min.css">
+    <link rel="stylesheet" href="static/AdminPanel.css">
+    <!-- 引入在线资源 -->
+    <script src="static/g2.min.js"></script>
+    <script src="static/jquery-3.3.1.slim.min.js"></script>
+    <script src="static/popper.min.js"></script>
+    <script src="static/bootstrap.min.js"></script>
+    <script src="static/jquery.min.js"></script>
+</head>
+
+
+<title>OpenHI Admin Panel</title>
+</head>
+
+<body data-gr-c-s-loaded="true">
+<nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
+    <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">Admin Panel</a>
+    <input class="form-control form-control-dark w-100" type="text" placeholder="Search" aria-label="Search">
+    <ul class="navbar-nav px-3">
+        <li class="nav-item text-nowrap">
+            <a class="nav-link" href="#">Sign out</a>
+        </li>
+    </ul>
+</nav>
+
+<div class="container-fluid">
+    <div class="row">
+        <nav class="col-md-2 d-none d-md-block bg-light sidebar">
+            <div class="sidebar-sticky">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link " href="dashboard">
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="graph">
+                            Graph
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link " href="table">
+                            Table
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Dashboard</h1>
+            </div>
+            <div class="row placeholders">
+                <div class="col-xs-12 col-sm-6 col-lg-3 placeholder">
+                    <div id="c1"></div>
+                    <h4 align="center">Label</h4>
+                    <h5 align="center">somethingelse</h5>
+                </div>
+
+                <script>
+                    test = $.get("data", function (data) {
+                        console.log(data);
+                        const chart = new G2.Chart({
+                            container: 'c1', // 指定图表容器 ID
+                            width: document.getElementById("c1").clientWidth, // 指定图表宽度
+                            height: document.getElementById("c1").clientWidth  // 指定图表高度
+                        });
+                        // Step 2: 载入数据源
+                        data_process = []
+                        for (i = 0; i < data.x.length; i = i + 1) {
+                            data_process.push({
+                                x: data.x[i],
+                                y: data.y[i]
+                            })
+                        }
+                        chart.source(data_process);
+
+                        chart.scale('value', {
+                            min: 0
+                        });
+                        chart.scale('year', {
+                            range: [0, 1]
+                        });
+                        chart.tooltip({
+                            crosshairs: {
+                                type: 'line'
+                            }
+                        });
+                        chart.line().position('x*y');
+                        chart.point().position('x*y').size(4).shape('circle').style({
+                            stroke: '#fff',
+                            lineWidth: 1
+                        });
+                        // Step 4: 渲染图表
+                        chart.render();
+                    });
+                    const data1 = [
+                        {x: 'Sports', y: 275},
+                        {x: 'Strategy', y: 115},
+                        {x: 'Action', y: 120},
+                        {x: 'Shooter', y: 350},
+                        {x: 'Other', y: 150}
+                    ]; // G2 对数据源格式的要求，仅仅是 JSON 数组，数组的每个元素是一个标准 JSON 对象。
+                    // Step 1: 创建 Chart 对象
+                </script>
+
+                <div class="col-xs-12 col-sm-6 col-lg-3 placeholder">
+                    <div id="c2"></div>
+                    <h4 align="center">Label</h4>
+                    <h5 align="center">somethingelse</h5>
+                </div>
+            </div>
+
+
+            <script>
+
+                test = $.get("data", function (data) {
+                    console.log(data);
+                    const chart = new G2.Chart({
+                        container: 'c2', // 指定图表容器 ID
+                        width: document.getElementById("c1").clientWidth, // 指定图表宽度
+                        height: document.getElementById("c1").clientWidth // 指定图表高度
+                    });
+                    // Step 2: 载入数据源
+                    data_process = []
+                    for (i = 0; i < data.x.length; i = i + 1) {
+                        data_process.push({
+                            x: data.x[i],
+                            y: data.y[i]
+                        })
+                    }
+                    chart.source(data_process);
+
+                    chart.scale('value', {
+                        min: 0
+                    });
+                    chart.scale('year', {
+                        range: [0, 1]
+                    });
+                    chart.tooltip({
+                        crosshairs: {
+                            type: 'line'
+                        }
+                    });
+                    chart.line().position('x*y');
+                    chart.point().position('x*y').size(4).shape('circle').style({
+                        stroke: '#fff',
+                        lineWidth: 1
+                    });
+                    // Step 4: 渲染图表
+                    chart.render();
+                });
+
+            </script>
+
+        </main>
+    </div>
+</div>
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+</body>
+
+</html>

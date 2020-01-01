@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="static/bootstrap.min.css">
+    <link rel="stylesheet" href="static/AdminPanel.css">
+    <!-- 引入在线资源 -->
+    <script src="static/g2.min.js"></script>
+    <script src="static/jquery-3.3.1.slim.min.js"></script>
+    <script src="static/popper.min.js"></script>
+    <script src="static/bootstrap.min.js"></script>
+    <script src="static/jquery.min.js"></script>
+    <script src="static/buttomOnclick.js"></script>
+
+</head>
+
+
+<title>OpenHI Admin Panel</title>
+</head>
+
+<body data-gr-c-s-loaded="true">
+<nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
+    <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">Admin Panel</a>
+    <input class="form-control form-control-dark w-100" type="text" placeholder="Search" aria-label="Search">
+    <ul class="navbar-nav px-3">
+        <li class="nav-item text-nowrap">
+            <a class="nav-link" href="#">Sign out</a>
+        </li>
+    </ul>
+</nav>
+
+<div class="container-fluid">
+    <div class="row">
+        <nav class="col-md-2 d-none d-md-block bg-light sidebar">
+            <div class="sidebar-sticky">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard">
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="graph">
+                            Graph
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="table">
+                            Table
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+            <h2>Slide Info</h2>
+            <div class="table-responsive">
+                <table class="table table-striped table-sm">
+                    <thead>
+                    <tr>
+                        <th>Slide_id</th>
+                        <th>Control</th>
+                        <th>UUID</th>
+                        <th>SVS File Name</th>
+                        <th>Preview Image</th>
+                        <th>Image Size</th>
+                        <th>Background Mask</th>
+                        <th>Predict Mask</th>
+                    </tr>
+                    </thead>
+                    <tbody id="MyTable">
+                    {#                        <tr>#}
+                    {#                            <td>1 </td>#}
+                    {#                            <td>ezgxdfhgkjlknlmmknjbhvgntffrxgfhj</td>#}
+                    {#                            <td>eshhrtsejcyhgjvh,kj.svs</td>#}
+                    {#                            <td>True</td>#}
+                    {#                            <td>Grade2</td>#}
+                    {#                        </tr>#}
+                    </tbody>
+                </table>
+                <form action="/uploader" method="POST"
+                      enctype="multipart/form-data">
+                    <input type="file" name="file"/>
+                    <input type="text" name="uuid"/>
+                    <input type="submit"/>
+                </form>
+            </div>
+
+            <script>
+                test = $.get("manifest_table_data", function (data) {
+                    console.log(data);
+                    for (let i = 0; i < data.length; i++) {
+                        let temp = document.createElement("tr");
+                        for (let j = 0; j < data[i].length; j++) {
+                            temp2 = document.createElement("td");
+                            temp2.innerHTML = data[i][j];
+                            temp.appendChild(temp2)
+                        }
+                        document.getElementById('MyTable').appendChild(temp)
+                    }
+                });
+            </script>
+
+        </main>
+    </div>
+</div>
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+</body>
+
+</html>

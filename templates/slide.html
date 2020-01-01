@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en" style="width:98%;height:98%">
+<head>
+    <meta charset="UTF-8">
+    <script type="text/javascript" src="{{ url_for('static', filename='openseadragon.js') }}"></script>
+    <title>Slide_{{ slide_id }}</title>
+</head>
+
+<body style="width:100%;height:100%">
+<div id="openseadragon1" style="width:100%;height:100%"></div>
+<script type="text/javascript">
+    var viewer = OpenSeadragon({
+        id: "openseadragon1",
+        prefixUrl: "{{ url_for('static', filename='images/') }}",
+        tileSources: "{{ slide_url}}",
+        minZoomImageRatio: 0,
+        maxZoomPixelRatio: 2,
+        autoResize: true,
+        visibilityRatio: 0,
+
+        gestureSettingsMouse: {
+            flickEnabled: false,
+        },
+        springStiffness: 5,// 5
+        animationTime: 0.5, //0.5
+
+        zoomPerSecond: 0.5,//0.5
+        zoomPerScroll: 1.3,
+
+        showNavigator: true,
+        navigatorPosition: "BOTTOM_RIGHT",
+    });
+
+    let add_mask = function (mask_name) {
+        let mask_root = "{{ mask_root}}";
+        let Bound_Viewport = viewer.world.getItemAt(0).getBounds();
+        viewer.addTiledImage({
+            tileSource: {
+                type: 'image',
+                url: mask_root + mask_name,
+            },
+            x: Bound_Viewport.x,
+            y: Bound_Viewport.y,
+            width: Bound_Viewport.width,
+            opacity: 0.7,
+            success: function () {
+                if (!mask) {
+                    remove_mask();
+                }
+            },
+            false: function () {
+                alert("no mask");
+            }
+        });
+    };
+
+    let remove_mask = function () {
+        while (viewer.world.getItemCount() >= 2)
+            viewer.world.removeItem(viewer.world.getItemAt(1));
+    };
+
+    viewer.addHandler('open', function () {
+        if (mask_url !== '')
+            add_mask(mask_url);
+        mask = 1;
+    });
+    mask_url = "{{mask_url}}";
+    let mask = 0;
+
+    document.onkeydown = function (e) {  //listen to the keboard;
+        let key = String.fromCharCode(window.event ? e.keyCode : e.which);
+        console.log(key);
+        if (key === 'B') {
+            mask = 1 - mask;
+            if (mask) {
+                add_mask(mask_url);
+            } else {
+                remove_mask();
+            }
+        }
+    };
+
+</script>
+</body>
+</html>
