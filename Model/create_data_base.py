@@ -42,11 +42,12 @@ cursor.execute("DROP TABLE IF EXISTS PREDICT_MASK")
 sql = """CREATE TABLE PREDICT_MASK (
          ID INT PRIMARY KEY NOT NULL auto_increment,
          UUID CHAR(36) NOT NULL,
-         Job_type VARCHAR(255) DEFAULT 'undefined',
+         Job_type VARCHAR(64) DEFAULT 'undefined',
          Finished INT DEFAULT 0,
          Total INT DEFAULT 1,
          Predict_mask VARCHAR(255) DEFAULT NULL,
-         Creat_time  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)"""
+         Creat_time  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+         Update_time  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)"""
 cursor.execute(sql)
 
 # 关闭数据库连接

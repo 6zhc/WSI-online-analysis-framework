@@ -55,10 +55,11 @@ class CancerDataset(data.Dataset):
 class ResNetClassification(object):
 
     def __init__(self, model_path, num_classes=2, batch_size=64, num_workers=0):
-        self.base_model = self._load_model(model_path)
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.num_classes = num_classes
+        self.base_model = self._load_model(model_path)
+
         normMean = [0.744, 0.544, 0.670]
         normStd = [0.183, 0.245, 0.190]
         normTransform = transforms.Normalize(normMean, normStd)
@@ -92,7 +93,7 @@ class ResNetClassification(object):
         outputs_all = []
         self.base_model.eval()
         with torch.no_grad():
-            for batch_idx, (inputs, targets) in enumerate(tqdm(test_loader)):
+            for batch_idx, (inputs, targets) in enumerate(test_loader):
                 inputs, targets = inputs.to('cuda'), targets.type(torch.LongTensor).to('cuda')
                 outputs = self.base_model(inputs)
                 if outputs_all == []:

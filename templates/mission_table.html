@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="static/bootstrap.min.css">
+    <link rel="stylesheet" href="static/AdminPanel.css">
+    <!-- 引入在线资源 -->
+    <script src="static/g2.min.js"></script>
+    <script src="static/jquery-3.3.1.slim.min.js"></script>
+    <script src="static/popper.min.js"></script>
+    <script src="static/bootstrap.min.js"></script>
+    <script src="static/jquery.min.js"></script>
+    <script src="static/buttomOnclick.js"></script>
+
+</head>
+
+
+<title>OpenHI Admin Panel</title>
+</head>
+
+<body data-gr-c-s-loaded="true">
+<nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
+    <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">Admin Panel</a>
+    <input class="form-control form-control-dark w-100" type="text" placeholder="Search" aria-label="Search">
+    <ul class="navbar-nav px-3">
+        <li class="nav-item text-nowrap">
+            <a class="nav-link" href="#">Sign out</a>
+        </li>
+    </ul>
+</nav>
+
+<div class="container-fluid">
+    <div class="row">
+        <nav class="col-md-2 d-none d-md-block bg-light sidebar">
+            <div class="sidebar-sticky">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard">
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="graph">
+                            Graph
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="table">
+                            Slide Table
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="mission_table">
+                            Mission Table
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+            <h2>Mission Info</h2>
+            <form action="/predict_mask_make" method="POST"
+                  enctype="multipart/form-data">
+                Slide ID: <input type="text" name="slide_id"/>
+                UUID: <input type="text" name="uuid"/>
+                Job Type:<input type="text" name="job_type" value="0"/>
+                <input type="submit"/>
+            </form>
+            <div class="table-responsive">
+                <table class="table table-striped table-sm">
+                    <thead>
+                    <tr>
+                        <th>Job_id</th>
+                        <th>Slide_id</th>
+                        <th>Controller</th>
+                        <th>UUID</th>
+                        <th>Job_type</th>
+                        <th>Process</th>
+                        <th>Detail Process</th>
+                        <th>Result</th>
+                        <th>Updated Time</th>
+                        <th>Starting Time</th>
+                    </tr>
+                    </thead>
+                    <tbody id="MyTable">
+                    {#                                            <tr>#}
+                    {#                                                <td>1 </td>#}
+                    {#                                                <td>#}
+                    {#                                                    <div class="progress progress-striped">#}
+                    {#                                                        <div class="progress-bar" role="progressbar" style="width: 10%;">#}
+                    {#                                                            </div>#}
+                    {#                                                    </div>#}
+                    {#                                                </td>#}
+                    {#                                                <td>eshhrtsejcyhgjvh,kj.svs</td>#}
+                    {#                                                <td>True</td>#}
+                    {#                                                <td>Grade2</td>#}
+                    {#                                            </tr>#}
+                    </tbody>
+                </table>
+
+            </div>
+
+            <script>
+                refresh_table = function () {
+                    $.get("mission_table_data", function (data) {
+                        console.log(data);
+                        document.getElementById('MyTable').innerText = "";
+                        for (let i = 0; i < data.length; i++) {
+                            let temp = document.createElement("tr");
+                            for (let j = 0; j < data[i].length; j++) {
+                                temp2 = document.createElement("td");
+                                temp2.innerHTML = data[i][j];
+                                temp.appendChild(temp2)
+                            }
+                            document.getElementById('MyTable').appendChild(temp)
+                        }
+                    });
+                    setTimeout(refresh_table, 1000)
+                };
+                refresh_table()
+            </script>
+
+        </main>
+    </div>
+</div>
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+</body>
+
+</html>

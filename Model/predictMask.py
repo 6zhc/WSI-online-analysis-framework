@@ -76,7 +76,7 @@ class PredictMask:
         db.commit()
         db.close()
 
-    def update_finished_by_id(self, job_id, total):
+    def update_total_by_id(self, job_id, total):
         db = self.db_connect()
         cursor = db.cursor()
         cursor.execute("UPDATE PREDICT_MASK SET Total= %s WHERE (ID = %s)", (total, job_id))

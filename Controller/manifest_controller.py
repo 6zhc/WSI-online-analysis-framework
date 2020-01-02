@@ -36,7 +36,10 @@ def get_table():
 
         icon_file_path = data_root + wsi[1] + '/' + 'icon.png'
         if not os.path.exists(icon_file_path):
-            image_processing.generate_icon_image_from_svs_file(svs_file_path, icon_file_path)
+            try:
+                image_processing.generate_icon_image_from_svs_file(svs_file_path, icon_file_path)
+            except:
+                pass
         temp.append('<img src="' + icon_file_path + '"/>')
 
         temp.append(str(dimensions[0]).rjust(6, '_') + ' * ' + str(dimensions[1]).rjust(6, '_'))

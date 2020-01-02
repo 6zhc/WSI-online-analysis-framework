@@ -1,5 +1,7 @@
 from Model import manifest
 from Model import predictMask
+from Controller import manifest_controller
+from Controller import thread
 
 
 def import_manifest(manifest_path):
@@ -13,6 +15,8 @@ def import_manifest(manifest_path):
             manifest_db.insert(slide_uuid=info[0], svs_file=info[1])
         except Exception as e:
             print(e)
+    thread.BackgroundThread(manifest_controller.get_table, 0).start()
+
 
 
 def export_manifest(manifest_path):

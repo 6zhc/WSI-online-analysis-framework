@@ -1,3 +1,3 @@
-from Controller import dataset_controller
+from Controller import image_processing
 
-dataset_controller.import_manifest("manifest.txt")
+image_processing.predict_mask_with_job_id("11")

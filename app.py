@@ -5,9 +5,11 @@ from Controller import manifest_controller
 from Controller import thread
 from Controller import image_processing
 from Controller import dataset_controller
+from Controller import mission_controller
 import copy
 import os
 import uuid
+
 
 app = Flask(__name__)
 dzi_online.add_dzi_sever(app)
@@ -63,6 +65,13 @@ def make_bg_mask():
     return jsonify({"info": "Mission Started !", "time": "5"})
 
 
+@app.route('/make_pre_mask')
+def make_pre_mask():
+    slide_id = request.args.get('slide_id', type=int)
+    thread.BackgroundThread(image_processing.predict_mask_with_job_id, slide_id).start()
+    return jsonify({"info": "Mission Started !", "time": "-1"})
+
+
 @app.route('/remove_wsi')
 def remove_wsi():
     slide_id = request.args.get('slide_id', type=int)
@@ -97,6 +106,25 @@ def slide():
 @app.route('/manifest_table_data')
 def table_data():
     return jsonify(manifest_controller.get_table())
+
+
+@app.route('/mission_table')
+def mission_table():
+    return render_template('mission_table.html')
+
+
+@app.route('/predict_mask_make', methods=['GET', 'POST'])
+def predict_mask_make():
+    slide_id = request.form['slide_id']
+    slide_uuid = request.form['uuid']
+    job_type = request.form['job_type']
+    thread.BackgroundThread(image_processing.predict_mask_with_job_id, slide_id, job_type).start()
+    return render_template('mission_table.html')
+
+
+@app.route('/mission_table_data')
+def mission_table_data():
+    return jsonify(mission_controller.get_table())
 
 
 @app.route('/graph')
