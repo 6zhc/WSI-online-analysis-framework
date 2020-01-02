@@ -19,11 +19,12 @@ class PredictMask:
             database=self.config['db']['database']
         )
 
-    def insert(self, slide_uuid, job_type=None, finished=0, total=None, predict_mask=None):
+    def insert(self, slide_uuid, slide_id, job_type=None, finished=0, total=None, predict_mask=None):
         db = self.db_connect()
         cursor = db.cursor()
-        sql = "INSERT INTO PREDICT_MASK( UUID, Job_type, Finished, Total, Predict_mask) VALUES (%s, %s, %s, %s, %s)"
-        val = (slide_uuid, job_type, finished, total, predict_mask)
+        sql = "INSERT INTO PREDICT_MASK( UUID, SlideID, Job_type, Finished, Total, Predict_mask)" \
+              " VALUES (%s, %s, %s, %s, %s, %s)"
+        val = (slide_uuid, slide_id, job_type, finished, total, predict_mask)
         cursor.execute(sql, val)
         temp = cursor.lastrowid
         cursor.close()
@@ -34,7 +35,7 @@ class PredictMask:
     def get_predict_masks(self):
         db = self.db_connect()
         cursor = db.cursor()
-        cursor.execute("SELECT * FROM PREDICT_MASK")
+        cursor.execute("SELECT * FROM PREDICT_MASK ORDER BY ID DESC")
         result = cursor.fetchall()
         db.close()
         return result
@@ -107,3 +108,4 @@ class PredictMask:
         cursor.close()
         db.commit()
         db.close()
+

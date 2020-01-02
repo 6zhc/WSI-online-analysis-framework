@@ -41,6 +41,7 @@ cursor.execute(sql)
 cursor.execute("DROP TABLE IF EXISTS PREDICT_MASK")
 sql = """CREATE TABLE PREDICT_MASK (
          ID INT PRIMARY KEY NOT NULL auto_increment,
+         SlideID INT NOT NULL,
          UUID CHAR(36) NOT NULL,
          Job_type VARCHAR(64) DEFAULT 'undefined',
          Finished INT DEFAULT 0,

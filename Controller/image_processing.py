@@ -2,6 +2,7 @@ import os
 import cv2
 import openslide
 import numpy
+import os
 from PIL import Image
 from Model import predictMask
 from Model import manifest
@@ -75,12 +76,14 @@ def predict_mask_with_job_id(slide_id, job_type="0"):
     manifest_db = manifest.Manifest()
     info = manifest_db.get_project_by_id(slide_id)
     predict_mask_db = predictMask.PredictMask()
-    job_id = predict_mask_db.insert(slide_uuid=info[1], job_type=job_type, total=-1)
+    job_id = predict_mask_db.insert(slide_uuid=info[1], slide_id=info[0], job_type=job_type, total=-1)
 
     myModule = predict_module.ResNetClassification(model_path=model_path,
                                                    num_classes=2, batch_size=1, num_workers=0)
     data_folder = data_root + info[1] + '/'
     svs_file = data_folder + info[2]
+    if not os.path.exists(data_folder + 'patch/'):
+        os.mkdir(data_folder + 'patch/')
     if info[4] is None or not os.path.exists(data_folder + info[4]):
         if info[3] is None or not os.path.exists(data_folder + info[4]):
             generate_smaller_image_from_svs_file(svs_file, data_folder + 'smaller_image.png')
@@ -100,10 +103,19 @@ def predict_mask_with_job_id(slide_id, job_type="0"):
     for y in range(w // 2000):
         for x in range(h // 2000):
             if available_region(mask[int(x * times):int(x * times + times), int(y * times):int(y * times + times)]):
-                patch = oslide.read_region((x * 2000, y * 2000), 0, (2000, 2000))
+                if os.path.exists(data_folder + 'patch/' + str(x) + '_' + str(y) + '.png'):
+                    patch = Image.open(data_folder + 'patch/' + str(x) + '_' + str(y) + '.png')
+                else:
+                    patch = oslide.read_region((x * 2000, y * 2000), 0, (2000, 2000))
+                    patch.save(data_folder + 'patch/' + str(x) + '_' + str(y) + '.png')
                 result = myModule.predict(numpy.resize(numpy.array(patch), tuple([1, 2000, 2000, 3])))
-                pre_result[int(x * times):int(x * times + times), int(y * times):int(y * times + times),
-                numpy.argmax(result[0])] = result[0, numpy.argmax(result[0])] * 255
+                probablity = result[0, numpy.argmax(result[0])]
+                if probablity > 0.5:
+                    pre_result[int(x * times):int(x * times + times), int(y * times):int(y * times + times),
+                    numpy.argmax(result[0])] = result[0, numpy.argmax(result[0])] * 255
+                else:
+                    pre_result[int(x * times):int(x * times + times), int(y * times):int(y * times + times)] = \
+                        [255, 255, 255]
             predict_mask_db.update_finished_by_id(job_id=job_id, finished=y * h // 2000 + x + 1)
     cv2.imwrite(data_folder + 'pre' + str(job_type) + '.png', pre_result)
     predict_mask_db.update_predict_mask_by_id(job_id=job_id, predict_mask='pre' + str(job_type) + '.png')

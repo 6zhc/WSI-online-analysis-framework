@@ -71,3 +71,8 @@ def get_info_by_id(slide_id):
 def remove_wsi_by_id(slide_id):
     mani = manifest.Manifest()
     mani.delete_project_by_id(slide_id)
+
+
+def get_total_number():
+    mani = manifest.Manifest()
+    return len(mani.get_projects())

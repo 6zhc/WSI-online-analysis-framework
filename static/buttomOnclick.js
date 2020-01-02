@@ -5,3 +5,10 @@ let btn_click = function (clickType, slideID) {
         alert(result.info);
     });
 };
+
+let btn_change_page = function (url, page_no) {
+    if (page_no == -1)
+        location.replace('/' + url + '?page_no=' + document.getElementById('page_no').value);
+    else
+        location.replace('/' + url + '?page_no=' + page_no);
+};

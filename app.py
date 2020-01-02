@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect
 from flask import jsonify
 from Controller import dzi_online
 from Controller import manifest_controller
@@ -25,7 +25,16 @@ except:
 @app.route('/')
 @app.route('/table')
 def table():
-    return render_template('table.html')
+    page_no = request.args.get('page_no', default=1, type=int)
+    item_per_page = request.args.get('item_per_page', default=15, type=int)
+    total_page = (manifest_controller.get_total_number() + item_per_page - 1) // item_per_page
+    if total_page == 0:
+        page_no = 1
+    elif page_no <= 0:
+        page_no = 1
+    elif page_no > total_page:
+        page_no = total_page
+    return render_template('table.html', page_no=page_no, total_page=total_page)
 
 
 @app.route('/uploader', methods=['GET', 'POST'])
@@ -79,6 +88,13 @@ def remove_wsi():
     return jsonify({"info": "Removed Successfully !", "time": "1"})
 
 
+@app.route('/remove_mission')
+def remove_mission():
+    job_id = request.args.get('slide_id', type=int)
+    mission_controller.remove_mission_by_id(job_id)
+    return jsonify({"info": "Removed Successfully !", "time": "-1"})
+
+
 @app.route('/clear_db')
 def clear_db():
     dataset_controller.clear_database()
@@ -105,12 +121,23 @@ def slide():
 
 @app.route('/manifest_table_data')
 def table_data():
-    return jsonify(manifest_controller.get_table())
+    page_no = request.args.get('page_no', default=1, type=int)
+    item_per_page = request.args.get('item_per_page', default=15, type=int)
+    return jsonify(manifest_controller.get_table()[page_no * item_per_page - item_per_page:page_no * item_per_page])
 
 
 @app.route('/mission_table')
 def mission_table():
-    return render_template('mission_table.html')
+    page_no = request.args.get('page_no', default=1, type=int)
+    item_per_page = request.args.get('item_per_page', default=15, type=int)
+    total_page = (mission_controller.get_total_number() + item_per_page - 1) // item_per_page
+    if total_page == 0:
+        page_no = 1
+    elif page_no <= 0:
+        page_no = 1
+    elif page_no > total_page:
+        page_no = total_page
+    return render_template('mission_table.html', page_no=page_no, total_page=total_page)
 
 
 @app.route('/predict_mask_make', methods=['GET', 'POST'])
@@ -119,12 +146,14 @@ def predict_mask_make():
     slide_uuid = request.form['uuid']
     job_type = request.form['job_type']
     thread.BackgroundThread(image_processing.predict_mask_with_job_id, slide_id, job_type).start()
-    return render_template('mission_table.html')
+    return redirect('mission_table')
 
 
 @app.route('/mission_table_data')
 def mission_table_data():
-    return jsonify(mission_controller.get_table())
+    page_no = request.args.get('page_no', default=1, type=int)
+    item_per_page = request.args.get('item_per_page', default=15, type=int)
+    return jsonify(mission_controller.get_table()[page_no * item_per_page - item_per_page:page_no * item_per_page])
 
 
 @app.route('/graph')
