@@ -67,19 +67,19 @@ def make_bg(slide_id):
 
 
 def predict_mask_with_job_id(slide_id, job_type="0"):
-    if str(job_type) == '0':
-        model_path = "Model/resnet_34_crd_model_59.pth"
-    elif str(job_type) == '1':
-        model_path = "Model/resnet_34_transfer_predicted_crd_model_best.pth"
-    else:
-        model_path = "Model/" + job_type
+    # if str(job_type) == '0':
+    #     model_path = "Model/resnet_34_crd_model_59.pth"
+    # elif str(job_type) == '1':
+    #     model_path = "Model/resnet_34_transfer_predicted_crd_model_best.pth"
+    # else:
+    model_path = "Model/" + job_type
     manifest_db = manifest.Manifest()
     info = manifest_db.get_project_by_id(slide_id)
     predict_mask_db = predictMask.PredictMask()
     job_id = predict_mask_db.insert(slide_uuid=info[1], slide_id=info[0], job_type=job_type, total=-1)
 
     myModule = predict_module.ResNetClassification(model_path=model_path,
-                                                   num_classes=2, batch_size=1, num_workers=0)
+                                                   num_classes=2, batch_size=64, num_workers=0)
     data_folder = data_root + info[1] + '/'
     svs_file = data_folder + info[2]
     if not os.path.exists(data_folder + 'patch/'):
@@ -98,27 +98,39 @@ def predict_mask_with_job_id(slide_id, job_type="0"):
     oslide = openslide.OpenSlide(svs_file)
     w, h = oslide.dimensions
     pre_result = numpy.zeros((mask.shape[0], mask.shape[1], 3))
+    probablity_list = []
     times = mask.shape[1] / w * 2000
     predict_mask_db.update_total_by_id(job_id=job_id, total=w // 2000 * h // 2000)
-    for y in range(w // 2000):
-        for x in range(h // 2000):
-            if available_region(mask[int(x * times):int(x * times + times), int(y * times):int(y * times + times)]):
-                if os.path.exists(data_folder + 'patch/' + str(x) + '_' + str(y) + '.png'):
-                    patch = Image.open(data_folder + 'patch/' + str(x) + '_' + str(y) + '.png')
-                else:
-                    patch = oslide.read_region((x * 2000, y * 2000), 0, (2000, 2000))
-                    patch.save(data_folder + 'patch/' + str(x) + '_' + str(y) + '.png')
-                result = myModule.predict(numpy.resize(numpy.array(patch), tuple([1, 2000, 2000, 3])))
-                probablity = result[0, numpy.argmax(result[0])]
-                if probablity > 0.5:
-                    pre_result[int(x * times):int(x * times + times), int(y * times):int(y * times + times),
-                    numpy.argmax(result[0])] = result[0, numpy.argmax(result[0])] * 255
-                else:
-                    pre_result[int(x * times):int(x * times + times), int(y * times):int(y * times + times)] = \
-                        [255, 255, 255]
-            predict_mask_db.update_finished_by_id(job_id=job_id, finished=y * h // 2000 + x + 1)
+    for x in range(w // 2000):
+        for y in range(h // 2000):
+            if available_region(mask[int(y * times):int(y * times + times), int(x * times):int(x * times + times)]):
+                # if os.path.exists(data_folder + 'patch/' + str(x) + '_' + str(y) + '.png'):
+                #     patch = Image.open(data_folder + 'patch/' + str(x) + '_' + str(y) + '.png')
+                # else:
+                #     patch = oslide.read_region((x * 2000, y * 2000), 0, (2000, 2000))
+                #     patch.save(data_folder + 'patch/' + str(x) + '_' + str(y) + '.png')
+                patch = oslide.read_region((x * 2000, y * 2000), 0, (2000, 2000))
+                patch = numpy.array(patch.convert('RGB'))
+                result = myModule.predict(numpy.resize(patch, tuple([1, 2000, 2000, 3])))
+                # result = myModule.predict(total_image)
+                probablity_list.append((x, y, result[0]))
+                pre_result[int(y * times):int(y * times + times), int(x * times):int(x * times + times),
+                numpy.argmax(result[0])] = result[0, numpy.argmax(result[0])] * 255
+            predict_mask_db.update_finished_by_id(job_id=job_id, finished=x * h // 2000 + y + 1)
+    if str(job_type) != '0':
+        pre_result = post_processing(pre_result)
     cv2.imwrite(data_folder + 'pre' + str(job_type) + '.png', pre_result)
     predict_mask_db.update_predict_mask_by_id(job_id=job_id, predict_mask='pre' + str(job_type) + '.png')
+    # file = open(data_folder + 'log.txt', 'w')
+    # for fp in probablity_list:
+    #     file.write(str(fp))
+    #     file.write('\n')
+    # file.close()
+
+
+def post_processing(image):
+    image[:, :, 1:] = 0
+    return image
 
 
 def available_region(region):

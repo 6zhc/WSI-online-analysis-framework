@@ -6,10 +6,13 @@ import os
 data_root = 'static/data/'
 
 
-def get_table():
+def get_table(start_no=0, end_no=0):
     mani = manifest.Manifest()
     data = []
-    for wsi in mani.get_projects():
+    wsis = mani.get_projects()
+    if end_no <= 0:
+        end_no = end_no + len(wsis)
+    for wsi in wsis[start_no: end_no]:
         temp = []
         temp.append(wsi[0])  # ID
         temp.append('<button type="button" onclick="btn_click(\'remove_wsi\',' +
@@ -27,7 +30,6 @@ def get_table():
                 data.append(temp)
             else:
                 temp.append('<a "target="_blank">' + wsi[2] + '</a>')
-                temp.append('No SVS file')
                 temp.append('No SVS file')
                 data.append(temp)
             continue
@@ -53,6 +55,7 @@ def get_table():
                         # + '<button type="button" onclick="btn_click(\'make_bg_mask\','
                         # + str(wsi[0]) + ')"> Remake</button>'
                         )
+        temp.append("model_selection")
 
         data.append(temp)
     return data
@@ -76,3 +79,17 @@ def remove_wsi_by_id(slide_id):
 def get_total_number():
     mani = manifest.Manifest()
     return len(mani.get_projects())
+
+
+def get_available_slide_id():
+    mani = manifest.Manifest()
+    data = []
+    for wsi in mani.get_projects():
+        temp = {"id": wsi[0], "text": wsi[0]}
+        try:  # image_size
+            svs_file_path = data_root + wsi[1] + '/' + wsi[2]
+            openslide.OpenSlide(svs_file_path)
+        except:
+            continue
+        data.append(temp)
+    return data

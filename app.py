@@ -34,7 +34,7 @@ def table():
         page_no = 1
     elif page_no > total_page:
         page_no = total_page
-    return render_template('table.html', page_no=page_no, total_page=total_page)
+    return render_template('table.html', page_no=page_no, total_page=total_page, item_per_page=item_per_page)
 
 
 @app.route('/uploader', methods=['GET', 'POST'])
@@ -77,7 +77,8 @@ def make_bg_mask():
 @app.route('/make_pre_mask')
 def make_pre_mask():
     slide_id = request.args.get('slide_id', type=int)
-    thread.BackgroundThread(image_processing.predict_mask_with_job_id, slide_id).start()
+    job_type = request.args.get('job_type', type=str, default="0")
+    thread.BackgroundThread(image_processing.predict_mask_with_job_id, slide_id, job_type).start()
     return jsonify({"info": "Mission Started !", "time": "-1"})
 
 
@@ -123,7 +124,7 @@ def slide():
 def table_data():
     page_no = request.args.get('page_no', default=1, type=int)
     item_per_page = request.args.get('item_per_page', default=15, type=int)
-    return jsonify(manifest_controller.get_table()[page_no * item_per_page - item_per_page:page_no * item_per_page])
+    return jsonify(manifest_controller.get_table(page_no * item_per_page - item_per_page, page_no * item_per_page))
 
 
 @app.route('/mission_table')
@@ -137,7 +138,7 @@ def mission_table():
         page_no = 1
     elif page_no > total_page:
         page_no = total_page
-    return render_template('mission_table.html', page_no=page_no, total_page=total_page)
+    return render_template('mission_table.html', page_no=page_no, total_page=total_page, item_per_page=item_per_page)
 
 
 @app.route('/predict_mask_make', methods=['GET', 'POST'])
@@ -154,6 +155,16 @@ def mission_table_data():
     page_no = request.args.get('page_no', default=1, type=int)
     item_per_page = request.args.get('item_per_page', default=15, type=int)
     return jsonify(mission_controller.get_table()[page_no * item_per_page - item_per_page:page_no * item_per_page])
+
+
+@app.route('/available_slide')
+def available_slide():
+    return jsonify(manifest_controller.get_available_slide_id())
+
+
+@app.route('/available_model')
+def available_model():
+    return jsonify(mission_controller.get_available_model())
 
 
 @app.route('/graph')

@@ -12,3 +12,13 @@ let btn_change_page = function (url, page_no) {
     else
         location.replace('/' + url + '?page_no=' + page_no);
 };
+
+let btn_predict = function () {
+    SlideID = $('#slide_id_select').select2('val');
+    Model = $('#model_select').select2('val');
+    $.get('/make_pre_mask?slide_id=' + SlideID + '&job_type=' + Model, function (result) {
+        if (result.time >= 0)
+            setTimeout("location.reload();", result.time * 1000);
+        alert(result.info);
+    });
+};

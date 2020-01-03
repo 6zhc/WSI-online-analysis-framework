@@ -9,6 +9,7 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="static/bootstrap.min.css">
     <link rel="stylesheet" href="static/AdminPanel.css">
+    <link rel="stylesheet" href="static/select2.min.css">
     <!-- 引入在线资源 -->
     <script src="static/g2.min.js"></script>
     <script src="static/jquery-3.3.1.slim.min.js"></script>
@@ -16,6 +17,7 @@
     <script src="static/bootstrap.min.js"></script>
     <script src="static/jquery.min.js"></script>
     <script src="static/buttomOnclick.js"></script>
+    <script src="static/select2.min.js"></script>
 
 </head>
 
@@ -106,18 +108,60 @@
             </div>
 
             <script>
-                test = $.get("manifest_table_data?page_no=" + {{ page_no }}, function (data) {
+                available_slide_id = [];
+                test = $.get("manifest_table_data?page_no=" + {{ page_no }} +"&item_per_page=" + {{ item_per_page }},
+                    function (data) {
                     console.log(data);
                     for (let i = 0; i < data.length; i++) {
                         let temp = document.createElement("tr");
-                        for (let j = 0; j < data[i].length; j++) {
+                        let j = 0;
+                        for (; j < data[i].length; j++) {
                             temp2 = document.createElement("td");
-                            temp2.innerHTML = data[i][j];
+                            if (data[i][j] == "model_selection") {
+                                temp2.innerHTML = model_selection(data[i][0]);
+                                available_slide_id.push(data[i][0])
+                            } else
+                                temp2.innerHTML = data[i][j];
                             temp.appendChild(temp2)
                         }
-                        document.getElementById('MyTable').appendChild(temp)
+                        for (; j <= 7; j++) {
+                            temp2 = document.createElement("td");
+                            temp2.innerHTML = "------------";
+                            temp.appendChild(temp2)
+                        }
+                        document.getElementById('MyTable').appendChild(temp);
                     }
-                });
+                        $.get("available_model", function (data) {
+                            console.log(data);
+                            models = data;
+                            for (j = 0; j < available_slide_id.length; j++) {
+                                $('#model_select_' + available_slide_id[j]).select2({
+                                    placeholder: 'Please select model',
+                                    data: models,
+                                });
+                                $('#model_select_' + available_slide_id[j]).on("select2:select", function (e) {
+                                    console.log(e.target.id.split('_').pop());
+                                    console.log($('#' + e.target.id).select2('val'));
+                                    SlideID = e.target.id.split('_').pop();
+                                    Model = $('#' + e.target.id).select2('val');
+
+                                    ask = confirm("是否执行slideID为" + SlideID + ", 预测模型为" + Model + "的任务？");
+                                    if (ask) {
+                                        $.get('/make_pre_mask?slide_id=' + SlideID + '&job_type=' + Model, function (result) {
+                                            alert(result.info);
+                                        });
+                                    }
+                                    $('#' + e.target.id).val(null).trigger('change');
+                                })
+                            }
+                        });
+                    });
+
+
+                model_selection = function (slide_id) {
+                    return "<select class=\"form-control\" id=\"model_select_" + slide_id + "\" style=\"width:350px\">" +
+                        "<option value=\"\"></option>"
+                }
             </script>
 
         </main>

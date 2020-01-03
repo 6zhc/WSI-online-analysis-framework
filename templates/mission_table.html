@@ -9,6 +9,7 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="static/bootstrap.min.css">
     <link rel="stylesheet" href="static/AdminPanel.css">
+    <link rel="stylesheet" href="static/select2.min.css">
     <!-- 引入在线资源 -->
     <script src="static/g2.min.js"></script>
     <script src="static/jquery-3.3.1.slim.min.js"></script>
@@ -16,6 +17,8 @@
     <script src="static/bootstrap.min.js"></script>
     <script src="static/jquery.min.js"></script>
     <script src="static/buttomOnclick.js"></script>
+    <script src="static/select2.min.js"></script>
+
 
 </head>
 
@@ -65,13 +68,21 @@
 
         <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
             <h2>Mission Info</h2>
-            <form action="/predict_mask_make" method="POST"
-                  enctype="multipart/form-data">
-                Slide ID: <input type="text" name="slide_id"/>
-                UUID: <input type="text" name="uuid"/>
-                Job Type:<input type="text" name="job_type" value="0"/>
-                <input type="submit"/>
-            </form>
+            {#            <form action="/predict_mask_make" method="POST"#}
+            {#                  enctype="multipart/form-data">#}
+            {#                Slide ID: <input type="text" name="slide_id"/>#}
+            {#                UUID: <input type="text" name="uuid"/>#}
+            {#                Job Type:<input type="text" name="job_type" value="0"/>#}
+            {#                <input type="submit"/>#}
+            {#            </form>#}
+            Slide ID: <select class="form-control" id="slide_id_select" style="width:200px">
+            <option value=""></option>
+        </select>
+            Model: <select class="form-control" id="model_select" style="width:350px">
+            <option value=""></option>
+            <input type="button" onclick="btn_predict()" value="predict" style="margin-left: 10px">
+        </select>
+
             <div class="table-responsive">
                 <table class="table table-striped table-sm">
                     <thead>
@@ -104,7 +115,8 @@
 
             <script>
                 refresh_table = function () {
-                    $.get("mission_table_data?page_no=" + {{ page_no }}, function (data) {
+                    $.get("mission_table_data?page_no=" + {{ page_no }} +"&item_per_page=" + {{ item_per_page }},
+                        function (data) {
                         console.log(data);
                         document.getElementById('MyTable').innerText = "";
                         for (let i = 0; i < data.length; i++) {
@@ -119,7 +131,28 @@
                     });
                     setTimeout(refresh_table, 1000)
                 };
-                refresh_table()
+                refresh_table();
+                $('#slide_id_select').select2({
+                    placeholder: 'Please select slideID'
+                });
+                $.get("available_slide", function (data) {
+                    console.log(data);
+                    $('#slide_id_select').select2({
+                        placeholder: 'Please select slideID',
+                        data: data,
+                    });
+                });
+
+                $('#model_select').select2({
+                    placeholder: 'Please select model'
+                });
+                $.get("available_model", function (data) {
+                    console.log(data);
+                    $('#model_select').select2({
+                        placeholder: 'Please select model',
+                        data: data,
+                    });
+                });
             </script>
 
         </main>

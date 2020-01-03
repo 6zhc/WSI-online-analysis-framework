@@ -1,4 +1,5 @@
 from Model import predictMask
+import os
 
 
 def get_table():
@@ -44,3 +45,13 @@ def remove_mission_by_id(job_id):
 def get_total_number():
     predict_mask_db = predictMask.PredictMask()
     return len(predict_mask_db.get_predict_masks())
+
+
+def get_available_model():
+    result = []
+    list = os.listdir("Model/")
+    for file in list:
+        if file[-4:] == ".pth":
+            temp = {"id": file, "text": file}
+            result.append(temp)
+    return result
