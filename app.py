@@ -23,8 +23,8 @@ except:
 
 
 @app.route('/')
-@app.route('/table')
-def table():
+@app.route('/slide_table')
+def slide_table():
     page_no = request.args.get('page_no', default=1, type=int)
     item_per_page = request.args.get('item_per_page', default=15, type=int)
     total_page = (manifest_controller.get_total_number() + item_per_page - 1) // item_per_page
@@ -34,7 +34,7 @@ def table():
         page_no = 1
     elif page_no > total_page:
         page_no = total_page
-    return render_template('table.html', page_no=page_no, total_page=total_page, item_per_page=item_per_page)
+    return render_template('slide_table.html', page_no=page_no, total_page=total_page, item_per_page=item_per_page)
 
 
 @app.route('/uploader', methods=['GET', 'POST'])
@@ -77,8 +77,8 @@ def make_bg_mask():
 @app.route('/make_pre_mask')
 def make_pre_mask():
     slide_id = request.args.get('slide_id', type=int)
-    job_type = request.args.get('job_type', type=str, default="0")
-    thread.BackgroundThread(image_processing.predict_mask_with_job_id, slide_id, job_type).start()
+    model_name = request.args.get('model_name', type=str, default="0")
+    thread.BackgroundThread(image_processing.predict_mask_with_job_id, slide_id, model_name).start()
     return jsonify({"info": "Mission Started !", "time": "-1"})
 
 
@@ -145,8 +145,8 @@ def mission_table():
 def predict_mask_make():
     slide_id = request.form['slide_id']
     slide_uuid = request.form['uuid']
-    job_type = request.form['job_type']
-    thread.BackgroundThread(image_processing.predict_mask_with_job_id, slide_id, job_type).start()
+    model_name = request.form['model_name']
+    thread.BackgroundThread(image_processing.predict_mask_with_job_id, slide_id, model_name).start()
     return redirect('mission_table')
 
 

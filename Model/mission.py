@@ -3,7 +3,7 @@ import configparser
 import os
 
 
-class PredictMask:
+class Mission:
     def __init__(self):
         config_file = os.getcwd() + '/config.ini'
         self.config = configparser.ConfigParser()

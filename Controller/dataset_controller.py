@@ -1,5 +1,5 @@
 from Model import manifest
-from Model import predictMask
+from Model import mission
 from Controller import manifest_controller
 from Controller import thread
 
@@ -18,7 +18,6 @@ def import_manifest(manifest_path):
     thread.BackgroundThread(manifest_controller.get_table, 0).start()
 
 
-
 def export_manifest(manifest_path):
     manifest_db = manifest.Manifest()
     manifest_txt = open(manifest_path, 'w')
@@ -35,17 +34,17 @@ def export_database(database_file_folder):
         for temp in wsi:
             manifest_csv.write(str(temp) + '\t')
         manifest_csv.write("\n")
-    predict_mask_db = predictMask.PredictMask()
-    predict_mask_csv = open(database_file_folder + '/predict_mask.txt', 'w')
-    predict_mask_csv.write("id\tfilename\tmd5\tsize\tstate\n")
-    for wsi in predict_mask_db.get_predict_masks():
+    mission_db = mission.Mission()
+    mission_csv = open(database_file_folder + '/predict_mask.txt', 'w')
+    mission_csv.write("id\tfilename\tmd5\tsize\tstate\n")
+    for wsi in mission_db.get_predict_masks():
         for temp in wsi:
-            predict_mask_csv.write(str(temp) + '\t')
-        predict_mask_csv.write("\n")
+            mission_csv.write(str(temp) + '\t')
+        mission_csv.write("\n")
 
 
 def clear_database():
     manifest_db = manifest.Manifest()
     manifest_db.delete_all_projects()
-    predict_mask_db = predictMask.PredictMask()
-    predict_mask_db.delete_all_predict()
+    mission_db = mission.Mission()
+    mission_db.delete_all_predict()

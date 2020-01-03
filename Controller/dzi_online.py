@@ -117,6 +117,7 @@ def add_dzi_sever(app):
         except ValueError:
             # Invalid level or coordinates
             abort(404)
+            return
         buf = PILBytesIO()
         tile.save(buf, format, quality=app.config['DEEPZOOM_TILE_QUALITY'])
         resp = make_response(buf.getvalue())

@@ -4,7 +4,7 @@ import openslide
 import numpy
 import os
 from PIL import Image
-from Model import predictMask
+from Model import mission
 from Model import manifest
 from Controller import predict_module
 
@@ -66,17 +66,17 @@ def make_bg(slide_id):
         manifest_db.update_background_mask_by_id(info[0], 'background_mask.png')
 
 
-def predict_mask_with_job_id(slide_id, job_type="0"):
-    # if str(job_type) == '0':
+def predict_mask_with_job_id(slide_id, model_name="0"):
+    # if str(model_name) == '0':
     #     model_path = "Model/resnet_34_crd_model_59.pth"
-    # elif str(job_type) == '1':
+    # elif str(model_name) == '1':
     #     model_path = "Model/resnet_34_transfer_predicted_crd_model_best.pth"
     # else:
-    model_path = "Model/" + job_type
+    model_path = "Model/" + model_name
     manifest_db = manifest.Manifest()
     info = manifest_db.get_project_by_id(slide_id)
-    predict_mask_db = predictMask.PredictMask()
-    job_id = predict_mask_db.insert(slide_uuid=info[1], slide_id=info[0], job_type=job_type, total=-1)
+    mission_db = mission.Mission()
+    job_id = mission_db.insert(slide_uuid=info[1], slide_id=info[0], job_type=model_name, total=-1)
 
     myModule = predict_module.ResNetClassification(model_path=model_path,
                                                    num_classes=2, batch_size=64, num_workers=0)
@@ -100,7 +100,7 @@ def predict_mask_with_job_id(slide_id, job_type="0"):
     pre_result = numpy.zeros((mask.shape[0], mask.shape[1], 3))
     probablity_list = []
     times = mask.shape[1] / w * 2000
-    predict_mask_db.update_total_by_id(job_id=job_id, total=w // 2000 * h // 2000)
+    mission_db.update_total_by_id(job_id=job_id, total=w // 2000 * h // 2000)
     for x in range(w // 2000):
         for y in range(h // 2000):
             if available_region(mask[int(y * times):int(y * times + times), int(x * times):int(x * times + times)]):
@@ -116,11 +116,11 @@ def predict_mask_with_job_id(slide_id, job_type="0"):
                 probablity_list.append((x, y, result[0]))
                 pre_result[int(y * times):int(y * times + times), int(x * times):int(x * times + times),
                 numpy.argmax(result[0])] = result[0, numpy.argmax(result[0])] * 255
-            predict_mask_db.update_finished_by_id(job_id=job_id, finished=x * h // 2000 + y + 1)
-    if str(job_type) != '0':
+            mission_db.update_finished_by_id(job_id=job_id, finished=x * h // 2000 + y + 1)
+    if str(model_name) != '0':
         pre_result = post_processing(pre_result)
-    cv2.imwrite(data_folder + 'pre' + str(job_type) + '.png', pre_result)
-    predict_mask_db.update_predict_mask_by_id(job_id=job_id, predict_mask='pre' + str(job_type) + '.png')
+    cv2.imwrite(data_folder + 'pre' + str(model_name) + '.png', pre_result)
+    mission_db.update_predict_mask_by_id(job_id=job_id, predict_mask='pre' + str(model_name) + '.png')
     # file = open(data_folder + 'log.txt', 'w')
     # for fp in probablity_list:
     #     file.write(str(fp))

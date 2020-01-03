@@ -19,8 +19,8 @@ def get_table(start_no=0, end_no=0):
                     str(wsi[0]) + ')">remove</button>')
         temp.append(wsi[1])  # UUID
 
+        svs_file_path = data_root + wsi[1] + '/' + wsi[2]
         try:  # image_size
-            svs_file_path = data_root + wsi[1] + '/' + wsi[2]
             dimensions = openslide.OpenSlide(svs_file_path).dimensions
         except:
             if os.path.exists(svs_file_path):

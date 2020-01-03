@@ -1,10 +1,10 @@
-from Model import predictMask
+from Model import mission
 import os
 
 
 def get_table():
-    predict_mask_db = predictMask.PredictMask()
-    jobs = predict_mask_db.get_predict_masks()
+    mission_db = mission.Mission()
+    jobs = mission_db.get_predict_masks()
     data = []
     for job in jobs:
         temp = []
@@ -38,13 +38,13 @@ def bar(now):
 
 
 def remove_mission_by_id(job_id):
-    predict_mask_db = predictMask.PredictMask()
-    predict_mask_db.delete_predict_mask_by_id(job_id)
+    mission_db = mission.Mission()
+    mission_db.delete_predict_mask_by_id(job_id)
 
 
 def get_total_number():
-    predict_mask_db = predictMask.PredictMask()
-    return len(predict_mask_db.get_predict_masks())
+    mission_db = mission.Mission()
+    return len(mission_db.get_predict_masks())
 
 
 def get_available_model():
