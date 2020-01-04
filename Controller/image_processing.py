@@ -119,7 +119,7 @@ def predict_mask_with_job_id(slide_id, model_name="0"):
             mission_db.update_finished_by_id(job_id=job_id, finished=x * h // 2000 + y + 1)
     if str(model_name) != '0':
         pre_result = post_processing(pre_result)
-    cv2.imwrite(data_folder + 'pre' + str(model_name) + '.png', pre_result)
+    cv2.imwrite(data_folder + 'mission' + str(job_id) + '_' + str(model_name) + '.png', pre_result)
     mission_db.update_predict_mask_by_id(job_id=job_id, predict_mask='pre' + str(model_name) + '.png')
     # file = open(data_folder + 'log.txt', 'w')
     # for fp in probablity_list:

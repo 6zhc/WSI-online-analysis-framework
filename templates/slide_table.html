@@ -80,6 +80,7 @@
                         <th>Image Size</th>
                         <th>Background Mask</th>
                         <th>Predict Mask</th>
+                        <th>Mission</th>
                     </tr>
                     </thead>
                     <tbody id="MyTable">
@@ -119,9 +120,9 @@
                                 temp2.innerHTML = data[i][j];
                             temp.appendChild(temp2)
                         }
-                        for (; j <= 7; j++) {
+                        for (; j <= 8; j++) {
                             temp2 = document.createElement("td");
-                            temp2.innerHTML = "------------";
+                            temp2.innerHTML = "---------";
                             temp.appendChild(temp2)
                         }
                         document.getElementById('MyTable').appendChild(temp);

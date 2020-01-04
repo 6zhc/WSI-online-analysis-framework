@@ -40,6 +40,16 @@ class Mission:
         db.close()
         return result
 
+    def get_predict_masks_by_slide_id(self, slide_id):
+        db = self.db_connect()
+        cursor = db.cursor()
+        print((slide_id,))
+        cursor.execute("SELECT * FROM PREDICT_MASK WHERE (SlideID = %s)", (slide_id,))
+        result = cursor.fetchall()
+        cursor.close()
+        db.close()
+        return result
+
     def get_predict_masks_by_id(self, job_id):
         db = self.db_connect()
         cursor = db.cursor()

@@ -2,9 +2,12 @@ from Model import mission
 import os
 
 
-def get_table():
+def get_table(slide_uuid):
     mission_db = mission.Mission()
-    jobs = mission_db.get_predict_masks()
+    if slide_uuid == "":
+        jobs = mission_db.get_predict_masks()
+    else:
+        jobs = mission_db.get_predict_masks_by_uuid(slide_uuid)
     data = []
     for job in jobs:
         temp = []

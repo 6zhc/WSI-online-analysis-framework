@@ -56,6 +56,7 @@ def get_table(start_no=0, end_no=0):
                         # + str(wsi[0]) + ')"> Remake</button>'
                         )
         temp.append("model_selection")
+        temp.append('<a href="/mission_table?slide_uuid=' + str(wsi[1]) + '"target="_blank">' + 'Mission' + '</a>')
 
         data.append(temp)
     return data
