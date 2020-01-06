@@ -97,7 +97,7 @@ def predict_mask_with_job_id(slide_id, model_name="0"):
     mask = cv2.imread(data_folder + info[4], cv2.IMREAD_GRAYSCALE)
     oslide = openslide.OpenSlide(svs_file)
     w, h = oslide.dimensions
-    pre_result = numpy.zeros((mask.shape[0], mask.shape[1], 3))
+    pre_result = numpy.zeros((mask.shape[0], mask.shape[1], 3), dtype=numpy.uint8)
     probablity_list = []
     times = mask.shape[1] / w * 2000
     mission_db.update_total_by_id(job_id=job_id, total=w // 2000 * h // 2000)
@@ -131,6 +131,20 @@ def predict_mask_with_job_id(slide_id, model_name="0"):
 
 def post_processing(image):
     image[:, :, 1:] = 0
+    image = cv2.blur(image, (200, 200))
+    image = cv2.applyColorMap(image[:, :, 0], cv2.COLORMAP_JET)
+    # image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+    # image[image < 140] = 0
+    # image[image > 180] = 180
+    #
+    # image[image > 140] = (image[image > 140] - 140) / 40 * 255
+    # image = Image.fromarray(image).convert('RGBA')
+    # # print("convert finished")
+    # image = numpy.array(image)
+    # image[:, :, 3] = image[:, :, 2]
+    # image[:, :, 2] = 255
+
     # image = 255 - image
     return image
 
