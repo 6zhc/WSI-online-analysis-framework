@@ -98,12 +98,17 @@
                     </tbody>
                 </table>
 
-                <div align="center">
-                    <input type="number" value="{{ page_no }}" style="width:40px" id="page_no">
-                    /{{ total_page }}
-                    <button onclick="btn_change_page('table',-1)">Go</button>
-                    <button onclick="btn_change_page('mission_table',{{ page_no + 1 }})">Next</button>
+                <div align="center" style="margin: 30px">
+                    <button onclick="btn_change_page('mission_table',1)">First</button>
                     <button onclick="btn_change_page('mission_table',{{ page_no - 1 }})">Former</button>
+
+                    <input type="number" value="{{ page_no }}" max="{{ total_page }}" min="1"
+                           style="width:40px; margin-left: 20px" id="page_no">
+                    /{{ total_page }}
+                    <button onclick="btn_change_page('mission_table',-1)" style="margin-right: 20px">Go</button>
+
+                    <button onclick="btn_change_page('mission_table',{{ page_no + 1 }})">Next</button>
+                    <button onclick="btn_change_page('mission_table',{{ total_page }})">Last</button>
                 </div>
 
             </div>

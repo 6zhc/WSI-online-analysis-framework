@@ -64,8 +64,9 @@
             <h2>Slide Info</h2>
             <form action="/uploader" method="POST"
                   enctype="multipart/form-data">
+                manifest 或 SVS文件：
+                <input type="text" name="uuid" placeholder="UUID（为空则自动生成）"/>
                 <input type="file" name="file"/>
-                <input type="text" name="uuid"/>
                 <input type="submit"/>
             </form>
             <div class="table-responsive">
@@ -93,12 +94,17 @@
                     {#                        </tr>#}
                     </tbody>
                 </table>
-                <div align="center">
-                    <input type="number" value="{{ page_no }}" style="width:40px" id="page_no">
+                <div align="center" style="margin: 30px">
+                    <button onclick="btn_change_page('slide_table',1)">First</button>
+                    <button onclick="btn_change_page('slide_table',{{ page_no - 1 }})">Former</button>
+
+                    <input type="number" value="{{ page_no }}" max="{{ total_page }}" min="1"
+                           style="width:40px; margin-left: 20px" id="page_no">
                     /{{ total_page }}
                     <button onclick="btn_change_page('slide_table',-1)" style="margin-right: 20px">Go</button>
+
                     <button onclick="btn_change_page('slide_table',{{ page_no + 1 }})">Next</button>
-                    <button onclick="btn_change_page('slide_table',{{ page_no - 1 }})">Former</button>
+                    <button onclick="btn_change_page('slide_table',{{ total_page }})">Last</button>
                 </div>
 
             </div>
