@@ -19,7 +19,7 @@ except:
         passwd=config['db']['passwd']
     )
     mycursor = db.cursor()
-    mycursor.execute("CREATE DATABASE test")
+    mycursor.execute("CREATE DATABASE " + config['db']['database'])
     db.close()
     db = mysql.connector.connect(
         host=config['db']['host'],
