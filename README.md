@@ -1,4 +1,4 @@
-# WSI-online-analysis-framework
+# WSI online analysis framework
 ## What is it
 * WSI-online-analysis-framework is a framework to build a svs file online viewing and analyzing server.
 * If you want the model or svs file for testing, you can download from 
