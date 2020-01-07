@@ -72,7 +72,7 @@
     * For more information you can visit Flask official document
 * Run command ```python -u -m flask run``` or ```flask run``` to start a server.
 * To change the host, ip or other thing. You can add options after the command. (Optional)
-    * eg. ```python -u -m flask run --host=0.0.0.0 --ip==8080```
+    * eg. ```python -u -m flask run --host=0.0.0.0 --ip=8080```
     * For more information you can run command ```python -u -m flask --help```
             Usage: python -m flask run [OPTIONS]
 
