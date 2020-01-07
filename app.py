@@ -1,20 +1,21 @@
 from flask import Flask, render_template, request, redirect
 from flask import jsonify
-from Controller import dzi_online
+from Controller import dzi_online_controller
 from Controller import manifest_controller
-from Controller import thread
+from Controller import thread_controller
 from Controller import image_processing
 from Controller import dataset_controller
 from Controller import mission_controller
-import copy
 import os
 import uuid
 
 
 app = Flask(__name__)
-dzi_online.add_dzi_sever(app)
+dzi_online_controller.add_dzi_sever(app)
 
 try:
+    if not os.path.exists("Data"):
+        os.mkdir("Data")
     if os.path.exists('static/data'):
         os.remove('static/data')
     os.symlink(os.getcwd() + '/Data', 'static/data')
@@ -70,7 +71,7 @@ def uploader_file():
 @app.route('/make_bg_mask')
 def make_bg_mask():
     slide_id = request.args.get('slide_id', type=int)
-    thread.BackgroundThread(image_processing.make_bg, slide_id).start()
+    thread_controller.BackgroundThread(image_processing.make_bg, slide_id).start()
     return jsonify({"info": "Mission Started !", "time": "5"})
 
 
@@ -78,7 +79,7 @@ def make_bg_mask():
 def make_pre_mask():
     slide_id = request.args.get('slide_id', type=int)
     model_name = request.args.get('model_name', type=str, default="0")
-    thread.BackgroundThread(image_processing.predict_mask_with_job_id, slide_id, model_name).start()
+    thread_controller.BackgroundThread(image_processing.predict_mask_with_job_id, slide_id, model_name).start()
     return jsonify({"info": "Mission Started !", "time": "-1"})
 
 

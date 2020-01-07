@@ -72,7 +72,7 @@ def predict_mask_with_job_id(slide_id, model_name="0"):
     # elif str(model_name) == '1':
     #     model_path = "Model/resnet_34_transfer_predicted_crd_model_best.pth"
     # else:
-    model_path = "Model/" + model_name
+    model_path = "models/" + model_name
     manifest_db = manifest.Manifest()
     info = manifest_db.get_project_by_id(slide_id)
     mission_db = mission.Mission()

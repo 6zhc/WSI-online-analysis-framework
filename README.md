@@ -57,9 +57,9 @@
 ```
 
 ### Import the trained model
-* Put the trained model(pth file) into the Model folder
+* Put the trained model(pth file) into the models folder
 ```
-    cp your_model_path Model
+    cp your_model_path models
 ```
 
 ### Run the framework
@@ -118,3 +118,39 @@
     
 ### Remove/reload the mask in the slide page.
 * Click 'B' on the keyboard.
+
+# Project Layout
+- Controller
+    - manifest_controller.py
+    - mission_controller.py
+    - dataset_controller.py
+    - dzi_online_controller.py
+    - thread_controller.py
+    - image_processing.py
+- Model
+    - create_database.py
+    - manifest.py 
+    - mission.py
+- templates (View)
+    - slide_table.html
+    - mission_table.html
+    - slide.html
+    - warning.html (Shown after uploading files)
+    - dashboard.html (developing)
+    - graph.html (developing)
+- static
+    - js/css files (Not detailed here) 
+    - icon files (Not detailed here) 
+    - data (soft link to Data folder)
+- Data (Created by app.py or created by yourself)
+    - folder named by UUID (Not detailed here) 
+        - svs file
+        - icon.png (used to show in the slide table)
+        - smaller_image.png (1/16 times the pixel size of the original picture)
+        - background_mask.png (the mask of the background, the same size of smaller_image)
+        - mission_{mission_id}_{model name}.png (the result of mission, the same size of smaller_image)
+- app.py (Main file)
+- config.ini (Configure file)
+- test.py (for testing use)
+- create_database.py (the same as the file in the Model folder)
+- README.md

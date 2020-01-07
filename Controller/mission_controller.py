@@ -52,8 +52,8 @@ def get_total_number():
 
 def get_available_model():
     result = []
-    list = os.listdir("Model/")
-    for file in list:
+    file_list = os.listdir("models/")
+    for file in file_list:
         if file[-4:] == ".pth":
             temp = {"id": file, "text": file}
             result.append(temp)
