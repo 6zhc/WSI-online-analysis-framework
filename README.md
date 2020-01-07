@@ -24,7 +24,7 @@
     * MySQL(or other database software)
     * Git
 
-* Library requirement
+* Python Library requirement
     * openslide-python==1.1.1
     * opencv-python==4.1.1.26
     * Pillow==6.2.1
@@ -33,6 +33,10 @@
     * numpy==1.17.4
     * mysql-connector==2.2.9
     * Flask==1.1.1
+* You can install python library with this command:
+```
+     pip install -r requirements.txt
+```
 
 ### Clone this repository with git and get in the folder
 ```
@@ -57,7 +61,7 @@
 ```
 
 ### Import the trained model
-* Put the trained model(pth file) into the models folder
+* Put the trained model (pth file) into the models folder
 ```
     cp your_model_path models
 ```
