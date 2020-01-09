@@ -78,7 +78,11 @@ def predict_mask_with_job_id(slide_id, model_name="0"):
     mission_db = mission.Mission()
     job_id = mission_db.insert(slide_uuid=info[1], slide_id=info[0], job_type=model_name, total=-1)
 
-    myModule = predict_module.ResNetClassification(model_path=model_path,
+    if "subtype" in str(model_name):
+        myModule = predict_module.ResNetClassification(model_path=model_path,
+                                                       num_classes=3, batch_size=64, num_workers=0)
+    else:
+        myModule = predict_module.ResNetClassification(model_path=model_path,
                                                    num_classes=2, batch_size=64, num_workers=0)
     data_folder = data_root + info[1] + '/'
     svs_file = data_folder + info[2]
@@ -117,11 +121,25 @@ def predict_mask_with_job_id(slide_id, model_name="0"):
                 pre_result[int(y * times):int(y * times + times), int(x * times):int(x * times + times),
                 numpy.argmax(result[0])] = result[0, numpy.argmax(result[0])] * 255
             mission_db.update_finished_by_id(job_id=job_id, finished=x * h // 2000 + y + 1)
-    if str(model_name) != '0':
+    if "subtype" not in str(model_name):
         pre_result = post_processing(pre_result)
-    mask_file_name = 'mission' + str(job_id) + '_' + str(model_name) + '.png'
-    cv2.imwrite(data_folder + mask_file_name, pre_result)
-    mission_db.update_predict_mask_by_id(job_id=job_id, predict_mask=mask_file_name)
+        mask_file_name = 'mission' + str(job_id) + '_' + str(model_name) + '.png'
+        cv2.imwrite(data_folder + mask_file_name, pre_result)
+        mission_db.update_predict_mask_by_id(job_id=job_id, predict_mask=mask_file_name)
+    else:
+        mask_file_name = 'mission' + str(job_id) + '_' + str(model_name) + '.png'
+        cv2.imwrite(data_folder + mask_file_name, pre_result)
+        sub = ["ccRCC", "pRCC", "chRCC"]
+        result_sub = [0, 0, 0]
+        for i in range(3):
+            result_sub[i] = numpy.sum(pre_result[:, :, i] != 0)
+        result_sub_sum = numpy.sum(result_sub)
+        summary = ""
+        for i in range(3):
+            result_sub[i] = int(result_sub[i] / result_sub_sum * 100)
+            summary = summary + sub[i] + ": " + str(result_sub[i]) + "%, "
+        mission_db.update_predict_mask_by_id(job_id=job_id, predict_mask=summary)
+
     # file = open(data_folder + 'log.txt', 'w')
     # for fp in probablity_list:
     #     file.write(str(fp))

@@ -22,11 +22,14 @@ def get_table(slide_uuid):
         temp.append(str(job[4]) + '/' + str(job[5]))
         if job[6] is None:
             temp.append("Not Finished")
-        else:
+        elif "mission" in job[6]:
             temp.append('<a href="/slide?slide_id=' + str(job[1]) +
                         '&mask_url=' + job[6] + '"target="_blank">' + job[6] + '</a>'
-                        # + '<button type="button" onclick="btn_click(\'make_bg_mask\','
-                        # + str(wsi[0]) + ')"> Remake</button>'
+                        )
+        else:
+            temp.append('<a href="/slide?slide_id=' + str(job[1]) +
+                        '&mask_url=' + 'mission' + str(job[0]) + '_' + str(job[3]) + '.png' +
+                        '"target="_blank">' + job[6] + '</a>'
                         )
         temp.append(str(job[8]))
         temp.append(str(job[7]))
