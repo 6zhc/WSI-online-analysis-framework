@@ -80,10 +80,17 @@ class ResNetClassification(object):
         base_model = models.resnet34()
         base_model.fc = nn.Linear(base_model.fc.in_features, self.num_classes)
         base_model = base_model.cuda()
-
-        checkpoint = torch.load(model_path)
-        # base_model.load_state_dict(checkpoint['state_dict'])
-        base_model.load_state_dict(checkpoint['net'])
+        try:
+          checkpoint = torch.load(model_path)
+          # base_model.load_state_dict(checkpoint['state_dict'])
+          base_model.load_state_dict(checkpoint['net'])
+        except:
+          base_model = nn.DataParallel(base_model)
+  
+          checkpoint = torch.load(model_path)
+          # base_model.load_state_dict(checkpoint['state_dict'])
+          base_model.load_state_dict(checkpoint['net'])
+        
         return base_model
 
     def predict(self, data_array):
