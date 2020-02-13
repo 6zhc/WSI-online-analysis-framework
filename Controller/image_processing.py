@@ -78,7 +78,10 @@ def predict_mask_with_job_id(slide_id, model_name="0"):
     mission_db = mission.Mission()
     job_id = mission_db.insert(slide_uuid=info[1], slide_id=info[0], job_type=model_name, total=-1)
 
-    if "subtype" in str(model_name):
+    if "subtype" in str(model_name) and "hybrid" in str(model_name):
+        myModule = predict_module.ResNetClassification(model_path=model_path,
+                                                       num_classes=4, batch_size=64, num_workers=0)
+    elif "subtype" in str(model_name):
         myModule = predict_module.ResNetClassification(model_path=model_path,
                                                        num_classes=3, batch_size=64, num_workers=0)
     else:
@@ -101,7 +104,7 @@ def predict_mask_with_job_id(slide_id, model_name="0"):
     mask = cv2.imread(data_folder + info[4], cv2.IMREAD_GRAYSCALE)
     oslide = openslide.OpenSlide(svs_file)
     w, h = oslide.dimensions
-    pre_result = numpy.zeros((mask.shape[0], mask.shape[1], 3), dtype=numpy.uint8)
+    pre_result = numpy.zeros((mask.shape[0], mask.shape[1], 4), dtype=numpy.uint8)
     probablity_list = []
     times = mask.shape[1] / w * 2000
     mission_db.update_total_by_id(job_id=job_id, total=w // 2000 * h // 2000)
@@ -126,9 +129,47 @@ def predict_mask_with_job_id(slide_id, model_name="0"):
         mask_file_name = 'mission' + str(job_id) + '_' + str(model_name) + '.png'
         cv2.imwrite(data_folder + mask_file_name, pre_result)
         mission_db.update_predict_mask_by_id(job_id=job_id, predict_mask=mask_file_name)
-    else:
+        
+        mask_file = cv2.imread(data_folder + mask_file_name)
+        
+        original_file_name = "smaller_image.png"
+        original_file = cv2.imread(data_folder + original_file_name)
+        
+        alpha = numpy.zeros(mask_file.shape)
+        alpha[:,:,0] = mask_file[:,:,0]
+        alpha[:,:,1] = mask_file[:,:,0]
+        alpha[:,:,2] = mask_file[:,:,0]
+        alpha = alpha.astype(float)/128 
+        
+        mask_file = mask_file.astype(float)
+        original_file = original_file.astype(float)
+        mask_file = cv2.multiply((1-alpha)*0.7, mask_file)
+        original_file = cv2.multiply(0.3+alpha*0.7, original_file) 
+        
+        outImage = original_file + mask_file
+        result_file_name = 'mission' + str(job_id) + '_result.png'
+        cv2.imwrite(data_folder + result_file_name ,outImage)
+        
+    elif "hybrid" in str(model_name):
+        sub = ["health", "ccRCC", "pRCC", "chRCC"]
+        result_sub = [0, 0, 0, 0]
+        for i in range(4):
+            result_sub[i] = numpy.sum(pre_result[:, :, i] != 0)
+        result_sub_sum = numpy.sum(result_sub)
+        summary = ""
+        for i in range(4):
+            result_sub[i] = int(result_sub[i] / result_sub_sum * 100)
+            summary = summary + sub[i] + ": " + str(result_sub[i]) + "%, "
+        
+        result = numpy.zeros((pre_result.shape[0], pre_result.shape[1], 3))
+        for i in range(3):
+            result[:,:,i] = pre_result[:,:,i+1]
         mask_file_name = 'mission' + str(job_id) + '_' + str(model_name) + '.png'
-        cv2.imwrite(data_folder + mask_file_name, pre_result)
+        cv2.imwrite(data_folder + mask_file_name, result)
+        
+        mission_db.update_predict_mask_by_id(job_id=job_id, predict_mask=summary)
+
+    else:
         sub = ["ccRCC", "pRCC", "chRCC"]
         result_sub = [0, 0, 0]
         for i in range(3):
@@ -138,6 +179,13 @@ def predict_mask_with_job_id(slide_id, model_name="0"):
         for i in range(3):
             result_sub[i] = int(result_sub[i] / result_sub_sum * 100)
             summary = summary + sub[i] + ": " + str(result_sub[i]) + "%, "
+            
+        result = numpy.zeros((pre_result.shape[0], pre_result.shape[1], 3))
+        for i in range(3):
+            result[:,:,i] = pre_result[:,:,i]
+        mask_file_name = 'mission' + str(job_id) + '_' + str(model_name) + '.png'
+        cv2.imwrite(data_folder + mask_file_name, result)
+        
         mission_db.update_predict_mask_by_id(job_id=job_id, predict_mask=summary)
 
     # file = open(data_folder + 'log.txt', 'w')
