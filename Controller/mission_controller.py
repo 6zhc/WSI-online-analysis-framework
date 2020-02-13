@@ -13,7 +13,11 @@ def get_table(slide_uuid):
         temp = []
         temp.append(job[0])  # ID
         # slide_id = manifest_db.get_project_by_uuid(job[2])[0]
-        temp.append(str(job[1]))
+        # print('static/data/' + str(job[2]) + '/mission' + str(job[0]) + '_result.png')
+        if os.path.exists('static/data/' + str(job[2]) + '/mission' + str(job[0]) + '_result.png'):
+            temp.append('<a href="/static/data/' + str(job[2]) + '/mission' + str(job[0]) + '_result.png"target="_blank">' + str(job[1]) + '</a>')
+        else:
+            temp.append(str(job[1]))
         temp.append('<button type="button" onclick="btn_click(\'remove_mission\',' +
                     str(job[0]) + ')">remove</button>')
         temp.append('<a href="/slide?slide_id=' + str(job[1]) + '"target="_blank">' + str(job[2]) + '</a>')
