@@ -136,19 +136,19 @@ def predict_mask_with_job_id(slide_id, model_name="0"):
         original_file = cv2.imread(data_folder + original_file_name)
         
         alpha = numpy.zeros(mask_file.shape)
-        alpha[:,:,0] = mask_file[:,:,0]
-        alpha[:,:,1] = mask_file[:,:,0]
-        alpha[:,:,2] = mask_file[:,:,0]
+        alpha[:, :, 0] = mask_file[:, :, 0]
+        alpha[:, :, 1] = mask_file[:, :, 0]
+        alpha[:, :, 2] = mask_file[:, :, 0]
         alpha = alpha.astype(float)/128 
         
         mask_file = mask_file.astype(float)
         original_file = original_file.astype(float)
         mask_file = cv2.multiply((1-alpha)*0.7, mask_file)
-        original_file = cv2.multiply(0.3+alpha*0.7, original_file) 
-        
-        outImage = original_file + mask_file
+        original_file = cv2.multiply(0.3 + alpha * 0.7, original_file)
+
+        out_image = original_file + mask_file
         result_file_name = 'mission' + str(job_id) + '_result.png'
-        cv2.imwrite(data_folder + result_file_name ,outImage)
+        cv2.imwrite(data_folder + result_file_name, out_image)
         
     elif "hybrid" in str(model_name):
         sub = ["health", "ccRCC", "pRCC", "chRCC"]
