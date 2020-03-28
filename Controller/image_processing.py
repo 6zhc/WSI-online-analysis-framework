@@ -7,6 +7,7 @@ from PIL import Image
 from Model import mission
 from Model import manifest
 from Controller import predict_module
+from Controller import predict_module2
 
 
 data_root = "Data/"
@@ -78,15 +79,6 @@ def predict_mask_with_job_id(slide_id, model_name="0"):
     mission_db = mission.Mission()
     job_id = mission_db.insert(slide_uuid=info[1], slide_id=info[0], job_type=model_name, total=-1)
 
-    if "subtype" in str(model_name) and "hybrid" in str(model_name):
-        myModule = predict_module.ResNetClassification(model_path=model_path,
-                                                       num_classes=4, batch_size=64, num_workers=0)
-    elif "subtype" in str(model_name):
-        myModule = predict_module.ResNetClassification(model_path=model_path,
-                                                       num_classes=3, batch_size=64, num_workers=0)
-    else:
-        myModule = predict_module.ResNetClassification(model_path=model_path,
-                                                   num_classes=2, batch_size=64, num_workers=0)
     data_folder = data_root + info[1] + '/'
     svs_file = data_folder + info[2]
     if not os.path.exists(data_folder + 'patch/'):
@@ -108,23 +100,28 @@ def predict_mask_with_job_id(slide_id, model_name="0"):
     probablity_list = []
     times = mask.shape[1] / w * 2000
     mission_db.update_total_by_id(job_id=job_id, total=w // 2000 * h // 2000)
-    for x in range(w // 2000):
-        for y in range(h // 2000):
-            if available_region(mask[int(y * times):int(y * times + times), int(x * times):int(x * times + times)]):
-                # if os.path.exists(data_folder + 'patch/' + str(x) + '_' + str(y) + '.png'):
-                #     patch = Image.open(data_folder + 'patch/' + str(x) + '_' + str(y) + '.png')
-                # else:
-                #     patch = oslide.read_region((x * 2000, y * 2000), 0, (2000, 2000))
-                #     patch.save(data_folder + 'patch/' + str(x) + '_' + str(y) + '.png')
-                patch = oslide.read_region((x * 2000, y * 2000), 0, (2000, 2000))
-                patch = numpy.array(patch.convert('RGB'))
-                result = myModule.predict(numpy.resize(patch, tuple([1, 2000, 2000, 3])))
-                # result = myModule.predict(total_image)
-                probablity_list.append((x, y, result[0]))
-                pre_result[int(y * times):int(y * times + times), int(x * times):int(x * times + times),
-                numpy.argmax(result[0])] = result[0, numpy.argmax(result[0])] * 255
-            mission_db.update_finished_by_id(job_id=job_id, finished=x * h // 2000 + y + 1)
+
     if "subtype" not in str(model_name):
+        myModule = predict_module.ResNetClassification(model_path=model_path,
+                                                       num_classes=2, batch_size=64, num_workers=0)
+
+        for x in range(w // 2000):
+            for y in range(h // 2000):
+                if available_region(mask[int(y * times):int(y * times + times), int(x * times):int(x * times + times)]):
+                    # if os.path.exists(data_folder + 'patch/' + str(x) + '_' + str(y) + '.png'):
+                    #     patch = Image.open(data_folder + 'patch/' + str(x) + '_' + str(y) + '.png')
+                    # else:
+                    #     patch = oslide.read_region((x * 2000, y * 2000), 0, (2000, 2000))
+                    #     patch.save(data_folder + 'patch/' + str(x) + '_' + str(y) + '.png')
+                    patch = oslide.read_region((x * 2000, y * 2000), 0, (2000, 2000))
+                    patch = numpy.array(patch.convert('RGB'))
+                    result = myModule.predict(numpy.resize(patch, tuple([1, 2000, 2000, 3])))
+                    # result = myModule.predict(total_image)
+                    # probablity_list.append((x, y, result[0]))
+                    pre_result[int(y * times):int(y * times + times), int(x * times):int(x * times + times),
+                    numpy.argmax(result[0])] = result[0, numpy.argmax(result[0])] * 255
+                mission_db.update_finished_by_id(job_id=job_id, finished=x * h // 2000 + y + 1)
+
         pre_result = post_processing(pre_result)
         mask_file_name = 'mission' + str(job_id) + '_' + str(model_name) + '.png'
         cv2.imwrite(data_folder + mask_file_name, pre_result)
@@ -149,8 +146,20 @@ def predict_mask_with_job_id(slide_id, model_name="0"):
         out_image = original_file + mask_file
         result_file_name = 'mission' + str(job_id) + '_result.png'
         cv2.imwrite(data_folder + result_file_name, out_image)
-        
-    elif "hybrid" in str(model_name):
+
+    elif "subtype" in str(model_name) and "hybrid" in str(model_name):
+        myModule = predict_module.ResNetClassification(model_path=model_path,
+                                                       num_classes=4, batch_size=64, num_workers=0)
+        for x in range(w // 2000):
+            for y in range(h // 2000):
+                if available_region(mask[int(y * times):int(y * times + times), int(x * times):int(x * times + times)]):
+                    patch = oslide.read_region((x * 2000, y * 2000), 0, (2000, 2000))
+                    patch = numpy.array(patch.convert('RGB'))
+                    result = myModule.predict(numpy.resize(patch, tuple([1, 2000, 2000, 3])))
+                    pre_result[int(y * times):int(y * times + times), int(x * times):int(x * times + times),
+                    numpy.argmax(result[0])] = result[0, numpy.argmax(result[0])] * 255
+                mission_db.update_finished_by_id(job_id=job_id, finished=x * h // 2000 + y + 1)
+
         sub = ["health", "ccRCC", "pRCC", "chRCC"]
         result_sub = [0, 0, 0, 0]
         for i in range(4):
@@ -163,13 +172,26 @@ def predict_mask_with_job_id(slide_id, model_name="0"):
         
         result = numpy.zeros((pre_result.shape[0], pre_result.shape[1], 3))
         for i in range(3):
-            result[:,:,i] = pre_result[:,:,i+1]
+            result[:, :, i] = pre_result[:, :, i + 1]
         mask_file_name = 'mission' + str(job_id) + '_' + str(model_name) + '.png'
         cv2.imwrite(data_folder + mask_file_name, result)
         
         mission_db.update_predict_mask_by_id(job_id=job_id, predict_mask=summary)
 
-    else:
+    elif "_subtype" in str(model_name) and "hybrid" not in str(model_name):
+        myModule = predict_module.ResNetClassification(model_path=model_path,
+                                                       num_classes=3, batch_size=64, num_workers=0)
+
+        for x in range(w // 2000):
+            for y in range(h // 2000):
+                if available_region(mask[int(y * times):int(y * times + times), int(x * times):int(x * times + times)]):
+                    patch = oslide.read_region((x * 2000, y * 2000), 0, (2000, 2000))
+                    patch = numpy.array(patch.convert('RGB'))
+                    result = myModule.predict(numpy.resize(patch, tuple([1, 2000, 2000, 3])))
+                    pre_result[int(y * times):int(y * times + times), int(x * times):int(x * times + times),
+                    numpy.argmax(result[0])] = result[0, numpy.argmax(result[0])] * 255
+                mission_db.update_finished_by_id(job_id=job_id, finished=x * h // 2000 + y + 1)
+
         sub = ["ccRCC", "pRCC", "chRCC"]
         result_sub = [0, 0, 0]
         for i in range(3):
@@ -186,6 +208,42 @@ def predict_mask_with_job_id(slide_id, model_name="0"):
         mask_file_name = 'mission' + str(job_id) + '_' + str(model_name) + '.png'
         cv2.imwrite(data_folder + mask_file_name, result)
         
+        mission_db.update_predict_mask_by_id(job_id=job_id, predict_mask=summary)
+
+    elif "MixMatch-subtype" in str(model_name):
+        myModule = predict_module2.ResNetClassification(model_path=model_path,
+                                                        batch_size=64, num_workers=0)
+
+        for x in range(w // 2000):
+            for y in range(h // 2000):
+                if available_region(mask[int(y * times):int(y * times + times), int(x * times):int(x * times + times)]):
+                    patch = oslide.read_region((x * 2000, y * 2000), 0, (2000, 2000))
+                    patch = numpy.array(patch.convert('RGB'))
+                    result1, result2 = myModule.predict(numpy.resize(patch, tuple([1, 2000, 2000, 3])))
+                    if result1[0, 1] > 0.5:
+                        pre_result[int(y * times):int(y * times + times), int(x * times):int(x * times + times),
+                        0] = result1[0, 1] * 255
+                    elif result1[0, 0] > 0.5:
+                        pre_result[int(y * times):int(y * times + times), int(x * times):int(x * times + times),
+                        numpy.argmax(result2[0]) + 1] = result2[0, numpy.argmax(result2[0])] * 255
+                mission_db.update_finished_by_id(job_id=job_id, finished=x * h // 2000 + y + 1)
+
+        sub = ["health", "ccRCC", "pRCC", "chRCC"]
+        result_sub = [0, 0, 0, 0]
+        for i in range(4):
+            result_sub[i] = numpy.sum(pre_result[:, :, i] != 0)
+        result_sub_sum = numpy.sum(result_sub)
+        summary = ""
+        for i in range(4):
+            result_sub[i] = int(result_sub[i] / result_sub_sum * 100)
+            summary = summary + sub[i] + ": " + str(result_sub[i]) + "%, "
+
+        result = numpy.zeros((pre_result.shape[0], pre_result.shape[1], 3))
+        for i in range(3):
+            result[:, :, i] = pre_result[:, :, i + 1]
+        mask_file_name = 'mission' + str(job_id) + '_' + str(model_name) + '.png'
+        cv2.imwrite(data_folder + mask_file_name, result)
+
         mission_db.update_predict_mask_by_id(job_id=job_id, predict_mask=summary)
 
     # file = open(data_folder + 'log.txt', 'w')

@@ -64,4 +64,7 @@ def get_available_model():
         if file[-4:] == ".pth":
             temp = {"id": file, "text": file}
             result.append(temp)
+        if file[-8:] == ".pth.tar":
+            temp = {"id": file, "text": file}
+            result.append(temp)
     return result
