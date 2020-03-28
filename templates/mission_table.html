@@ -99,16 +99,26 @@
                 </table>
 
                 <div align="center" style="margin: 30px">
-                    <button onclick="btn_change_page('mission_table',1)">First</button>
-                    <button onclick="btn_change_page('mission_table',{{ page_no - 1 }})">Former</button>
+                    <button onclick="btn_change_page('mission_table','1' + '&slide_uuid=' + '{{ slide_uuid }}')">
+                        First
+                    </button>
+                    <button onclick="btn_change_page('mission_table',{{ page_no - 1 }}+ '&slide_uuid=' + '{{ slide_uuid }}')">
+                        Former
+                    </button>
 
                     <input type="number" value="{{ page_no }}" max="{{ total_page }}" min="1"
                            style="width:40px; margin-left: 20px" id="page_no">
                     /{{ total_page }}
-                    <button onclick="btn_change_page('mission_table',-1)" style="margin-right: 20px">Go</button>
+                    <button onclick="btn_change_page('mission_table',document.getElementById('page_no').value
+                            + '&slide_uuid=' + '{{ slide_uuid }}')" style="margin-right: 20px">Go
+                    </button>
 
-                    <button onclick="btn_change_page('mission_table',{{ page_no + 1 }})">Next</button>
-                    <button onclick="btn_change_page('mission_table',{{ total_page }})">Last</button>
+                    <button onclick="btn_change_page('mission_table',{{ page_no + 1 }}+ '&slide_uuid=' + '{{ slide_uuid }}')">
+                        Next
+                    </button>
+                    <button onclick="btn_change_page('mission_table',{{ total_page }}+ '&slide_uuid=' + '{{ slide_uuid }}')">
+                        Last
+                    </button>
                 </div>
 
             </div>

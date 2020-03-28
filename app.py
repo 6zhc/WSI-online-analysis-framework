@@ -133,7 +133,7 @@ def mission_table():
     page_no = request.args.get('page_no', default=1, type=int)
     item_per_page = request.args.get('item_per_page', default=15, type=int)
     slide_uuid = request.args.get('slide_uuid', default="", type=str)
-    total_page = (mission_controller.get_total_number() + item_per_page - 1) // item_per_page
+    total_page = (len(mission_controller.get_table(slide_uuid)) + item_per_page - 1) // item_per_page
     if total_page == 0:
         page_no = 1
     elif page_no <= 0:
