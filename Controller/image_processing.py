@@ -1,4 +1,3 @@
-import os
 import cv2
 import openslide
 import numpy
@@ -6,8 +5,7 @@ import os
 from PIL import Image
 from Model import mission
 from Model import manifest
-from Controller import predict_module
-from Controller import predict_module2
+from Controller.predict_module import predict_module2, predict_module
 
 original_data_root = "Data/"
 analysis_data_root = "Data/Analysis_data/"

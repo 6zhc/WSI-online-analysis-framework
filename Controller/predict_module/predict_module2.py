@@ -14,7 +14,6 @@ data_array size is (x, 2000, 2000, 3) RGB
 #### ccrcc cancer region detection #####
 import math
 import torch
-import torch.nn as nn
 import torch.nn.parallel
 import torch.backends.cudnn as cudnn
 import torch.optim
@@ -22,9 +21,8 @@ import torch.utils.data
 import torchvision.transforms as transforms
 import torch.utils.data as data
 from PIL import Image
-from tqdm import tqdm
 import numpy as np
-from Controller import resynet
+from Controller.predict_module import resynet
 
 
 # os.environ['CUDA_VISIBLE_DEVICES'] = '5'

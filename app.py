@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect
 from flask import jsonify
-from Controller import dzi_online_controller
+from Controller import dzi_online_server
 from Controller import manifest_controller
 from Controller import thread_controller
 from Controller import image_processing
@@ -12,7 +12,7 @@ import openslide
 
 
 app = Flask(__name__)
-dzi_online_controller.add_dzi_sever(app)
+dzi_online_server.add_dzi_sever(app)
 
 try:
     if not os.path.exists("Data"):
