@@ -8,7 +8,7 @@ from Model import manifest
 from Controller.predict_module import predict_module2, predict_module
 
 original_data_root = "Data/"
-analysis_data_root = "Data/Analysis_data/"
+analysis_data_root = "Data/analysis_data/"
 
 
 def generate_icon_image_from_svs_file(svs_file_path, output_file_path):

@@ -4,8 +4,8 @@ import openslide
 import os
 
 original_data_root = 'static/data/Original_data/'
-analysis_data_root = "static/data/Analysis_data/"
-icon_root = 'static/data/Slide_icon/'
+analysis_data_root = "static/data/analysis_data/"
+icon_root = 'static/data/slide_icon/'
 
 
 def get_table(start_no=0, end_no=0):
