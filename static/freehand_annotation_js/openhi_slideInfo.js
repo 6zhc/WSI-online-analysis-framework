@@ -12,7 +12,7 @@ var demographic_update = function () {
     var data = JSON.stringify('demographic');
     $.ajax({
         type: 'POST',
-        url: '/get_patient_meta/',
+        url: '/freehand_annotation/get_patient_meta/' + info_url,
         async: true,
         data: data,
         contentType: 'application/json',

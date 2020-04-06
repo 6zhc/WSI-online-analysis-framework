@@ -6,6 +6,7 @@ from Controller import thread_controller
 from Controller import image_processing
 from Controller import dataset_controller
 from Controller import mission_controller
+from Controller import freehand_annotation_server
 import os
 import uuid
 import openslide
@@ -13,6 +14,7 @@ import openslide
 
 app = Flask(__name__)
 dzi_online_server.add_dzi_sever(app)
+freehand_annotation_server.add_annotation_sever(app)
 
 try:
     if not os.path.exists("Data"):
@@ -25,7 +27,7 @@ except:
 
 
 # for i in os.listdir('static/data'):
-#     icon_root = 'static/data/Slide_icon/'
+#     icon_root = 'static/data/slide_icon/'
 #     icon_file_path = icon_root + i + '/' + 'icon.png'
 #     try:
 #         for j in os.listdir('static/data/'+ i ):
@@ -129,14 +131,14 @@ def slide():
     slide_id = request.args.get('slide_id', default=1, type=int)
     mask_url = request.args.get('mask_url', default="", type=str)
     info = manifest_controller.get_info_by_id(slide_id)
-    dzi_file_path = "static/data/Original_data" + str(info[1]) + '/' \
+    dzi_file_path = "static/data/dzi_data/" + str(info[1]) + '/' \
                     + str(info[2]) + ".dzi"
     if os.path.exists(dzi_file_path):
         slide_url = dzi_file_path
     else:
         slide_url = "/dzi_online/Data/Original_data/" + str(info[1]) + '/' \
                     + str(info[2]) + ".dzi"
-    mask_root = "static/data/Analysis_data/" + str(info[1]) + '/'
+    mask_root = "static/data/analysis_data/" + str(info[1]) + '/'
 
     return render_template('slide.html', slide_url=slide_url, slide_id=slide_id,
                            mask_url=mask_url, mask_root=mask_root)

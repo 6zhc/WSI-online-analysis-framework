@@ -1,5 +1,5 @@
 var toggle_boundary = function () {
-    OSD_control.mask_controller = !OSD_control.mask_controller
+    OSD_control.mask_controller = !OSD_control.mask_controller;
     update_toggle_boundary_info();
     remove_mask();
     if (OSD_control.mask_controller) add_mask(TBA_control.reg_id);
@@ -76,7 +76,7 @@ var update_scale_bar = function () {
 var post_record = function () {
     console.log(OSD_control.data_draw);
     set_status(OSD_status2num.data_processing);
-    $.post("/_record", OSD_control.data_draw).done(function (data) {
+    $.post("/freehand_annotation/_record" + info_url, OSD_control.data_draw).done(function (data) {
         console.log(data);
         OSD_control.data_draw = {};
         OSD_control.point_number = 0;
@@ -96,37 +96,38 @@ var post_record = function () {
 };
 
 var change_slide_id = function () {
-    console.log("Sending slide id and wait for return value");
-    set_status(OSD_status2num.data_processing);
-    console.log("Sending slide id and wait for return value");
-    $.getJSON(
-        '/_change_slide_id',
-        {id: $('input[name="slide_id"]').val(),},
-        function (data) {
-            console.log(data);
-            if (data.status === 'slide id update successful') {
-                location.reload();
-                // remove_mask();
-                // viewer.world.removeItem(viewer.world.getItemAt(0));
-                // viewer.addTiledImage({
-                //     tileSource: "/static/test.dzi",
-                // });
-            } else {
-                $("#change_result_flash").empty();
-                $("#change_result_flash").append(data.status)
-            }
-            update_slide_id();
-        }
-    );
+    // console.log("Sending slide id and wait for return value");
+    // set_status(OSD_status2num.data_processing);
+    // console.log("Sending slide id and wait for return value");
+    // $.getJSON(
+    //     '/freehand_annotation/_change_slide_id'+info_url,
+    //     {id: $('input[name="slide_id"]').val(),},
+    //     function (data) {
+    //         console.log(data);
+    //         if (data.status === 'slide id update successful') {
+    //             location.reload();
+    //             // remove_mask();
+    //             // viewer.world.removeItem(viewer.world.getItemAt(0));
+    //             // viewer.addTiledImage({
+    //             //     tileSource: "/static/test.dzi",
+    //             // });
+    //         } else {
+    //             $("#change_result_flash").empty();
+    //             $("#change_result_flash").append(data.status)
+    //         }
+    //         update_slide_id();
+    //     }
+    // );
+    window.location.href("/freehand_annotation?annotation_id=" + annotatorID + '&slide_id=' + slideID);
     return false;
 };
 
 var update_slide_id = function () {
-    $.getJSON('/_get_slide_id', {info: "nothing"}, function (data) {
+    // $.getJSON('/freehand_annotation/_get_slide_id' + info_url, {info: "nothing"}, function (data) {
         // Fetch data from '#slide_result' field and send as JSON
-        $("#slide_result").text("Current slide: " + data.slide_id);
-        document.getElementById("slide_id_input_box").setAttribute("value", data.slide_id);
-    });
+    $("#slide_result").text("Current slide: " + slideID);
+    document.getElementById("slide_id_input_box").setAttribute("value", slideID);
+    // });
 };
 
 // For both ps_lv and grading ratio buttons.
@@ -201,7 +202,7 @@ var add_viewing_pos = function () {
             downRight_X: region_bound.DownRight_X,
             downRight_Y: region_bound.DownRight_Y
         }
-        $.getJSON('/record_viewing_pos', data_to_send, function (data) {
+        $.getJSON('/freehand_annotation/record_viewing_pos' + info_url, data_to_send, function (data) {
                 if (parseInt(data.num_status) == 1) {
                     console.log(data.status);
                 } else {

@@ -20,7 +20,7 @@ var update_mouse_location = function (event) {
 };
 
 var update_image_info = function () {
-    $.getJSON('/_get_info', {}, function (data) {  //get inform and create radio button,
+    $.getJSON('/freehand_annotation/_get_info' + info_url, {}, function (data) {  //get inform and create radio button,
         // Print received data from the back-end
         console.log(data);
         image_info = data;
@@ -52,20 +52,23 @@ var add_mask = function () {
         var2: Math.floor(region_bound.UpLeft_Y - region_bound.Height * 0.5),
         var3: Math.ceil(region_bound.DownRight_X + region_bound.Width * 0.5),
         var4: Math.ceil(region_bound.DownRight_Y + region_bound.Height * 0.5),
-        var5: 512 * 2,
-        var6: 512 * 2,
+        var5: Math.ceil(document.getElementById("openseadragon1").offsetWidth * 2),
+        var6: Math.ceil(document.getElementById("openseadragon1").offsetHeight * 2),
         var7: 0,
     };
     console.log(data_askFor);
     set_status(OSD_status2num.image_processing);
-    $.getJSON('/_update_image', data_askFor, //asking for the new image
+    $.getJSON('/freehand_annotation/_update_image' + info_url, data_askFor, //asking for the new image
         function (data) {
             if (data.exit_code != 0) return;
             console.log(data);
             while (viewer.world.getItemCount() >= 20)
                 viewer.world.removeItem(viewer.world.getItemAt(1));
             set_status(OSD_status2num.update_image);
-            var Bound_Rec_Pixel = new OpenSeadragon.Rect(x = data_askFor.var1, y = data_askFor.var2, width = data_askFor.var3 - data_askFor.var1, height = data_askFor.var4 - data_askFor.var2);
+            var Bound_Rec_Pixel = new OpenSeadragon.Rect(x = data_askFor.var1,
+                y = data_askFor.var2,
+                width = data_askFor.var3 - data_askFor.var1,
+                height = data_askFor.var4 - data_askFor.var2);
             var Bound_Rec_Viewport = viewer.world.getItemAt(0).imageToViewportRectangle(Bound_Rec_Pixel);
             viewer.tileSources.url = data.slide_url;
             viewer.addTiledImage({
