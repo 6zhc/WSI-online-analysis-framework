@@ -9,8 +9,8 @@ from Model import manifest
 from Controller import predict_module
 from Controller import predict_module2
 
-
-data_root = "Data/"
+original_data_root = "Data/"
+analysis_data_root = "Data/Analysis_data/"
 
 
 def generate_icon_image_from_svs_file(svs_file_path, output_file_path):
@@ -55,15 +55,18 @@ def generate_background_mask_from_smaller_image(smaller_image_path, output_file_
 def make_bg(slide_id):
     manifest_db = manifest.Manifest()
     info = manifest_db.get_project_by_id(slide_id)
-    data_folder = data_root + info[1] + '/'
-    svs_file = data_folder + info[2]
-    if info[4] is None or not os.path.exists(data_folder + info[4]):
-        if info[3] is None or not os.path.exists(data_folder + info[4]):
-            generate_smaller_image_from_svs_file(svs_file, data_folder + 'smaller_image.png')
+    original_data_folder = original_data_root + info[1] + '/'
+    svs_file = original_data_folder + info[2]
+    analysis_data_folder = analysis_data_root + info[1] + '/'
+    if not os.path.exists(analysis_data_folder):
+        os.mkdir(analysis_data_folder)
+    if info[4] is None or not os.path.exists(analysis_data_folder + info[4]):
+        if info[3] is None or not os.path.exists(analysis_data_folder + info[3]):
+            generate_smaller_image_from_svs_file(svs_file, analysis_data_folder + 'smaller_image.png')
             manifest_db.update_smaller_image_by_id(info[0], 'smaller_image.png')
             info = manifest_db.get_project_by_id(slide_id)
-        smaller_image = data_folder + info[3]
-        generate_background_mask_from_smaller_image(smaller_image, data_folder + 'background_mask.png')
+        smaller_image = analysis_data_folder + info[3]
+        generate_background_mask_from_smaller_image(smaller_image, analysis_data_folder + 'background_mask.png')
         manifest_db.update_background_mask_by_id(info[0], 'background_mask.png')
 
 
@@ -74,30 +77,25 @@ def predict_mask_with_job_id(slide_id, model_name="0"):
     #     model_path = "Model/resnet_34_transfer_predicted_crd_model_best.pth"
     # else:
     model_path = "models/" + model_name
+
+    make_bg(slide_id)
+
     manifest_db = manifest.Manifest()
     info = manifest_db.get_project_by_id(slide_id)
     mission_db = mission.Mission()
     job_id = mission_db.insert(slide_uuid=info[1], slide_id=info[0], job_type=model_name, total=-1)
 
-    data_folder = data_root + info[1] + '/'
-    svs_file = data_folder + info[2]
-    if not os.path.exists(data_folder + 'patch/'):
-        os.mkdir(data_folder + 'patch/')
-    if info[4] is None or not os.path.exists(data_folder + info[4]):
-        if info[3] is None or not os.path.exists(data_folder + info[4]):
-            generate_smaller_image_from_svs_file(svs_file, data_folder + 'smaller_image.png')
-            manifest_db.update_smaller_image_by_id(info[0], 'smaller_image.png')
-            info = manifest_db.get_project_by_id(slide_id)
-        smaller_image = data_folder + info[3]
-        generate_background_mask_from_smaller_image(smaller_image, data_folder + 'background_mask.png')
-        manifest_db.update_background_mask_by_id(info[0], 'background_mask.png')
-        info = manifest_db.get_project_by_id(slide_id)
+    original_data_folder = original_data_root + info[1] + '/'
+    analysis_data_folder = analysis_data_root + info[1] + '/'
 
-    mask = cv2.imread(data_folder + info[4], cv2.IMREAD_GRAYSCALE)
+    svs_file = original_data_folder + info[2]
+    # if not os.path.exists(analysis_data_folder + 'patch/'):
+    #     os.mkdir(analysis_data_folder + 'patch/')
+
+    mask = cv2.imread(analysis_data_folder + info[4], cv2.IMREAD_GRAYSCALE)
     oslide = openslide.OpenSlide(svs_file)
     w, h = oslide.dimensions
     pre_result = numpy.zeros((mask.shape[0], mask.shape[1], 4), dtype=numpy.uint8)
-    probablity_list = []
     times = mask.shape[1] / w * 2000
     mission_db.update_total_by_id(job_id=job_id, total=w // 2000 * h // 2000)
 
@@ -108,11 +106,11 @@ def predict_mask_with_job_id(slide_id, model_name="0"):
         for x in range(w // 2000):
             for y in range(h // 2000):
                 if available_region(mask[int(y * times):int(y * times + times), int(x * times):int(x * times + times)]):
-                    # if os.path.exists(data_folder + 'patch/' + str(x) + '_' + str(y) + '.png'):
-                    #     patch = Image.open(data_folder + 'patch/' + str(x) + '_' + str(y) + '.png')
+                    # if os.path.exists(analysis_data_folder + 'patch/' + str(x) + '_' + str(y) + '.png'):
+                    #     patch = Image.open(analysis_data_folder + 'patch/' + str(x) + '_' + str(y) + '.png')
                     # else:
                     #     patch = oslide.read_region((x * 2000, y * 2000), 0, (2000, 2000))
-                    #     patch.save(data_folder + 'patch/' + str(x) + '_' + str(y) + '.png')
+                    #     patch.save(analysis_data_folder + 'patch/' + str(x) + '_' + str(y) + '.png')
                     patch = oslide.read_region((x * 2000, y * 2000), 0, (2000, 2000))
                     patch = numpy.array(patch.convert('RGB'))
                     result = myModule.predict(numpy.resize(patch, tuple([1, 2000, 2000, 3])))
@@ -124,13 +122,13 @@ def predict_mask_with_job_id(slide_id, model_name="0"):
 
         pre_result = post_processing(pre_result)
         mask_file_name = 'mission' + str(job_id) + '_' + str(model_name) + '.png'
-        cv2.imwrite(data_folder + mask_file_name, pre_result)
+        cv2.imwrite(analysis_data_folder + mask_file_name, pre_result)
         mission_db.update_predict_mask_by_id(job_id=job_id, predict_mask=mask_file_name)
-        
-        mask_file = cv2.imread(data_folder + mask_file_name)
+
+        mask_file = cv2.imread(analysis_data_folder + mask_file_name)
         
         original_file_name = "smaller_image.png"
-        original_file = cv2.imread(data_folder + original_file_name)
+        original_file = cv2.imread(analysis_data_folder + original_file_name)
         
         alpha = numpy.zeros(mask_file.shape)
         alpha[:, :, 0] = mask_file[:, :, 0]
@@ -145,7 +143,7 @@ def predict_mask_with_job_id(slide_id, model_name="0"):
 
         out_image = original_file + mask_file
         result_file_name = 'mission' + str(job_id) + '_result.png'
-        cv2.imwrite(data_folder + result_file_name, out_image)
+        cv2.imwrite(analysis_data_folder + result_file_name, out_image)
 
     elif "subtype" in str(model_name) and "hybrid" in str(model_name):
         myModule = predict_module.ResNetClassification(model_path=model_path,
@@ -174,7 +172,7 @@ def predict_mask_with_job_id(slide_id, model_name="0"):
         for i in range(3):
             result[:, :, i] = pre_result[:, :, i + 1]
         mask_file_name = 'mission' + str(job_id) + '_' + str(model_name) + '.png'
-        cv2.imwrite(data_folder + mask_file_name, result)
+        cv2.imwrite(analysis_data_folder + mask_file_name, result)
         
         mission_db.update_predict_mask_by_id(job_id=job_id, predict_mask=summary)
 
@@ -206,7 +204,7 @@ def predict_mask_with_job_id(slide_id, model_name="0"):
         for i in range(3):
             result[:,:,i] = pre_result[:,:,i]
         mask_file_name = 'mission' + str(job_id) + '_' + str(model_name) + '.png'
-        cv2.imwrite(data_folder + mask_file_name, result)
+        cv2.imwrite(analysis_data_folder + mask_file_name, result)
         
         mission_db.update_predict_mask_by_id(job_id=job_id, predict_mask=summary)
 
@@ -242,11 +240,11 @@ def predict_mask_with_job_id(slide_id, model_name="0"):
         for i in range(3):
             result[:, :, i] = pre_result[:, :, i + 1]
         mask_file_name = 'mission' + str(job_id) + '_' + str(model_name) + '.png'
-        cv2.imwrite(data_folder + mask_file_name, result)
+        cv2.imwrite(analysis_data_folder + mask_file_name, result)
 
         mission_db.update_predict_mask_by_id(job_id=job_id, predict_mask=summary)
 
-    # file = open(data_folder + 'log.txt', 'w')
+    # file = open(analysis_data_folder + 'log.txt', 'w')
     # for fp in probablity_list:
     #     file.write(str(fp))
     #     file.write('\n')

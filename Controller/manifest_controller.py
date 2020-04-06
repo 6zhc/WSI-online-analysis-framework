@@ -3,7 +3,9 @@ from Controller import image_processing
 import openslide
 import os
 
-data_root = 'static/data/'
+original_data_root = 'static/data/Original_data/'
+analysis_data_root = "static/data/Analysis_data/"
+icon_root = 'static/data/Slide_icon/'
 
 
 def get_table(start_no=0, end_no=0):
@@ -19,7 +21,7 @@ def get_table(start_no=0, end_no=0):
                     str(wsi[0]) + ')">remove</button>')
         temp.append(wsi[1])  # UUID
 
-        svs_file_path = data_root + wsi[1] + '/' + wsi[2]
+        svs_file_path = original_data_root + wsi[1] + '/' + wsi[2]
         try:  # image_size
             dimensions = openslide.OpenSlide(svs_file_path).dimensions
         except:
@@ -36,9 +38,11 @@ def get_table(start_no=0, end_no=0):
 
         temp.append('<a href="/slide?slide_id=' + str(wsi[0]) + '"target="_blank">' + wsi[2] + '</a>')
 
-        icon_file_path = data_root + wsi[1] + '/' + 'icon.png'
+        icon_file_path = icon_root + wsi[1] + '/' + 'icon.png'
         if not os.path.exists(icon_file_path):
             try:
+                if not os.path.exists(icon_root + wsi[1] + '/'):
+                    os.mkdir(icon_root + wsi[1] + '/')
                 image_processing.generate_icon_image_from_svs_file(svs_file_path, icon_file_path)
             except:
                 pass
@@ -46,7 +50,7 @@ def get_table(start_no=0, end_no=0):
 
         temp.append(str(dimensions[0]).rjust(6, '_') + ' * ' + str(dimensions[1]).rjust(6, '_'))
 
-        if wsi[4] is None or not os.path.exists(data_root + wsi[1] + '/' + wsi[4]):
+        if wsi[4] is None or not os.path.exists(analysis_data_root + wsi[1] + '/' + wsi[4]):
             temp.append('<button type="button" onclick="btn_click(\'make_bg_mask\',' +
                         str(wsi[0]) + ')"> Make BG Mask</button>')
         else:
@@ -88,7 +92,7 @@ def get_available_slide_id():
     for wsi in mani.get_projects():
         temp = {"id": wsi[0], "text": wsi[0]}
         try:  # image_size
-            svs_file_path = data_root + wsi[1] + '/' + wsi[2]
+            svs_file_path = original_data_root + wsi[1] + '/' + wsi[2]
             openslide.OpenSlide(svs_file_path)
         except:
             continue

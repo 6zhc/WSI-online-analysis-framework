@@ -43,7 +43,7 @@ class Mission:
     def get_predict_masks_by_slide_id(self, slide_id):
         db = self.db_connect()
         cursor = db.cursor()
-        print((slide_id,))
+        # print((slide_id,))
         cursor.execute("SELECT * FROM PREDICT_MASK WHERE (SlideID = %s)", (slide_id,))
         result = cursor.fetchall()
         cursor.close()
@@ -62,7 +62,7 @@ class Mission:
     def get_predict_masks_by_uuid(self, slide_uuid):
         db = self.db_connect()
         cursor = db.cursor()
-        print((slide_uuid,))
+        # print((slide_uuid,))
         cursor.execute("SELECT * FROM PREDICT_MASK WHERE (UUID = %s)", (slide_uuid,))
         result = cursor.fetchall()
         cursor.close()
@@ -72,7 +72,7 @@ class Mission:
     def get_predict_masks_by_uuid_and_job_type(self, slide_uuid, job_type):
         db = self.db_connect()
         cursor = db.cursor()
-        print((slide_uuid,))
+        # print((slide_uuid,))
         cursor.execute("SELECT * FROM PREDICT_MASK WHERE (UUID = %s and Job_type = %s)", (slide_uuid, job_type))
         result = cursor.fetchall()
         cursor.close()

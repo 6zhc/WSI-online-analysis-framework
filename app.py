@@ -8,6 +8,7 @@ from Controller import dataset_controller
 from Controller import mission_controller
 import os
 import uuid
+import openslide
 
 
 app = Flask(__name__)
@@ -21,6 +22,26 @@ try:
     os.symlink(os.getcwd() + '/Data', 'static/data')
 except:
     pass
+
+
+# for i in os.listdir('static/data'):
+#     icon_root = 'static/data/Slide_icon/'
+#     icon_file_path = icon_root + i + '/' + 'icon.png'
+#     try:
+#         for j in os.listdir('static/data/'+ i ):
+#             try:
+#                 openslide.OpenSlide('static/data/' + i + '/'+j)
+#                 if not os.path.exists(icon_file_path):
+#                     try:
+#                         if not os.path.exists(icon_root + i + '/'):
+#                             os.mkdir(icon_root + i + '/')
+#                         image_processing.generate_icon_image_from_svs_file('static/data/' + i + '/'+j, icon_file_path)
+#                     except:
+#                         pass
+#             except:
+#                 pass
+#     except:
+#         pass
 
 
 @app.route('/')
@@ -108,14 +129,14 @@ def slide():
     slide_id = request.args.get('slide_id', default=1, type=int)
     mask_url = request.args.get('mask_url', default="", type=str)
     info = manifest_controller.get_info_by_id(slide_id)
-    dzi_file_path = "static/data/" + str(info[1]) + '/' \
+    dzi_file_path = "static/data/Original_data" + str(info[1]) + '/' \
                     + str(info[2]) + ".dzi"
     if os.path.exists(dzi_file_path):
         slide_url = dzi_file_path
     else:
-        slide_url = "/dzi_online/Data/" + str(info[1]) + '/' \
+        slide_url = "/dzi_online/Data/Original_data/" + str(info[1]) + '/' \
                     + str(info[2]) + ".dzi"
-    mask_root = "static/data/" + str(info[1]) + '/'
+    mask_root = "static/data/Analysis_data/" + str(info[1]) + '/'
 
     return render_template('slide.html', slide_url=slide_url, slide_id=slide_id,
                            mask_url=mask_url, mask_root=mask_root)
