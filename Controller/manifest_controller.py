@@ -98,3 +98,9 @@ def get_available_slide_id():
             continue
         data.append(temp)
     return data
+
+
+def continue_slide_id():
+    mani = manifest.Manifest()
+    mani.continue_id()
+    return

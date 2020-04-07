@@ -106,3 +106,20 @@ class Manifest:
         cursor.close()
         db.commit()
         db.close()
+
+    def continue_id(self):
+        db = self.db_connect()
+        cursor = db.cursor()
+        cursor.execute("SELECT * FROM MANIFEST")
+        result = cursor.fetchall()
+
+        slide_id = 0
+
+        for wsi in result:
+            slide_id = slide_id + 1
+            if wsi[0] != slide_id:
+                cursor.execute("UPDATE MANIFEST SET ID = %s WHERE (ID = %s)", (slide_id, wsi[0]))
+
+        cursor.close()
+        db.commit()
+        db.close()

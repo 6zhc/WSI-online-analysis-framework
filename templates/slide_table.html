@@ -62,13 +62,16 @@
 
         <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
             <h2>Slide Info</h2>
-            <form action="/uploader" method="POST"
-                  enctype="multipart/form-data">
-                manifest 或 SVS文件：
-                <input type="text" name="uuid" placeholder="UUID（为空则自动生成）"/>
-                <input type="file" name="file"/>
-                <input type="submit"/>
-            </form>
+            <div class="form-inline">
+                <form action="/uploader" method="POST" enctype="multipart/form-data">
+                    manifest 或 SVS文件：
+                    <input type="text" name="uuid" placeholder="UUID（为空则自动生成）"/>
+                    <input type="file" name="file"/>
+                    <input type="submit" value="submit"/>
+                </form>
+                <button onclick="$.getJSON('/continue_slide_id')" style="margin-left: 100px"> 整理Slide ID</button>
+            </div>
+
             <div class="table-responsive">
                 <table class="table table-striped table-sm">
                     <thead>
