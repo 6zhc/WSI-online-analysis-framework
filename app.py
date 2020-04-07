@@ -7,6 +7,7 @@ from Controller import image_processing
 from Controller import dataset_controller
 from Controller import mission_controller
 from Controller import freehand_annotation_server
+from Controller import nuclei_annotation_server
 import os
 import uuid
 import openslide
@@ -15,6 +16,7 @@ import openslide
 app = Flask(__name__)
 dzi_online_server.add_dzi_sever(app)
 freehand_annotation_server.add_annotation_sever(app)
+nuclei_annotation_server.add_annotation_sever(app)
 
 try:
     if not os.path.exists("Data"):
@@ -193,6 +195,12 @@ def available_slide():
 @app.route('/available_model')
 def available_model():
     return jsonify(mission_controller.get_available_model())
+
+
+@app.route('/continue_slide_id')
+def continue_slide_id():
+    manifest_controller.continue_slide_id()
+    return jsonify({"mas": 'None'})
 
 
 @app.route('/upload')

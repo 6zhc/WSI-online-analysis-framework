@@ -20,7 +20,7 @@ var update_mouse_location = function (event) {
 };
 
 var update_image_info = function () {
-    $.getJSON('/_get_info', {}, function (data) {  //get inform and create radio button,
+    $.getJSON('/nuclei_annotation/_get_info' + info_url, {}, function (data) {  //get inform and create radio button,
         // Print received data from the back-end
         console.log(data);
         image_info = data;
@@ -62,14 +62,15 @@ var add_mask = function (region_id) {
     };
     console.log(data_askFor);
     set_status(OSD_status2num.image_processing);
-    $.getJSON('/_update_image', data_askFor, //asking for the new image
+    $.getJSON('/nuclei_annotation/_update_image' + info_url, data_askFor, //asking for the new image
         function (data) {
             if (data.exit_code != 0) return;
             console.log(data);
             while (viewer.world.getItemCount() >= 20)
                 viewer.world.removeItem(viewer.world.getItemAt(1));
             set_status(OSD_status2num.update_image);
-            var Bound_Rec_Pixel = new OpenSeadragon.Rect(x = data_askFor.var1, y = data_askFor.var2, width = data_askFor.var3 - data_askFor.var1, height = data_askFor.var4 - data_askFor.var2);
+            var Bound_Rec_Pixel = new OpenSeadragon.Rect(x = data_askFor.var1, y = data_askFor.var2,
+                width = data_askFor.var3 - data_askFor.var1 + 1, height = data_askFor.var4 - data_askFor.var2 + 1);
             var Bound_Rec_Viewport = viewer.world.getItemAt(0).imageToViewportRectangle(Bound_Rec_Pixel);
             viewer.tileSources.url = data.slide_url;
             viewer.addTiledImage({

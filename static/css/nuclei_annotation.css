@@ -1,0 +1,307 @@
+body {
+    font-family: "Helvetica", Arial;
+    width: 100%;
+    height: 100vh;
+    margin: 0;
+    float: left;
+    background-color: rgb(250, 250, 250);
+}
+
+.heading {
+    float: left;
+    width: 100%;
+    height: 50px;
+    box-shadow: 0 2px 2px #888888;
+    margin-bottom: 12px;
+}
+
+.heading h1 {
+    float: left;
+    color: #0f0f0f;
+    width: 50%;
+    margin: 5px auto 5px 15px;
+    padding: 5px 0 5px 15px;
+}
+
+.heading form {
+    float: right;
+}
+
+#logout {
+    float: right;
+    margin: 10px 20px 10px 0;
+    border-radius: 25px;
+    background-color: #269ccc;
+    height: 30px;
+    width: 100px;
+    color: white;
+    font-weight: bold;
+}
+
+#logout:hover {
+    float: right;
+    border-radius: 25px;
+    background-color: #269ccc;
+    height: 50px;
+    width: 100px;
+    cursor: pointer;
+}
+
+h3 {
+    margin: 10px 0 5px 0;
+}
+
+div.area_container {
+    margin-left: 1%;
+    margin-right: 1%;
+}
+
+div#operation.area_container {
+    float: left;
+    height: calc(100% - 62px);
+    width: 98%;
+}
+
+div#config.area_container {
+    float: left;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    width: 98%;
+    height: calc(30% - 20px);
+    overflow-y: scroll;
+
+    display: none;
+}
+
+/* OSD
+/* OSD
+    width: 70%;
+    height: calc(100% - 40px);
+*/
+div#openseadragon1 {
+    float: left;
+    margin: 0;
+    width: 800px;
+    height: 800px;
+}
+
+div#side_panel {
+    float: left;
+    width: 28%;
+    height: calc(100% - 40px);
+    padding: 0 1% 0 1%;
+
+    overflow: auto;
+
+    display: flex;
+    flex-direction: column;
+}
+
+div#main_control {
+    float: left;
+    width: 100%;
+    margin-bottom: 10px;
+
+    flex: initial;
+
+    border-bottom: 2px solid #3f3e3e;
+}
+
+button#hl_btn {
+    float: left;
+    height: 100%;
+    margin-right: 10px;
+}
+
+div#tb_list {
+    padding-top: 10px;
+    width: 100%;
+    float: left;
+    clear: left;
+}
+
+div#tb_warn {
+    float: left;
+    clear: left;
+    color: red;
+}
+
+ol#tba_ul_list {
+    columns: 3;
+    margin: 3px 0 3px 0;
+}
+
+li.clicky {
+    cursor: pointer;
+}
+
+li.clicky:hover {
+    color: red;
+    background-color: yellow;
+}
+
+li#reg_selected {
+    padding: 3px;
+    font-weight: bold;
+    color: red;
+}
+
+div#meta_data_container {
+    float: left;
+    width: 98%;
+    height: auto;
+    overflow-y: auto;
+
+    flex: auto;
+}
+
+div#scale_bar {
+    position: absolute;
+    margin-top: 750px;
+    left: 3%;
+
+    width: 100px;
+    background-color: rgba(125, 125, 125, 0.2);
+    text-align: center;
+    border: 1px solid #000;
+}
+
+div#status_bar_container {
+    clear: both;
+    float: left;
+    height: 30px;
+    padding-top: 10px;
+    padding-left: 2%;
+    width: 68%;
+}
+
+div#vmag_container {
+    float: left;
+    height: 100%;
+    width: 40%;
+}
+
+div#status_container {
+    float: left;
+    width: 25%;
+}
+
+div#error_container {
+    float: right;
+    width: 20%;
+}
+
+div#upper_control_container {
+    float: left;
+    width: 100%;
+    margin-top: 10px;
+}
+
+
+div#setup_control {
+    float: left;
+    width: 46%;
+    margin-left: calc(2% - 2px);
+    padding-left: 2%;
+    border-left: 1px solid #3f3e3e;
+}
+
+div#lower_control_container {
+    display: none;
+    float: left;
+    width: 100%;
+    margin-top: 10px;
+    padding-top: 5px;
+    border-top: 1px solid #3f3e3e;
+}
+
+h2.control_header, span.control_header {
+    background-color: #269ccc;
+    color: white;
+    padding: 6px;
+    margin: 5px 0 0 0;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+div.control_content {
+    background-color: #9ed2c5;
+    padding: 6px;
+}
+
+#patient_info {
+    display: none;
+    float: left;
+    padding: 2%;
+    width: calc(96% - 2px);
+    text-align: left;
+    background-color: #ffffff;
+    border: solid 1px #c3c3c3;
+}
+
+#bio_info button, #patient_info button {
+    background-color: white;
+    border: 1px solid grey;
+    margin-bottom: 2px;
+    border-radius: 2px;
+}
+
+#bio_info button:hover, #patient_info button:hover {
+    background-color: #269ccc;
+    cursor: pointer;
+}
+
+#bio_info {
+    display: none;
+    float: left;
+    padding: 2%;
+    width: calc(96% - 2px);
+    text-align: left;
+    background-color: #ffffff;
+    border: solid 1px #c3c3c3;
+}
+
+#meta_data {
+    float: left;
+    padding: 2%;
+    width: calc(96% - 2px);
+    text-align: center;
+    background-color: #269ccc;
+    border: solid 1px #c3c3c3;
+    font-size: 25px;
+    color: #ffffff;
+}
+
+#clinical_meta_data {
+    float: left;
+    padding: 2%;
+    width: calc(96% - 2px);
+    text-align: center;
+    background-color: #9ed2c5;
+    border: solid 1px #ffffff;
+}
+
+#clinical_meta_data:hover {
+    float: left;
+    text-align: center;
+    background-color: #c6cfd2;
+    border: solid 1px #ffffff;
+    cursor: pointer;
+}
+
+#bio_meta_data {
+    float: left;
+    padding: 2%;
+    width: calc(96% - 2px);
+    text-align: center;
+    background-color: #9ed2c5;
+    border: solid 1px #ffffff;
+}
+
+#bio_meta_data:hover {
+    float: left;
+    text-align: center;
+    background-color: #c6cfd2;
+    border: solid 1px #ffffff;
+    cursor: pointer;
+}

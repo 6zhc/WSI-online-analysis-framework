@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>OpenHI</title>
+    <script type="text/javascript" src="{{ url_for('static', filename='jquery.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='openseadragon.js') }}"></script>
+    <script type="text/javascript"
+            src="{{ url_for('static', filename='nuclei_annotation_js/openhi_globalValue.js') }}"></script>
+    <script type="text/javascript"
+            src="{{ url_for('static', filename='nuclei_annotation_js/openhi_viewer.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='nuclei_annotation_js/openhi_controller.js') }}"
+            charset="GBK"></script>
+    <script type="text/javascript"
+            src="{{ url_for('static', filename='nuclei_annotation_js/openhi_status.js') }}"></script>
+    <script type="text/javascript"
+            src="{{ url_for('static', filename='nuclei_annotation_js/openhi_slideInfo.js') }}"></script>
+
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/nuclei_annotation.css') }}">
+    <style>
+
+    </style>
+</head>
+<body>
+
+
+<div class="heading">
+    <h1>
+        OpenHI <span style="font-size: 50%; color: #3f3e3e;">v2</span>
+    </h1>
+
+    <form name="logout" action="/logout/" method="post">
+        <input id="logout" type="submit" value="Logout">
+    </form>
+</div>
+
+<div class="area_container" id="operation">
+
+    <div id="openseadragon1"></div>
+    <div id="side_panel">
+        <div id="main_control">
+            {#            <h2 class="control_header">Pre-segmentation level</h2>#}
+            {#                <div class="control_content" id="PS_lv"></div>#}
+
+            <h2 class="control_header">Tumor grading</h2>
+            <div class="control_content" id="grading"></div>
+
+            {#            <div style="padding: 10px 0 10px 0;">#}
+            {#                <span class="" style="height: 100%; margin-right: 10px">Click to undo: </span>#}
+            {##}
+            {#                <a href=# id=undo><button class='btn btn-default'>Undo</button></a>#}
+            {#            </div>#}
+
+            <div style="padding: 10px 0 0 0;">
+                <span class="control_header" style="height: 100%; margin-right: 10px">Show/hide: </span>
+                <a href=# id=tog_boun>
+                    <button class='btn btn-default'>Boundary</button>
+                </a>
+                <p id="tog_result" style="margin-top: 5px; margin-bottom: 5px">Toggle switch: ...</p>
+            </div>
+
+            <div style="padding: 10px 0 0 0;">
+                <span class="control_header" style="height: 100%; margin-right: 10px">Viewing Position Record: </span>
+                <a href=# id=Viewing_Position_Record>
+                    <button class='btn btn-default'>button</button>
+                </a>
+                <p id="Viewing_Position_result" style="margin-top: 5px; margin-bottom: 5px">Viewing Position Record:
+                    off</p>
+            </div>
+
+            <!-- Slide control -->
+            <div class="container" style="margin: 0 0 10px 0; width: calc(100% - 10px); float: left;">
+                <span class="control_header" style="height: 100%; margin:0 10px 0 0; float: left;">Slide ID: </span>
+
+                <form>
+                    <input id="slide_id_input_box" style="float: left; margin-right: 4px" type=text size=5
+                           name=slide_id>
+                    <p id="change_result_flash" style="color:red"></p>
+                    <a href=# id=slide_id style="float:left;">
+                        <button class='btn btn-default'>Change Slide</button>
+                    </a>
+                </form>
+
+                <span id=slide_result>Current slide: unknown</span>
+            </div>
+
+            <!-- High-low magnification control  -->
+            <div class="container" style="margin: 0 0 10px 0; width: calc(100% - 10px); float: left; clear: both;">
+                <span class="control_header" style="float: left; height: 100%; margin:0 10px 0 0; font-size: 80%;">
+                    Magnification Control:
+                </span>
+                <!-- Use id="mag_l_rp" and so on for "resolving power mode"-->
+                <a href=# id="mag_l">
+                    <button class='btn btn-default' id="hl_btn">Low</button>
+                </a>
+                <a href=# id="mag_h">
+                    <button class='btn btn-default' id="hl_btn">High</button>
+                </a>
+            </div>
+
+            <!-- TBA list -->
+            <div class="container" style="margin: 0 0 10px 0; width: calc(100% - 10px); float: left; clear: both;">
+                <span class="control_header" style="float: left; height: 100%; margin:0 10px 0 0; font-size: 80%;">
+                    To be annotated list:
+                </span>
+                <a href=# id="add_sw">
+                    <button class='btn btn-default' id="hl_btn">Add current region</button>
+                </a>
+                <a href=# id="rm_sw">
+                    <button class='btn btn-default' id="hl_btn">Remove latest region</button>
+                </a>
+                <div id="tb_list"></div>
+                <div id="tb_warn"></div>
+            </div>
+        </div>
+
+        <div id="meta_data_container">
+            <h2 class="control_header">Slide grading</h2>
+            <div class="control_content" id="Slide_grading"></div>
+            <h2 class="control_header">Check Box</h2>
+            <div class="control_content" id="check_box"></div>
+
+            <div>
+                <div id="meta_data"><b>Slide Information</b></div>
+                <div id="clinical_meta_data" style="font-size: 21px"><b>Clinical Information</b></div>
+                <div id="patient_info">
+                    <button id="demographic" style="font-size: 18px"><b>demographic</b></button>
+                    <p id="demographic_info"
+                       style="display:none;margin-left:30px;margin-top: 3px;margin-bottom: 0px"></p>
+                    <br>
+                    <button id="diagnosis" style="font-size: 18px"><b>diagnosis</b></button>
+                    <p id="diagnosis_info" style="display:none;margin-left:30px;margin-top: 3px;margin-bottom: 0px"></p>
+                    <br>
+                    <button id="exposure" style="font-size: 18px"><b>exposure</b></button>
+                    <p id="exposure_info" style="display:none;margin-left:30px;margin-top: 3px;margin-bottom: 0px"></p>
+                    <br>
+                    <button id="family_history" style="font-size: 18px"><b>family_history</b></button>
+                    <p id="family_history_info"
+                       style="display:none;margin-left:30px;margin-top: 3px;margin-bottom: 0px">No information</p>
+                    <br>
+                    <button id="follow_up" style="font-size: 18px"><b>follow_up</b></button>
+                    <p id="follow_up_info" style="display:none;margin-left:30px;margin-top: 3px;margin-bottom: 0px">No
+                        information</p>
+                    <br>
+                    <button id="molecular_test" style="font-size: 18px"><b>molecular_test</b></button>
+                    <p id="molecular_test_info"
+                       style="display:none;margin-left:30px;margin-top: 3px;margin-bottom: 0px">No information</p>
+                    <br>
+                    <button id="treatment" style="font-size: 18px"><b>treatment</b></button>
+                    <p id="treatment_info" style="display:none;margin-left:30px;margin-top: 3px;margin-bottom: 0px">No
+                        information</p>
+                </div>
+
+                <div id="bio_meta_data" style="font-size: 21px"><b>Biospecimen Information</b></div>
+                <div id="bio_info">
+                    <button id="slide" style="font-size: 18px;display:none"><b>slide</b></button>
+                    <p id="slide_info" style="display:none;margin-left:30px;margin-top: 3px;margin-bottom: 0px"></p>
+                    <br>
+                    <button id="sample" style="font-size: 18px"><b>sample</b></button>
+                    <p id="sample_info" style="display:none;margin-left:30px;margin-top: 3px;margin-bottom: 0px"></p>
+                    <br>
+                    <button id="portion" style="font-size: 18px;display:none"><b>portion</b></button>
+                    <p id="portion_info" style="display:none;margin-left:30px;margin-top: 3px;margin-bottom: 0px"></p>
+                    <br>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- This is the scale bar -->
+    <div id="scale_bar">
+        ...
+    </div>
+
+    <!-- Status bar container -->
+    <div id="status_bar_container">
+        <div id="vmag_container">
+            <div style="float: left;">Virtual Magnification: x<span id="mag_show"></span></div>
+            <br/>
+            <div style="display: none;">
+                <div style="float: left; margin-right: 5px;">Adjust virtual magnification: x</div>
+                <div>
+                    <input type=text size=5 id="input-vmag" value="100">
+                    <a href=# id="virtual-mag-usr-input">
+                        <button class='btn btn-default'>Update vMag</button>
+                    </a>
+                    <span style="font-style: italic"> - Do not change</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="status_bar" id="status_container">
+            <div style="float: left;">
+                Status: <span id="status_show"></span>
+                <span id="status_block" style="color: rgb(80,80,80)"> </span></div>
+        </div>
+
+        <div id="error_container">
+            <div style="float: left;background-color:#FF0000"><span id="error_show"></span></div>
+        </div>
+    </div>
+</div>
+
+<div class="area_container" id="config">
+
+    <div id="upper_control_container">
+
+
+        <div id="setup_control">
+
+            <div class="container">
+                <h3>Screen Resolution: </h3>
+                <form>
+                    <select id="sr" , onchange="onScreenResSelect()">
+
+                    </select>
+                    <div id="sr_o">
+                        width:
+                        <input type=text size=5 id=sr_ox value="1920">
+                        height:
+                        <input type=text size=5 id=sr_oy value="1080">
+                    </div>
+                    <a href=# id=sr_update>
+                        <button class='btn btn-default'>Update Resolution</button>
+                    </a>
+                </form>
+            </div>
+
+            <div class="container">
+                <h3>Screen Size (inch): </h3>
+                <form>
+                    <select id="ss" , onchange="onScreenSizeSelect()">
+
+                    </select>
+                    <div id="ss_o">
+                        size:
+                        <input type=text size=5 id=ss_os value="24.0">
+                    </div>
+                    <a href=# id=ss_update>
+                        <button class='btn btn-default'>Update Size</button>
+                    </a>
+                </form>
+            </div>
+
+            {% if ignore_hps %}
+                <div class="container" style="display: none">
+            {% else %}
+                <div class="container">
+            {% endif %}
+            <h3>Distance from Screen (cm): </h3>
+            <form>
+                <select id="ds" , onchange="onDistanceSelect()">
+
+                </select>
+                <div id="ds_o">
+                    distance:
+                    <input type=text size=6 id=ds_od value="50">
+                </div>
+                <a href=# id=ds_update>
+                    <button class='btn btn-default'>Update Distance</button>
+                </a>
+            </form>
+            </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="lower_control_container">
+        <div class="container">
+            <h3 style="margin-bottom: 5px">Viewing coordinates adjustment (for debugging): </h3>
+            <form>
+                <h4 style="margin-top: 5px; margin-bottom: 5px">Top-left (location): </h4>
+                <span style="margin-left: 15px;">x:</span>
+                <input type=text size=5 name=tl_x1 value="1200">
+
+                y:
+                <input type=text size=5 name=tl_y1 value="1500">
+
+                <h4 style="margin-top: 5px; margin-bottom: 5px">Viewing size: </h4>
+
+                <span style="margin-left: 15px;">image width:</span>
+                <input type=text size=5 name=tl_x2 value="1300">
+
+                <a href=# id=update_img_man>
+                    <button class='btn btn-default'>Update Image</button>
+                </a>
+                <br/>
+                <span style="font-style: italic; font-size: 80%">The height of the image is automatically calculated based on the width
+                and the specified viewer size. </span>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    var slideID = {{ slide_id }};
+    var annotatorID = {{ annotator_id }};
+    var slideUUID = "{{ slide_uuid }}";
+    var info_url = "?slide_id={{ slide_id }}&annotator_id={{ annotator_id }}&slide_uuid={{ slide_uuid }}";
+
+    var viewer = OpenSeadragon({
+        id: "openseadragon1",
+        prefixUrl: "{{ url_for('static', filename='images/') }}",
+        tileSources: "{{ slide_url}}",
+        minZoomImageRatio: 0,
+        maxZoomPixelRatio: 10,
+        autoResize: true,
+        visibilityRatio: 0,
+
+        gestureSettingsMouse: {
+            flickEnabled: false,
+        },
+        springStiffness: 5,// 5
+        animationTime: 0.5, //0.5
+
+        zoomPerSecond: 0.5,//0.5
+        zoomPerScroll: 1.3,
+
+        showNavigator: true,
+        //navigatorOpacity: 0.1,
+        //navigatorAutoFade : false,
+        navigatorPosition: "BOTTOM_RIGHT",
+    });
+
+    var mouse_tracker = new OpenSeadragon.MouseTracker({ //set mouse tracker
+        element: viewer.container,
+        moveHandler: update_mouse_location,
+        scrollHandler: update_mouse_location,
+        exitHandler: function (e) {
+            if (OSD_control.point_record_controller) {
+                OSD_control.point_record_controller = 0;
+                post_record();
+            }
+        },
+    });
+
+    viewer.addHandler('open', OSD_open_function);
+    viewer.addHandler('animation-finish', animation_finsh_function);
+    viewer.addHandler('animation', animation_function);
+    viewer.addHandler('animation-start', animation_start_function);
+    viewer.addHandler('full-page', OSD_fullpage_function);
+
+    viewer.addHandler('canvas-nonprimary-press', function (e) {
+        if (e.button == 2) {
+            OSD_control.point_record_controller = 1;
+            recording_point();
+        }
+        if (e.button == 1) {
+            OSD_control.point_mid_record_controller = 1;
+            mid_recording_point();
+        }
+    });
+
+    viewer.addHandler('canvas-nonprimary-release', function (e) {
+        if (e.button == 2) {
+            OSD_control.point_record_controller = 0;
+            post_record();
+        }
+        if (e.button == 1) {
+            OSD_control.point_mid_record_controller = 0;
+            //post_record();
+        }
+    });
+
+    update_image_info();
+    update_tb_list();
+    update_slide_id();
+
+    document.onkeydown = function (e) {  //listen to the keboard;
+        var key = String.fromCharCode(window.event ? e.keyCode : e.which);
+        console.log(key);
+        if (document.getElementById("" + key)) {
+            document.getElementById("" + key).checked = true;
+            document.getElementById("" + key).onchange();
+        }
+
+        if (key == 'R' || key == 'Z' || key == 'X' || key == 'C' || key == 'E') {
+            console.log('Refreshing image with a key');
+            if (key == 'E') {
+                toggle_boundary();
+            } else if (key == 'R') {
+                document.getElementById("0").checked = true;
+                document.getElementById("0").onchange();
+            }
+        }
+
+    };
+
+    // Toggle sub-region boundary
+    $('a#tog_boun').bind('click', toggle_boundary);
+    $('a#Viewing_Position_Record').bind('click', viewing_position_record);
+    // $('a#undo').bind('click', undo_function);
+    $('a#slide_id').bind('click', change_slide_id);
+    $('a#mag_l').bind('click', turn_low_mv);
+    $('a#mag_h').bind('click', turn_high_mv);
+    $('a#add_sw').bind('click', add_TBA_list);
+    $('a#rm_sw').bind('click', remove_TBA_list);
+
+
+</script>
+</body>
+</html>

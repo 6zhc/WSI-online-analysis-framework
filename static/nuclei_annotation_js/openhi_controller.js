@@ -79,7 +79,7 @@ var post_record = function () {
     if (TBA_control.tba_status === 0) return;
     console.log(OSD_control.data_draw);
     set_status(OSD_status2num.data_processing);
-    $.post("/_record", OSD_control.data_draw).done(function (data) {
+    $.post("/nuclei_annotation/_record" + info_url, OSD_control.data_draw).done(function (data) {
         console.log(data);
         OSD_control.data_draw = {};
         OSD_control.point_number = 0;
@@ -99,37 +99,38 @@ var post_record = function () {
 };
 
 var change_slide_id = function () {
-    console.log("Sending slide id and wait for return value");
-    set_status(OSD_status2num.data_processing);
-    console.log("Sending slide id and wait for return value");
-    $.getJSON(
-        '/_change_slide_id',
-        {id: $('input[name="slide_id"]').val(),},
-        function (data) {
-            console.log(data);
-            if (data.status === 'slide id update successful') {
-                location.reload();
-                // remove_mask();
-                // viewer.world.removeItem(viewer.world.getItemAt(0));
-                // viewer.addTiledImage({
-                //     tileSource: "/static/test.dzi",
-                // });
-            } else {
-                $("#change_result_flash").empty();
-                $("#change_result_flash").append(data.status)
-            }
-            update_slide_id();
-        }
-    );
+    // console.log("Sending slide id and wait for return value");
+    // set_status(OSD_status2num.data_processing);
+    // console.log("Sending slide id and wait for return value");
+    // $.getJSON(
+    //     '/_change_slide_id',
+    //     {id: $('input[name="slide_id"]').val(),},
+    //     function (data) {
+    //         console.log(data);
+    //         if (data.status === 'slide id update successful') {
+    //             location.reload();
+    //             // remove_mask();
+    //             // viewer.world.removeItem(viewer.world.getItemAt(0));
+    //             // viewer.addTiledImage({
+    //             //     tileSource: "/static/test.dzi",
+    //             // });
+    //         } else {
+    //             $("#change_result_flash").empty();
+    //             $("#change_result_flash").append(data.status)
+    //         }
+    //         update_slide_id();
+    //     }
+    // );
+    window.location.href("/freehand_annotation?annotation_id=" + annotatorID + '&slide_id=' + slideID);
     return false;
 };
 
 var update_slide_id = function () {
-    $.getJSON('/_get_slide_id', {info: "nothing"}, function (data) {
-        // Fetch data from '#slide_result' field and send as JSON
-        $("#slide_result").text("Current slide: " + data.slide_id);
-        document.getElementById("slide_id_input_box").setAttribute("value", data.slide_id);
-    });
+    // $.getJSON('/_get_slide_id', {info: "nothing"}, function (data) {
+    //     // Fetch data from '#slide_result' field and send as JSON
+    $("#slide_result").text("Current slide: " + slideID);
+    document.getElementById("slide_id_input_box").setAttribute("value", slideID);
+    // });
 };
 
 // For both ps_lv and grading ratio buttons.
@@ -213,7 +214,7 @@ var create_slide_grading_controls = function () {
 
     check_box_text = ""
 
-    $.getJSON('/read_final_result', {}, function (data) {
+    $.getJSON('/read_final_result' + info_url, {}, function (data) {
         // Fetch data from '#slide_result' field and send as JSON
         data.result.toString().trim().split('\n').forEach(function (v, i) {
             if (i == 0) {
@@ -254,7 +255,7 @@ var submit_check_box = function () {
         final_report += obj[k].value;
         final_report += '\n'
     }
-    $.getJSON('/save_final_result', {final_result: final_report}, function (data) {
+    $.getJSON('/save_final_result' + info_url, {final_result: final_report}, function (data) {
         // Fetch data from '#slide_result' field and send as JSON
         console.log(data)
     });
@@ -290,7 +291,7 @@ var add_TBA_list = function () {
     console.log("Add current region (sub-window) to the TBA list.");
     if (Math.round(region_bound.Width) == Math.round(TBA_control.low_mag_dim / image_info.um_per_px)) {
         // Send the coordinate to the system
-        $.getJSON('/_add_sw', {x: region_bound.Center_X, y: region_bound.Center_Y},
+        $.getJSON('/nuclei_annotation/_add_sw' + info_url, {x: region_bound.Center_X, y: region_bound.Center_Y},
             function (data) {
                 if (parseInt(data.num_status) == 1) {
                     console.log(data.status);
@@ -309,7 +310,7 @@ var remove_TBA_list = function () {
     console.log("Remove current region (sub-window) from the TBA list.");
     if (TBA_control.tba_status) {
         // Send request to remove current "reg_id"
-        $.getJSON('/_rm_sw', {sw_id: TBA_control.reg_id}, function (data) {
+        $.getJSON('/nuclei_annotation/_rm_sw' + info_url, {sw_id: TBA_control.reg_id}, function (data) {
                 if (parseInt(data.num_status) == 1) {
                     console.log(data.status);
                     update_tb_list();
@@ -350,7 +351,7 @@ function makeUL(array) {
 var update_tb_list = function (add_last_mask = false) {
     // Update the TBA list
     // Fetch TBA list information and update on the web page.
-    $.getJSON('/_update_tb_list', {}, function (data) {
+    $.getJSON('/nuclei_annotation/_update_tb_list' + info_url, {}, function (data) {
         var max_region = parseInt(data.max_region);
         var reg_list = [];      // Clear the list.
         TBA_list = {};
