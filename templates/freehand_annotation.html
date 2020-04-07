@@ -221,7 +221,8 @@
 <script type="text/javascript">
     var slideID = {{ slide_id }};
     var annotatorID = {{ annotator_id }};
-    var info_url = "?slide_id={{ slide_id }}&annotator_id={{ annotator_id }}";
+    var slideUUID = "{{ slide_uuid }}";
+    var info_url = "?slide_id={{ slide_id }}&annotator_id={{ annotator_id }}&slide_uuid={{ slide_uuid }}";
 
     var viewer = OpenSeadragon({
         id: "openseadragon1",
@@ -315,13 +316,13 @@
     // Toggle sub-region boundary
     $('a#tog_boun').bind('click', toggle_boundary);
     $('a#Clear_boun').bind('click', function () {
-        $.get('/_clear_lines', function () {
+        $.get('/freehand_annotation/_clear_lines' + info_url, function () {
             update_mask();
         });
         return false;
     });
     $('a#undo').bind('click', function () {
-        $.get('/_undo_lines', function () {
+        $.get('/freehand_annotation/_undo_lines' + info_url, function () {
             update_mask();
         });
         return false;

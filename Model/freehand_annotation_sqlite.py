@@ -2,7 +2,7 @@ import sqlite3
 import os
 
 
-class FreehandAnnotationSqliteConnector:
+class SqliteConnector:
     def __init__(self, sqlite_path):
         self.sqlite_path = sqlite_path
         if not os.path.exists(sqlite_path):

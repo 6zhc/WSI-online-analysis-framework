@@ -6,7 +6,7 @@ import os
 import uuid
 
 from Controller import manifest_controller
-from Model.freehand_annotation_sqlite import FreehandAnnotationSqliteConnector
+from Model.freehand_annotation_sqlite import SqliteConnector
 from Model import manifest
 
 original_data_root = 'static/data/Original_data/'
@@ -29,13 +29,15 @@ def add_annotation_sever(app):
             slide_url = "/dzi_online/Data/Original_data/" + str(info[1]) + '/' \
                         + str(info[2]) + ".dzi"
 
-        return render_template('freehand_annotation.html', slide_url=slide_url, slide_id=slide_id, annotator_id=1)
+        return render_template('freehand_annotation.html', slide_url=slide_url, slide_id=slide_id,
+                               annotator_id=annotator_id, slide_uuid=info[1])
 
     @app.route('/freehand_annotation/_get_info')
     def freehand_annotation_get_info():
 
         slide_id = request.args.get('slide_id', default=1, type=int)
         annotator_id = request.args.get('annotator_id', default=1, type=int)
+        slide_uuid = request.args.get('slide_uuid', default="", type=str)
 
         mani = manifest.Manifest()
         wsi = mani.get_project_by_id(slide_id)
@@ -56,18 +58,15 @@ def add_annotation_sever(app):
     def freehand_annotation_clear_lines():
         slide_id = request.args.get('slide_id', default=1, type=int)
         annotator_id = request.args.get('annotator_id', default=1, type=int)
+        slide_uuid = request.args.get('slide_uuid', default="", type=str)
 
-        mani = manifest.Manifest()
-        wsi = mani.get_project_by_id(slide_id)
-        svs_file_path = original_data_root + wsi[1] + '/' + wsi[2]
-        uuid = wsi[1]
-        annotation_root_folder = freehand_annotation_data_root + uuid + '/'
+        annotation_root_folder = freehand_annotation_data_root + slide_uuid + '/'
 
         if not os.path.exists(annotation_root_folder):
             os.mkdir(annotation_root_folder)
         annotaion_db = annotation_root_folder + 'FreehandAnnotation.db'
 
-        db = FreehandAnnotationSqliteConnector(annotaion_db)
+        db = SqliteConnector(annotaion_db)
         db.delete_all_lines()
         return jsonify(
             exit_code=True,
@@ -77,18 +76,15 @@ def add_annotation_sever(app):
     def freehand_annotation_undo_lines():
         slide_id = request.args.get('slide_id', default=1, type=int)
         annotator_id = request.args.get('annotator_id', default=1, type=int)
+        slide_uuid = request.args.get('slide_uuid', default="", type=str)
 
-        mani = manifest.Manifest()
-        wsi = mani.get_project_by_id(slide_id)
-        svs_file_path = original_data_root + wsi[1] + '/' + wsi[2]
-        uuid = wsi[1]
-        annotation_root_folder = freehand_annotation_data_root + uuid + '/'
+        annotation_root_folder = freehand_annotation_data_root + slide_uuid + '/'
 
         if not os.path.exists(annotation_root_folder):
             os.mkdir(annotation_root_folder)
         annotaion_db = annotation_root_folder + 'FreehandAnnotation.db'
 
-        db = FreehandAnnotationSqliteConnector(annotaion_db)
+        db = SqliteConnector(annotaion_db)
         db.del_max_branch()
         return jsonify(
             exit_code=True,
@@ -98,12 +94,9 @@ def add_annotation_sever(app):
     def freehand_annotation_update_image():
         slide_id = request.args.get('slide_id', default=1, type=int)
         annotator_id = request.args.get('annotator_id', default=1, type=int)
+        slide_uuid = request.args.get('slide_uuid', default="", type=str)
 
-        mani = manifest.Manifest()
-        wsi = mani.get_project_by_id(slide_id)
-        svs_file_path = original_data_root + wsi[1] + '/' + wsi[2]
-        UUID = wsi[1]
-        annotation_root_folder = freehand_annotation_data_root + UUID + '/'
+        annotation_root_folder = freehand_annotation_data_root + slide_uuid + '/'
 
         if not os.path.exists(annotation_root_folder):
             os.mkdir(annotation_root_folder)
@@ -124,11 +117,11 @@ def add_annotation_sever(app):
         loc_viewer_size = (v5, v6)
 
         # Update URL configuration
-        slide_url = 'static/cache/tmp.png'
+        slide_url = 'static/cache/' + str(uuid.uuid1()) + '.png'
 
         mask = np.zeros([v6, v5, 4])
 
-        db = FreehandAnnotationSqliteConnector(annotaion_db)
+        db = SqliteConnector(annotaion_db)
         color = [[0, 0, 255, 255], [0, 255, 0, 255], [255, 0, 0, 255]]
         # print(db.get_lines())
 
@@ -153,12 +146,9 @@ def add_annotation_sever(app):
     def freehand_annotation_record():
         slide_id = request.args.get('slide_id', default=1, type=int)
         annotator_id = request.args.get('annotator_id', default=1, type=int)
+        slide_uuid = request.args.get('slide_uuid', default="", type=str)
 
-        mani = manifest.Manifest()
-        wsi = mani.get_project_by_id(slide_id)
-        svs_file_path = original_data_root + wsi[1] + '/' + wsi[2]
-        uuid = wsi[1]
-        annotation_root_folder = freehand_annotation_data_root + uuid + '/'
+        annotation_root_folder = freehand_annotation_data_root + slide_uuid + '/'
 
         if not os.path.exists(annotation_root_folder):
             os.mkdir(annotation_root_folder)
@@ -169,7 +159,7 @@ def add_annotation_sever(app):
 
         pt_list_att = ('[x]', '[y]', '[grading]')
 
-        db = FreehandAnnotationSqliteConnector(annotaion_db)
+        db = SqliteConnector(annotaion_db)
 
         # In one round, the grading and pslv could be updated only once.
         data = []
