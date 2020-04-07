@@ -11,7 +11,6 @@ from Model.nuclei_annotation_sqlite import SqliteConnector
 
 import tensorflow as tf
 from Controller.segmentation_algorithm.segmentation_algorithm import SegmentationModel
-from Controller.segmentation_algorithm.segmentation_algorithm import water_image
 
 model = SegmentationModel()
 graph = tf.get_default_graph()
