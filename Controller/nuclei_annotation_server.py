@@ -178,7 +178,6 @@ def add_annotation_sever(app):
         annotator_data = np.loadtxt(annotator_data_url, delimiter=",", dtype=int)
 
         temp = 1
-        # In one round, the grading and pslv could be updated only once.
         for i in range(num_of_points):
             temp_new = region_image[int(int(req_form[str(i) + '[y]'])), int(int(req_form[str(i) + '[x]']))]
             if temp != temp_new and temp_new > 1:

@@ -121,7 +121,13 @@ var change_slide_id = function () {
     //         update_slide_id();
     //     }
     // );
-    window.location.href("/freehand_annotation?annotation_id=" + annotatorID + '&slide_id=' + slideID);
+    var new_slide_id = parseInt($('input[name="slide_id"]').val())
+    if (available_slide.indexOf(new_slide_id) == -1) {
+        alert("非法Slide ID!");
+        return false;
+    } else
+        window.location.href("/nuclei_annotation?annotation_id=" + annotatorID
+            + '&slide_id=' + new_slide_id.toString());
     return false;
 };
 

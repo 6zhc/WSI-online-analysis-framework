@@ -79,7 +79,8 @@
                 <span class="control_header" style="height: 100%; margin:0 10px 0 0; float: left;">Slide ID: </span>
 
                 <form>
-                    <input id="slide_id_input_box" style="float: left; margin-right: 4px" type=text size=5
+                    <input type="number" id="slide_id_input_box" style="float: left; margin-right: 4px; width: 60px"
+                           type=text
                            name=slide_id>
                     <p id="change_result_flash" style="color:red"></p>
                     <a href=# id=slide_id style="float:left;">
@@ -223,6 +224,14 @@
     var annotatorID = {{ annotator_id }};
     var slideUUID = "{{ slide_uuid }}";
     var info_url = "?slide_id={{ slide_id }}&annotator_id={{ annotator_id }}&slide_uuid={{ slide_uuid }}";
+
+    var available_slide = [];
+    $.get("available_slide", function (data) {
+        console.log(data);
+        for (var i = 0; i < data.length; i++) {
+            available_slide.push(data[i].id)
+        }
+    });
 
     var viewer = OpenSeadragon({
         id: "openseadragon1",

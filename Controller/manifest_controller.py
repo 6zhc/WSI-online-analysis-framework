@@ -23,6 +23,11 @@ def get_table(start_no=0, end_no=0):
 
         svs_file_path = original_data_root + wsi[1] + '/' + wsi[2]
         try:  # image_size
+            # icon_file_path = icon_root + wsi[1] + '/' + 'icon.png'
+            # if os.path.exists(icon_file_path) and (end_no-start_no) >50:
+            #     dimensions = [-1, -1]
+            # else:
+            #     raise Exception("error")
             dimensions = openslide.OpenSlide(svs_file_path).dimensions
         except:
             if os.path.exists(svs_file_path):
@@ -91,10 +96,12 @@ def get_available_slide_id():
     data = []
     for wsi in mani.get_projects():
         temp = {"id": wsi[0], "text": wsi[0]}
-        try:  # image_size
-            svs_file_path = original_data_root + wsi[1] + '/' + wsi[2]
-            openslide.OpenSlide(svs_file_path)
-        except:
+        icon_file_path = icon_root + wsi[1] + '/' + 'icon.png'
+        if not os.path.exists(icon_file_path):
+            # try:  # image_size
+            #     svs_file_path = original_data_root + wsi[1] + '/' + wsi[2]
+            #     openslide.OpenSlide(svs_file_path)
+            # except:
             continue
         data.append(temp)
     return data
