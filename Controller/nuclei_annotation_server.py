@@ -25,6 +25,7 @@ def add_annotation_sever(app):
 
         slide_id = request.args.get('slide_id', default=4, type=int)
         annotator_id = request.args.get('annotator_id', default=1, type=int)
+        annotation_project = request.args.get('project', default="None", type=str)
         slide_uuid = request.args.get('slide_uuid', default="", type=str)
 
         info = manifest_controller.get_info_by_id(slide_id)
@@ -37,13 +38,14 @@ def add_annotation_sever(app):
                         + str(info[2]) + ".dzi"
 
         return render_template('nuclei_annotation.html', slide_url=slide_url, slide_id=slide_id,
-                               annotator_id=annotator_id, slide_uuid=info[1])
+                               annotator_id=annotator_id, slide_uuid=info[1], project=annotation_project)
 
     @app.route('/nuclei_annotation/_get_info')
     def nuclei_annotation_get_info():
 
         slide_id = request.args.get('slide_id', default=1, type=int)
         annotator_id = request.args.get('annotator_id', default=1, type=int)
+        annotation_project = request.args.get('project', default="None", type=str)
         slide_uuid = request.args.get('slide_uuid', default="", type=str)
 
         mani = manifest.Manifest()
@@ -65,12 +67,13 @@ def add_annotation_sever(app):
     def nuclei_annotation_update_image():
         slide_id = request.args.get('slide_id', default=1, type=int)
         annotator_id = request.args.get('annotator_id', default=1, type=int)
+        annotation_project = request.args.get('project', default="None", type=str)
         slide_uuid = request.args.get('slide_uuid', default="", type=str)
 
         mani = manifest.Manifest()
         wsi = mani.get_project_by_id(slide_id)
         svs_file_path = original_data_root + wsi[1] + '/' + wsi[2]
-        annotation_root_folder = nuclei_annotation_data_root + wsi[1] + '/'
+        annotation_root_folder = nuclei_annotation_data_root + annotation_project + '/' + wsi[1] + '/'
 
         if not os.path.exists(annotation_root_folder):
             os.mkdir(annotation_root_folder)
@@ -145,7 +148,8 @@ def add_annotation_sever(app):
             cv2.imwrite(result_pic_url, mask)
 
         # Update URL configuration
-        slide_url = 'static/data/nuclei_annotation_data/' + wsi[1] + '/a' + str(annotator_id) + '_r' + str(v7) + '.png'
+        slide_url = 'static/data/nuclei_annotation_data/' + annotation_project + '/' \
+                    + wsi[1] + '/a' + str(annotator_id) + '_r' + str(v7) + '.png'
         result_pic = cv2.imread(result_pic_url)
         cv2.imwrite(slide_url, result_pic)
 
@@ -163,9 +167,10 @@ def add_annotation_sever(app):
     def nuclei_annotation_record():
         slide_id = request.args.get('slide_id', default=1, type=int)
         annotator_id = request.args.get('annotator_id', default=1, type=int)
+        annotation_project = request.args.get('project', default="None", type=str)
         slide_uuid = request.args.get('slide_uuid', default="", type=str)
 
-        annotation_root_folder = nuclei_annotation_data_root + slide_uuid + '/'
+        annotation_root_folder = nuclei_annotation_data_root + annotation_project + '/' + slide_uuid + '/'
 
         req_form = request.form
         num_of_points = int(len(req_form) / 4)
@@ -201,9 +206,10 @@ def add_annotation_sever(app):
     def nuclei_annotation_update_tb_list():
         slide_id = request.args.get('slide_id', default=1, type=int)
         annotator_id = request.args.get('annotator_id', default=1, type=int)
+        annotation_project = request.args.get('project', default="None", type=str)
         slide_uuid = request.args.get('slide_uuid', default="", type=str)
 
-        annotation_root_folder = nuclei_annotation_data_root + slide_uuid + '/'
+        annotation_root_folder = nuclei_annotation_data_root + annotation_project + '/' + slide_uuid + '/'
 
         if not os.path.exists(annotation_root_folder):
             os.mkdir(annotation_root_folder)
@@ -216,6 +222,7 @@ def add_annotation_sever(app):
     def nuclei_annotation_add_sw():
         slide_id = request.args.get('slide_id', default=1, type=int)
         annotator_id = request.args.get('annotator_id', default=1, type=int)
+        annotation_project = request.args.get('project', default="None", type=str)
         slide_uuid = request.args.get('slide_uuid', default="", type=str)
 
         allowed_annotator = range(5)
@@ -223,7 +230,7 @@ def add_annotation_sever(app):
             x = request.args.get('x', 0, type=int)
             y = request.args.get('y', 0, type=int)
 
-            annotation_root_folder = nuclei_annotation_data_root + slide_uuid + '/'
+            annotation_root_folder = nuclei_annotation_data_root + annotation_project + '/' + slide_uuid + '/'
 
             if not os.path.exists(annotation_root_folder):
                 os.mkdir(annotation_root_folder)
@@ -242,6 +249,7 @@ def add_annotation_sever(app):
     def nuclei_annotation_rm_sw():
         slide_id = request.args.get('slide_id', default=1, type=int)
         annotator_id = request.args.get('annotator_id', default=1, type=int)
+        annotation_project = request.args.get('project', default="None", type=str)
         slide_uuid = request.args.get('slide_uuid', default="", type=str)
 
         allowed_annotator = range(5)
@@ -249,7 +257,7 @@ def add_annotation_sever(app):
         if annotator_id in allowed_annotator:
             sw_id = request.args.get('sw_id', 0, type=int)
 
-            annotation_root_folder = nuclei_annotation_data_root + slide_uuid + '/'
+            annotation_root_folder = nuclei_annotation_data_root + annotation_project + '/' + slide_uuid + '/'
 
             tba_list_db = annotation_root_folder + 'tba_list.db'
             db = SqliteConnector(tba_list_db)

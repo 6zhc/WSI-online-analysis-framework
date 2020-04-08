@@ -127,7 +127,7 @@ var change_slide_id = function () {
         return false;
     } else
         window.location.href("/nuclei_annotation?annotation_id=" + annotatorID
-            + '&slide_id=' + new_slide_id.toString());
+            + '&slide_id=' + new_slide_id.toString() + '&project=' + project);
     return false;
 };
 

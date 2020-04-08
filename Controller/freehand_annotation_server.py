@@ -19,6 +19,7 @@ def add_annotation_sever(app):
 
         slide_id = request.args.get('slide_id', default=4, type=int)
         annotator_id = request.args.get('annotator_id', default=1, type=int)
+        annotation_project = request.args.get('project', default="None", type=str)
 
         info = manifest_controller.get_info_by_id(slide_id)
         dzi_file_path = "/static/data/dzi_data/" + str(info[1]) + '/' \
@@ -30,13 +31,14 @@ def add_annotation_sever(app):
                         + str(info[2]) + ".dzi"
 
         return render_template('freehand_annotation.html', slide_url=slide_url, slide_id=slide_id,
-                               annotator_id=annotator_id, slide_uuid=info[1])
+                               annotator_id=annotator_id, slide_uuid=info[1], project=annotation_project)
 
     @app.route('/freehand_annotation/_get_info')
     def freehand_annotation_get_info():
 
         slide_id = request.args.get('slide_id', default=1, type=int)
         annotator_id = request.args.get('annotator_id', default=1, type=int)
+        annotation_project = request.args.get('project', default="None", type=str)
         slide_uuid = request.args.get('slide_uuid', default="", type=str)
 
         mani = manifest.Manifest()
@@ -58,9 +60,10 @@ def add_annotation_sever(app):
     def freehand_annotation_clear_lines():
         slide_id = request.args.get('slide_id', default=1, type=int)
         annotator_id = request.args.get('annotator_id', default=1, type=int)
+        annotation_project = request.args.get('project', default="None", type=str)
         slide_uuid = request.args.get('slide_uuid', default="", type=str)
 
-        annotation_root_folder = freehand_annotation_data_root + slide_uuid + '/'
+        annotation_root_folder = freehand_annotation_data_root + annotation_project + '/' + slide_uuid + '/'
 
         if not os.path.exists(annotation_root_folder):
             os.mkdir(annotation_root_folder)
@@ -76,9 +79,10 @@ def add_annotation_sever(app):
     def freehand_annotation_undo_lines():
         slide_id = request.args.get('slide_id', default=1, type=int)
         annotator_id = request.args.get('annotator_id', default=1, type=int)
+        annotation_project = request.args.get('project', default="None", type=str)
         slide_uuid = request.args.get('slide_uuid', default="", type=str)
 
-        annotation_root_folder = freehand_annotation_data_root + slide_uuid + '/'
+        annotation_root_folder = freehand_annotation_data_root + annotation_project + '/' + slide_uuid + '/'
 
         if not os.path.exists(annotation_root_folder):
             os.mkdir(annotation_root_folder)
@@ -94,9 +98,10 @@ def add_annotation_sever(app):
     def freehand_annotation_update_image():
         slide_id = request.args.get('slide_id', default=1, type=int)
         annotator_id = request.args.get('annotator_id', default=1, type=int)
+        annotation_project = request.args.get('project', default="None", type=str)
         slide_uuid = request.args.get('slide_uuid', default="", type=str)
 
-        annotation_root_folder = freehand_annotation_data_root + slide_uuid + '/'
+        annotation_root_folder = freehand_annotation_data_root + annotation_project + '/' + slide_uuid + '/'
 
         if not os.path.exists(annotation_root_folder):
             os.mkdir(annotation_root_folder)
@@ -146,9 +151,10 @@ def add_annotation_sever(app):
     def freehand_annotation_record():
         slide_id = request.args.get('slide_id', default=1, type=int)
         annotator_id = request.args.get('annotator_id', default=1, type=int)
+        annotation_project = request.args.get('project', default="None", type=str)
         slide_uuid = request.args.get('slide_uuid', default="", type=str)
 
-        annotation_root_folder = freehand_annotation_data_root + slide_uuid + '/'
+        annotation_root_folder = freehand_annotation_data_root + annotation_project + '/' + slide_uuid + '/'
 
         if not os.path.exists(annotation_root_folder):
             os.mkdir(annotation_root_folder)

@@ -8,7 +8,7 @@ analysis_data_root = "static/data/analysis_data/"
 icon_root = 'static/data/slide_icon/'
 
 
-def get_table(start_no=0, end_no=0):
+def get_table(start_no=0, end_no=0, make_icon_mask=1):
     mani = manifest.Manifest()
     data = []
     wsis = mani.get_projects()
@@ -44,7 +44,7 @@ def get_table(start_no=0, end_no=0):
         temp.append('<a href="/slide?slide_id=' + str(wsi[0]) + '"target="_blank">' + wsi[2] + '</a>')
 
         icon_file_path = icon_root + wsi[1] + '/' + 'icon.png'
-        if not os.path.exists(icon_file_path):
+        if not os.path.exists(icon_file_path) and make_icon_mask != 0:
             try:
                 if not os.path.exists(icon_root + wsi[1] + '/'):
                     os.mkdir(icon_root + wsi[1] + '/')

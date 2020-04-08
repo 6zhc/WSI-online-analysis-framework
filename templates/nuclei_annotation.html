@@ -298,7 +298,8 @@
     var slideID = {{ slide_id }};
     var annotatorID = {{ annotator_id }};
     var slideUUID = "{{ slide_uuid }}";
-    var info_url = "?slide_id={{ slide_id }}&annotator_id={{ annotator_id }}&slide_uuid={{ slide_uuid }}";
+    var project = "{{ project }}";
+    var info_url = "?slide_id={{ slide_id }}&annotator_id={{ annotator_id }}&slide_uuid={{ slide_uuid }}&project={{ project }}";
 
     var available_slide = [];
     $.get("available_slide", function (data) {

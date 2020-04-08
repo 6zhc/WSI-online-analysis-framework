@@ -6,6 +6,7 @@ from Controller import thread_controller
 from Controller import image_processing
 from Controller import dataset_controller
 from Controller import mission_controller
+from Controller import annotation_project_controller
 from Controller import freehand_annotation_server
 from Controller import nuclei_annotation_server
 import os
@@ -26,26 +27,6 @@ try:
     os.symlink(os.getcwd() + '/Data', 'static/data')
 except:
     pass
-
-
-# for i in os.listdir('static/data'):
-#     icon_root = 'static/data/slide_icon/'
-#     icon_file_path = icon_root + i + '/' + 'icon.png'
-#     try:
-#         for j in os.listdir('static/data/'+ i ):
-#             try:
-#                 openslide.OpenSlide('static/data/' + i + '/'+j)
-#                 if not os.path.exists(icon_file_path):
-#                     try:
-#                         if not os.path.exists(icon_root + i + '/'):
-#                             os.mkdir(icon_root + i + '/')
-#                         image_processing.generate_icon_image_from_svs_file('static/data/' + i + '/'+j, icon_file_path)
-#                     except:
-#                         pass
-#             except:
-#                 pass
-#     except:
-#         pass
 
 
 @app.route('/')
@@ -86,7 +67,7 @@ def uploader_file():
             print(e)
             return render_template('warning.html', info='file uploaded fail')
         try:
-            image_processing.generate_icon_image_from_svs_file('Data/' + slide_uuid + '/' + f.filename,
+            image_processing.generate_icon_image_from_svs_file('Data/' + slide_uuid + '/' + file.filename,
                                                                'Data/' + slide_uuid + '/icon.png')
         except Exception as e:
             print(e)
@@ -150,7 +131,7 @@ def slide():
 def table_data():
     page_no = request.args.get('page_no', default=1, type=int)
     item_per_page = request.args.get('item_per_page', default=15, type=int)
-    return jsonify(manifest_controller.get_table(page_no * item_per_page - item_per_page, page_no * item_per_page))
+    return jsonify(manifest_controller.get_table(page_no * item_per_page - item_per_page, page_no * item_per_page, 0))
 
 
 @app.route('/mission_table')
@@ -169,15 +150,6 @@ def mission_table():
                            item_per_page=item_per_page, slide_uuid=slide_uuid)
 
 
-# @app.route('/predict_mask_make', methods=['GET', 'POST'])
-# def predict_mask_make():
-#     slide_id = request.form['slide_id']
-#     slide_uuid = request.form['uuid']
-#     model_name = request.form['model_name']
-#     thread.BackgroundThread(image_processing.predict_mask_with_job_id, slide_id, model_name).start()
-#     return redirect('mission_table')
-
-
 @app.route('/mission_table_data')
 def mission_table_data():
     page_no = request.args.get('page_no', default=1, type=int)
@@ -185,6 +157,17 @@ def mission_table_data():
     slide_uuid = request.args.get('slide_uuid', default="", type=str)
     return jsonify(
         mission_controller.get_table(slide_uuid)[page_no * item_per_page - item_per_page:page_no * item_per_page])
+
+
+@app.route('/annotation_project_table')
+def annotation_project_table():
+    return render_template('annotation_project_table.html')
+
+
+@app.route('/annotation_project_table_data')
+def annotation_project_table_data():
+    return jsonify(
+        annotation_project_controller.get_table())
 
 
 @app.route('/available_slide')
@@ -201,6 +184,12 @@ def available_model():
 def continue_slide_id():
     manifest_controller.continue_slide_id()
     return jsonify({"mas": 'None'})
+
+
+@app.route('/refresh_annotation_slide')
+def refresh_annotation_slide():
+    annotation_project_controller.refresh_npy()
+    return redirect('/annotation_project_table')
 
 
 @app.route('/upload')

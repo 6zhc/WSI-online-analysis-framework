@@ -118,13 +118,13 @@ var change_slide_id = function () {
     //         update_slide_id();
     //     }
     // );
-    var new_slide_id = parseInt($('input[name="slide_id"]').val())
+    var new_slide_id = parseInt($('input[name="slide_id"]').val());
     if (available_slide.indexOf(new_slide_id) == -1) {
         alert("非法Slide ID!");
         return false;
     } else
         window.location.href("/freehand_annotation?annotation_id=" + annotatorID
-            + '&slide_id=' + new_slide_id.toString());
+            + '&slide_id=' + new_slide_id.toString() + '&project=' + project);
     return false;
 };
 
