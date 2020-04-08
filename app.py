@@ -134,6 +134,11 @@ def table_data():
     return jsonify(manifest_controller.get_table(page_no * item_per_page - item_per_page, page_no * item_per_page, 0))
 
 
+@app.route('/refresh_manifest_table_data')
+def refresh_manifest_table_data():
+    return jsonify(manifest_controller.get_table())
+
+
 @app.route('/mission_table')
 def mission_table():
     page_no = request.args.get('page_no', default=1, type=int)
