@@ -157,15 +157,8 @@ var create_grading_controls = function () {
         radio.onchange = function () {
             OSD_control.grading = getRadioValue("grading");
         };
-        if (i <= 4) {
-            var text = document.createTextNode(' ' + i + '\u00A0\u00A0');
-        } else if (i == 5) {
-            var text = document.createTextNode(' ' + 'Endothelial��Ƥϸ��[5]' + '\u00A0\u00A0')
-        } else if (i == 6) {
-            var text = document.createTextNode(' ' + 'Lymphocytes�ܰ�ϸ��[6]' + '\u00A0\u00A0')
-        } else {
-            var text = document.createTextNode(' ' + 'Unmark [0]' + '\u00A0\u00A0');
-        }
+
+        var text = document.createTextNode(' ' + i + '\u00A0\u00A0');
 
         document.getElementById("grading").appendChild(radio);
         document.getElementById("grading").appendChild(text);
