@@ -107,7 +107,7 @@ def refresh_npy():
 
         temp.append('<a href="/nuclei_annotation?slide_id=' + str(slide_id[0]) + '&project=' + str(project_name)
                     + '" target="_Blank">nuclei annotate </a>')
-        temp.append('<a href="/nuclei_annotation?slide_id=' + str(slide_id[0]) + '&project=' + str(project_name)
+        temp.append('<a href="/freehand_annotation?slide_id=' + str(slide_id[0]) + '&project=' + str(project_name)
                     + '" target="_Blank">freehand annotate </a>')
 
         result.append(temp)

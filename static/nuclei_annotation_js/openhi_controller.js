@@ -126,8 +126,8 @@ var change_slide_id = function () {
         alert("非法Slide ID!");
         return false;
     } else
-        window.location.href("/nuclei_annotation?annotation_id=" + annotatorID
-            + '&slide_id=' + new_slide_id.toString() + '&project=' + project);
+        window.location.href = "/nuclei_annotation?annotation_id=" + annotatorID
+            + '&slide_id=' + new_slide_id.toString() + '&project=' + project;
     return false;
 };
 
