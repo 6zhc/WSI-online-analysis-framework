@@ -15,15 +15,6 @@ from Controller import dataset_controller
 from Controller import mission_controller
 import os
 
-app = Flask(__name__)
-dzi_online_server.add_dzi_sever(app)
-freehand_annotation_server.add_annotation_sever(app)
-nuclei_annotation_server.add_annotation_sever(app)
-annotation_project_server.add_annotation_project_sever(app)
-mission_server.add_mission_server(app)
-manifest_server.add_manifest_server(app)
-
-
 try:
     if not os.path.exists("Data"):
         os.mkdir("Data")
@@ -32,6 +23,15 @@ try:
     os.symlink(os.getcwd() + '/Data', 'static/data')
 except:
     pass
+
+
+app = Flask(__name__)
+dzi_online_server.add_dzi_sever(app)
+freehand_annotation_server.add_annotation_sever(app)
+nuclei_annotation_server.add_annotation_sever(app)
+annotation_project_server.add_annotation_project_sever(app)
+mission_server.add_mission_server(app)
+manifest_server.add_manifest_server(app)
 
 
 @app.route('/')

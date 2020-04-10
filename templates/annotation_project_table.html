@@ -85,8 +85,8 @@
                         <th>Slide ID</th>
                         <th>Missing Slide ID</th>
                         <th>Missing Slide UUID</th>
-                        <th>Nuclei Annotation Progress</th>
-                        <th>Freehand Annotation Progress</th>
+                        <th>Nuclei Annotation Progress<a href="/refresh_nuclei_annotation_progress">(刷新)</a></th>
+                        <th>Freehand Annotation Progress<a href="/refresh_freehand_annotation_progress">(刷新)</a></th>
                         <th>Nuclei Annotation</th>
                         <th>Freehand Annotation</th>
                         <th>Export Nuclei Annotation</th>
@@ -123,7 +123,7 @@
                                     temp2.innerHTML = data[i][j];
                                 temp.appendChild(temp2)
                             }
-                            for (; j <= 8; j++) {
+                            for (; j <= 9; j++) {
                                 temp2 = document.createElement("td");
                                 temp2.innerHTML = "---------";
                                 temp.appendChild(temp2)

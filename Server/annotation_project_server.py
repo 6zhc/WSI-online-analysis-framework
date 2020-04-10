@@ -19,3 +19,13 @@ def add_annotation_project_sever(app):
     def refresh_annotation_slide():
         thread_controller.BackgroundThread(annotation_project_controller.refresh_npy).start()
         return redirect('/annotation_project_table')
+
+    @app.route('/refresh_nuclei_annotation_progress')
+    def refresh_nuclei_annotation_progress():
+        annotation_project_controller.refresh_nuclei_annotation_progress()
+        return redirect('/annotation_project_table')
+
+    @app.route('/refresh_freehand_annotation_progress')
+    def refresh_freehand_annotation_progress():
+        annotation_project_controller.refresh_freehand_annotation_progress()
+        return redirect('/annotation_project_table')

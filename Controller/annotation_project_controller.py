@@ -5,18 +5,97 @@ from Model import manifest
 from Controller import manifest_controller
 from Model.freehand_annotation_sqlite import SqliteConnector
 
-manifest_root = "annotation_project_manifest/"
+manifest_root = "Data/annotation_project_manifest/"
 nuclei_annotation_root = "Data/nuclei_annotation_data/"
 freehand_annotation_root = "Data/freehand_annotation_data/"
 
 
 def get_table():
-    filename = 'annotation_project_manifest/table.npy'
+    filename = manifest_root + 'table.npy'
     if not os.path.exists(filename):
         refresh_npy()
     result = numpy.load(filename)
     result = result.tolist()
     return result
+
+
+def refresh_nuclei_annotation_progress():
+    filename = manifest_root + 'table.npy'
+    if not os.path.exists(filename):
+        refresh_npy()
+    else:
+        result = numpy.load(filename)
+        for i in range(len(result)):
+            manifest_txt = open(manifest_root + result[i][0] + '.txt').readlines()
+            annotation_project_root = nuclei_annotation_root + result[i][0] + '/'
+
+            annotator_no = 6
+            region_no = 0
+            finish_region_no = numpy.zeros(annotator_no)
+            for wsi in manifest_txt:
+                info = wsi.split('\t')
+                if not os.path.exists(annotation_project_root + info[0] + '/'):
+                    continue
+                for annotation_file in os.listdir(annotation_project_root + info[0] + '/'):
+                    # print(annotation_file[0], annotation_file[-4:])
+                    if annotation_file[0] == 'r' and annotation_file[-4:] == '.txt':
+                        region_no = region_no + 1
+                        for annotator_id in range(annotator_no):
+                            if os.path.exists(annotation_project_root + info[0] + '/' +
+                                              'a' + str(annotator_id + 1) + '_' + annotation_file) and \
+                                    sum(numpy.loadtxt(annotation_project_root + info[0] + '/' +
+                                                      'a' + str(annotator_id + 1) + '_' + annotation_file)) > 0:
+                                finish_region_no[annotator_id] += 1
+            result_str = ""  # 'Total: ' + str(region_no) + ', <br/>'
+            for annotator_id in range(annotator_no):
+                result_str += str(annotator_id + 1) + ': ' + \
+                              str(int(finish_region_no[annotator_id])) + ' /' + str(region_no) + ', '
+                if annotator_id % 2:
+                    result_str += '<br/>'
+            result[i][4] = result_str
+
+        filename = manifest_root + 'table.npy'
+        result = numpy.array(result)
+        numpy.save(filename, result)  # 保存为.npy格式
+    return
+
+
+def refresh_freehand_annotation_progress():
+    filename = manifest_root + 'table.npy'
+    if not os.path.exists(filename):
+        refresh_npy()
+    else:
+        result = numpy.load(filename)
+        for i in range(len(result)):
+            manifest_txt = open(manifest_root + result[i][0] + '.txt').readlines()
+            annotation_project_root = nuclei_annotation_root + result[i][0] + '/'
+
+            annotator_no = 6
+            region_no = 0
+            finish_region_no = numpy.zeros(annotator_no)
+            for wsi in manifest_txt:
+                info = wsi.split('\t')
+                region_no = region_no + 1
+                if not os.path.exists(annotation_project_root + info[0] + '/'):
+                    continue
+                for annotator_id in range(annotator_no):
+                    if os.path.exists(annotation_project_root + info[0] + '/' +
+                                      'a' + str(annotator_id + 1) + '.db') and \
+                            len(SqliteConnector(annotation_project_root + info[0] + '/' +
+                                                'a' + str(annotator_id + 1) + '.db').get_lines()) > 0:
+                        finish_region_no[annotator_id] += 1
+            result_str = ""  # 'Total: ' + str(region_no) + ', <br/>'
+            for annotator_id in range(annotator_no):
+                result_str += str(annotator_id + 1) + ': ' + \
+                              str(int(finish_region_no[annotator_id])) + ' /' + str(region_no) + ', '
+                if annotator_id % 2:
+                    result_str += '<br/>'
+            result[i][5] = result_str
+
+        filename = manifest_root + 'table.npy'
+        result = numpy.array(result)
+        numpy.save(filename, result)  # 保存为.npy格式
+    return
 
 
 def refresh_npy():
@@ -55,7 +134,7 @@ def refresh_npy():
 
         missing_slide_id_str = ""
         slide_id_str = ""
-        if slide_id == []:
+        if not slide_id:
             temp.append('Empty Manifest!')
             result.append(temp)
             continue
@@ -82,56 +161,13 @@ def refresh_npy():
         if not os.path.exists(annotation_project_root):
             os.mkdir(annotation_project_root)
 
-        annotator_no = 6
-        region_no = 0
-        finish_region_no = numpy.zeros(annotator_no)
-        for wsi in manifest_txt:
-            info = wsi.split('\t')
-            if not os.path.exists(annotation_project_root + info[0] + '/'):
-                continue
-            for annotation_file in os.listdir(annotation_project_root + info[0] + '/'):
-                # print(annotation_file[0], annotation_file[-4:])
-                if annotation_file[0] == 'r' and annotation_file[-4:] == '.txt':
-                    region_no = region_no + 1
-                    for annotator_id in range(annotator_no):
-                        if os.path.exists(annotation_project_root + info[0] + '/' +
-                                          'a' + str(annotator_id + 1) + '_' + annotation_file) and \
-                                sum(numpy.loadtxt(annotation_project_root + info[0] + '/' +
-                                                  'a' + str(annotator_id + 1) + '_' + annotation_file)) > 0:
-                            finish_region_no[annotator_id] += 1
-        result_str = ""  # 'Total: ' + str(region_no) + ', <br/>'
-        for annotator_id in range(annotator_no):
-            result_str += str(annotator_id + 1) + ': ' + \
-                          str(int(finish_region_no[annotator_id])) + ' /' + str(region_no) + ', '
-            if annotator_id % 2:
-                result_str += '<br/>'
-        temp.append(result_str)
+        temp.append("Unavailable")
 
         annotation_project_root = freehand_annotation_root + project_name + '/'
         if not os.path.exists(annotation_project_root):
             os.mkdir(annotation_project_root)
 
-        annotator_no = 6
-        region_no = 0
-        finish_region_no = numpy.zeros(annotator_no)
-        for wsi in manifest_txt:
-            info = wsi.split('\t')
-            region_no = region_no + 1
-            if not os.path.exists(annotation_project_root + info[0] + '/'):
-                continue
-            for annotator_id in range(annotator_no):
-                if os.path.exists(annotation_project_root + info[0] + '/' +
-                                  'a' + str(annotator_id + 1) + '.db') and \
-                        len(SqliteConnector(annotation_project_root + info[0] + '/' +
-                                            'a' + str(annotator_id + 1) + '.db').get_lines()) > 0:
-                    finish_region_no[annotator_id] += 1
-        result_str = ""  # 'Total: ' + str(region_no) + ', <br/>'
-        for annotator_id in range(annotator_no):
-            result_str += str(annotator_id + 1) + ': ' + \
-                          str(int(finish_region_no[annotator_id])) + ' /' + str(region_no) + ', '
-            if annotator_id % 2:
-                result_str += '<br/>'
-        temp.append(result_str)
+        temp.append("Unavailable")
 
         temp.append('<a href="/nuclei_annotation?slide_id=' + str(slide_id[0]) + '&project=' + str(project_name)
                     + '" target="_Blank">nuclei annotate </a>')
@@ -140,6 +176,11 @@ def refresh_npy():
 
         result.append(temp)
 
-    filename = 'annotation_project_manifest/table.npy'
+    filename = manifest_root + 'table.npy'
     result = numpy.array(result)
     numpy.save(filename, result)  # 保存为.npy格式
+
+    refresh_freehand_annotation_progress()
+    refresh_nuclei_annotation_progress()
+
+    return
