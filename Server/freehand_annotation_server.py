@@ -67,7 +67,7 @@ def add_annotation_sever(app):
 
         if not os.path.exists(annotation_root_folder):
             os.mkdir(annotation_root_folder)
-        annotaion_db = annotation_root_folder + 'FreehandAnnotation.db'
+        annotaion_db = annotation_root_folder + 'a' + str(annotator_id) + '.db'
 
         db = SqliteConnector(annotaion_db)
         db.delete_all_lines()
@@ -86,7 +86,7 @@ def add_annotation_sever(app):
 
         if not os.path.exists(annotation_root_folder):
             os.mkdir(annotation_root_folder)
-        annotaion_db = annotation_root_folder + 'FreehandAnnotation.db'
+        annotaion_db = annotation_root_folder + 'a' + str(annotator_id) + '.db'
 
         db = SqliteConnector(annotaion_db)
         db.del_max_branch()
@@ -105,7 +105,7 @@ def add_annotation_sever(app):
 
         if not os.path.exists(annotation_root_folder):
             os.mkdir(annotation_root_folder)
-        annotaion_db = annotation_root_folder + 'FreehandAnnotation.db'
+        annotaion_db = annotation_root_folder + 'a' + str(annotator_id) + '.db'
 
         error_message = 'N/A'
         request_status = 0
@@ -158,7 +158,7 @@ def add_annotation_sever(app):
 
         if not os.path.exists(annotation_root_folder):
             os.mkdir(annotation_root_folder)
-        annotaion_db = annotation_root_folder + 'FreehandAnnotation.db'
+        annotaion_db = annotation_root_folder + 'a' + str(annotator_id) + '.db'
 
         req_form = request.form
         num_of_points = int(len(req_form) / 3)

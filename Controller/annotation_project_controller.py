@@ -3,9 +3,11 @@ import numpy
 import json
 from Model import manifest
 from Controller import manifest_controller
+from Model.freehand_annotation_sqlite import SqliteConnector
 
 manifest_root = "annotation_project_manifest/"
 nuclei_annotation_root = "Data/nuclei_annotation_data/"
+freehand_annotation_root = "Data/freehand_annotation_data/"
 
 
 def get_table():
@@ -88,7 +90,7 @@ def refresh_npy():
             if not os.path.exists(annotation_project_root + info[0] + '/'):
                 continue
             for annotation_file in os.listdir(annotation_project_root + info[0] + '/'):
-                print(annotation_file[0], annotation_file[-4:])
+                # print(annotation_file[0], annotation_file[-4:])
                 if annotation_file[0] == 'r' and annotation_file[-4:] == '.txt':
                     region_no = region_no + 1
                     for annotator_id in range(annotator_no):
@@ -97,6 +99,32 @@ def refresh_npy():
                                 sum(numpy.loadtxt(annotation_project_root + info[0] + '/' +
                                                   'a' + str(annotator_id + 1) + '_' + annotation_file)) > 0:
                             finish_region_no[annotator_id] += 1
+        result_str = ""  # 'Total: ' + str(region_no) + ', <br/>'
+        for annotator_id in range(annotator_no):
+            result_str += str(annotator_id + 1) + ': ' + \
+                          str(int(finish_region_no[annotator_id])) + ' /' + str(region_no) + ', '
+            if annotator_id % 2:
+                result_str += '<br/>'
+        temp.append(result_str)
+
+        annotation_project_root = freehand_annotation_root + project_name + '/'
+        if not os.path.exists(annotation_project_root):
+            os.mkdir(annotation_project_root)
+
+        annotator_no = 6
+        region_no = 0
+        finish_region_no = numpy.zeros(annotator_no)
+        for wsi in manifest_txt:
+            info = wsi.split('\t')
+            region_no = region_no + 1
+            if not os.path.exists(annotation_project_root + info[0] + '/'):
+                continue
+            for annotator_id in range(annotator_no):
+                if os.path.exists(annotation_project_root + info[0] + '/' +
+                                  'a' + str(annotator_id + 1) + '.db') and \
+                        len(SqliteConnector(annotation_project_root + info[0] + '/' +
+                                            'a' + str(annotator_id + 1) + '.db').get_lines()) > 0:
+                    finish_region_no[annotator_id] += 1
         result_str = ""  # 'Total: ' + str(region_no) + ', <br/>'
         for annotator_id in range(annotator_no):
             result_str += str(annotator_id + 1) + ': ' + \

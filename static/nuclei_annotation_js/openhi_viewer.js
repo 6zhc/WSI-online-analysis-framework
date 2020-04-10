@@ -28,6 +28,7 @@ var update_image_info = function () {
         create_grading_controls();
         create_slide_grading_controls();
         update_toggle_boundary_info();
+        update_region_bound();
     });
 };
 

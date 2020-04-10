@@ -25,6 +25,7 @@ var update_image_info = function () {
         console.log(data);
         image_info = data;
         update_toggle_boundary_info();
+        update_region_bound();
     });
 };
 

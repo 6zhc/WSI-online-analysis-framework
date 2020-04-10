@@ -7,7 +7,7 @@ from Model import mission
 from Model import manifest
 from Controller.predict_module import predict_module2, predict_module
 
-original_data_root = "Data/"
+original_data_root = "Data/Original_data/"
 analysis_data_root = "Data/analysis_data/"
 
 
