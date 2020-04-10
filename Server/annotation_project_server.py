@@ -1,4 +1,4 @@
-from flask import render_template, redirect
+from flask import render_template, redirect, request
 from flask import jsonify
 
 from Controller import thread_controller
@@ -18,6 +18,7 @@ def add_annotation_project_sever(app):
     @app.route('/refresh_annotation_slide')
     def refresh_annotation_slide():
         thread_controller.BackgroundThread(annotation_project_controller.refresh_npy).start()
+        # annotation_project_controller.refresh_npy()
         return redirect('/annotation_project_table')
 
     @app.route('/refresh_nuclei_annotation_progress')
@@ -28,4 +29,22 @@ def add_annotation_project_sever(app):
     @app.route('/refresh_freehand_annotation_progress')
     def refresh_freehand_annotation_progress():
         annotation_project_controller.refresh_freehand_annotation_progress()
+        return redirect('/annotation_project_table')
+
+    @app.route('/export_freehand_annotation')
+    def export_freehand_annotation():
+        manifest_file = request.args.get('manifest_file', type=str)
+
+        thread_controller.BackgroundThread(annotation_project_controller.export_freehand_annotation_data,
+                                           manifest_file).start()
+
+        return redirect('/annotation_project_table')
+
+    @app.route('/export_nuclei_annotation')
+    def export_nuclei_annotation():
+        manifest_file = request.args.get('manifest_file', type=str)
+
+        thread_controller.BackgroundThread(annotation_project_controller.export_nuclei_annotation_data,
+                                           manifest_file).start()
+
         return redirect('/annotation_project_table')

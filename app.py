@@ -13,14 +13,20 @@ from Controller import thread_controller
 from Controller import image_processing
 from Controller import dataset_controller
 from Controller import mission_controller
+from Controller import annotation_project_controller
 import os
 
 try:
-    if not os.path.exists("Data"):
-        os.mkdir("Data")
     if os.path.exists('static/data'):
         os.remove('static/data')
     os.symlink(os.getcwd() + '/Data', 'static/data')
+except:
+    pass
+
+try:
+    if os.path.exists('static/export'):
+        os.remove('static/export')
+    os.symlink(os.getcwd() + '/export', 'static/export')
 except:
     pass
 

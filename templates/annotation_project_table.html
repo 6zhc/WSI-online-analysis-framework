@@ -107,30 +107,30 @@
             </div>
 
             <script>
-                available_slide_id = [];
-                test = $.get("annotation_project_table_data",
-                    function (data) {
-                        console.log(data);
-                        for (let i = 0; i < data.length; i++) {
-                            let temp = document.createElement("tr");
-                            let j = 0;
-                            for (; j < data[i].length; j++) {
-                                temp2 = document.createElement("td");
-                                if (data[i][j] == "model_selection") {
-                                    temp2.innerHTML = model_selection(data[i][0]);
-                                    available_slide_id.push(data[i][0])
-                                } else
+                loop = function () {
+                    $.get("annotation_project_table_data",
+                        function (data) {
+                            console.log(data);
+                            document.getElementById('MyTable').innerText = "";
+                            for (let i = 0; i < data.length; i++) {
+                                let temp = document.createElement("tr");
+                                let j = 0;
+                                for (; j < data[i].length; j++) {
+                                    temp2 = document.createElement("td");
                                     temp2.innerHTML = data[i][j];
-                                temp.appendChild(temp2)
+                                    temp.appendChild(temp2)
+                                }
+                                for (; j <= 9; j++) {
+                                    temp2 = document.createElement("td");
+                                    temp2.innerHTML = "---------";
+                                    temp.appendChild(temp2)
+                                }
+                                document.getElementById('MyTable').appendChild(temp);
                             }
-                            for (; j <= 9; j++) {
-                                temp2 = document.createElement("td");
-                                temp2.innerHTML = "---------";
-                                temp.appendChild(temp2)
-                            }
-                            document.getElementById('MyTable').appendChild(temp);
-                        }
-                    });
+                        });
+                    setTimeout(loop, 3000);
+                };
+                loop();
 
             </script>
 
