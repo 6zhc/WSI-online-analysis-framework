@@ -376,10 +376,10 @@ def refresh_npy():
             try:
                 info[0] = '[*] ' + info[0]
                 wsi = mani.get_project_by_uuid(info[0][4:])
-                slide_table_file.write(str(wsi[0]) + '\t' + info[0][4:] + '\n')
                 if int(wsi[0]) not in available_slide_id:
                     info[0] = '[' + str(wsi[0]) + '] ' + info[0][4:]
                     raise Exception
+                slide_table_file.write(str(wsi[0]) + '\t' + info[0][4:] + '\n')
                 slide_id.append(int(wsi[0]))
             except:
                 missing_slide_uuid.append(info[0])

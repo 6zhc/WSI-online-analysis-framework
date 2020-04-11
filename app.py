@@ -73,7 +73,16 @@ def slide():
 @app.route('/available_slide')
 @login_required
 def available_slide():
-    return jsonify(manifest_controller.get_available_slide_id())
+    project = request.args.get('project', default="", type=str)
+    if project == "":
+        return jsonify(manifest_controller.get_available_slide_id())
+    else:
+        data = []
+        for wsi in open('export/' + project + '_slide_table.txt').readlines():
+            slide_id = int(wsi.split('\t')[0])
+            temp = {"id": slide_id, "text": slide_id}
+            data.append(temp)
+        return jsonify(data)
 
 
 @app.route('/available_model')

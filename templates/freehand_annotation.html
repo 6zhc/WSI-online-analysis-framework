@@ -227,7 +227,7 @@
     var info_url = "?slide_id={{ slide_id }}&annotator_id={{ annotator_id }}&slide_uuid={{ slide_uuid }}&project={{ project }}";
 
     var available_slide = [];
-    $.get("available_slide", function (data) {
+    $.get("available_slide" + info_url, function (data) {
         console.log(data);
         for (var i = 0; i < data.length; i++) {
             available_slide.push(data[i].id)

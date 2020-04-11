@@ -6,6 +6,7 @@ from Controller import manifest_controller
 from Controller import thread_controller
 from Controller import image_processing
 from Controller import dataset_controller
+from Controller import annotation_project_controller
 
 import os
 import uuid
@@ -41,6 +42,7 @@ def add_manifest_server(app):
     @app.route('/continue_slide_id')
     def continue_slide_id():
         manifest_controller.continue_slide_id()
+        thread_controller.BackgroundThread(annotation_project_controller.refresh_npy).start()
         return jsonify({"mas": 'None'})
 
     @app.route('/remove_wsi')
