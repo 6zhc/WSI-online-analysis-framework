@@ -1,15 +1,16 @@
 import cv2
 import numpy as np
-from flask import jsonify, request, render_template
 import openslide
 import os
 import uuid
+import tensorflow as tf
+
+from flask_login import login_required, current_user
+from flask import jsonify, request, render_template
 
 from Controller import manifest_controller
 from Model import manifest
-from Model.nuclei_annotation_sqlite import SqliteConnector
-
-import tensorflow as tf
+from Model import nuclei_annotation_sqlite
 from Controller.segmentation_algorithm.segmentation_algorithm import SegmentationModel
 
 model = SegmentationModel()
@@ -21,10 +22,12 @@ nuclei_annotation_data_root = "static/data/nuclei_annotation_data/"
 
 def add_annotation_sever(app):
     @app.route('/nuclei_annotation', methods=['GET', 'POST'])
+    @login_required
     def nuclei_annotation():
 
         slide_id = request.args.get('slide_id', default=4, type=int)
-        annotator_id = request.args.get('annotator_id', default=1, type=int)
+        annotator_id = current_user.get_id()
+        # annotator_id = request.args.get('annotator_id', default=1, type=int)
         annotation_project = request.args.get('project', default="None", type=str)
         slide_uuid = request.args.get('slide_uuid', default="", type=str)
 
@@ -214,7 +217,7 @@ def add_annotation_sever(app):
         if not os.path.exists(annotation_root_folder):
             os.mkdir(annotation_root_folder)
         tba_list_db = annotation_root_folder + 'tba_list.db'
-        db = SqliteConnector(tba_list_db)
+        db = nuclei_annotation_sqlite.SqliteConnector(tba_list_db)
         tba_result = db.get_RegionID_Centre()
         return jsonify(max_region=len(tba_result), reg_list=tba_result)
 
@@ -236,7 +239,7 @@ def add_annotation_sever(app):
                 os.mkdir(annotation_root_folder)
 
             tba_list_db = annotation_root_folder + 'tba_list.db'
-            db = SqliteConnector(tba_list_db)
+            db = nuclei_annotation_sqlite.SqliteConnector(tba_list_db)
             db.incert_RegionCentre(-1, x, y)
 
             message = 'Successfully added diagnostic region'
@@ -260,7 +263,7 @@ def add_annotation_sever(app):
             annotation_root_folder = nuclei_annotation_data_root + annotation_project + '/' + slide_uuid + '/'
 
             tba_list_db = annotation_root_folder + 'tba_list.db'
-            db = SqliteConnector(tba_list_db)
+            db = nuclei_annotation_sqlite.SqliteConnector(tba_list_db)
             db.delete_RegionCentre(sw_id)
 
             original_pic_url = annotation_root_folder + 'r' + str(sw_id) + '.png'

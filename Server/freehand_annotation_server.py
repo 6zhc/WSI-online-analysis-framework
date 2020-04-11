@@ -1,12 +1,14 @@
 import cv2
-import numpy as np
-from flask import jsonify, request, render_template
+import numpy
 import openslide
 import os
 import uuid
 
+from flask import jsonify, request, render_template
+from flask_login import login_required, current_user
+
 from Controller import manifest_controller
-from Model.freehand_annotation_sqlite import SqliteConnector
+from Model import freehand_annotation_sqlite
 from Model import manifest
 
 original_data_root = 'static/data/Original_data/'
@@ -15,10 +17,12 @@ freehand_annotation_data_root = "static/data/freehand_annotation_data/"
 
 def add_annotation_sever(app):
     @app.route('/freehand_annotation', methods=['GET', 'POST'])
+    @login_required
     def freehand_annotation():
 
         slide_id = request.args.get('slide_id', default=4, type=int)
-        annotator_id = request.args.get('annotator_id', default=1, type=int)
+        annotator_id = current_user.get_id()
+        # annotator_id = request.args.get('annotator_id', default=1, type=int)
         annotation_project = request.args.get('project', default="None", type=str)
 
         info = manifest_controller.get_info_by_id(slide_id)
@@ -69,7 +73,7 @@ def add_annotation_sever(app):
             os.mkdir(annotation_root_folder)
         annotaion_db = annotation_root_folder + 'a' + str(annotator_id) + '.db'
 
-        db = SqliteConnector(annotaion_db)
+        db = freehand_annotation_sqlite.SqliteConnector(annotaion_db)
         db.delete_all_lines()
         return jsonify(
             exit_code=True,
@@ -88,7 +92,7 @@ def add_annotation_sever(app):
             os.mkdir(annotation_root_folder)
         annotaion_db = annotation_root_folder + 'a' + str(annotator_id) + '.db'
 
-        db = SqliteConnector(annotaion_db)
+        db = freehand_annotation_sqlite.SqliteConnector(annotaion_db)
         db.del_max_branch()
         return jsonify(
             exit_code=True,
@@ -124,9 +128,9 @@ def add_annotation_sever(app):
         # Update URL configuration
         slide_url = 'static/cache/' + str(uuid.uuid1()) + '.png'
 
-        mask = np.zeros([v6, v5, 4])
+        mask = numpy.zeros([v6, v5, 4])
 
-        db = SqliteConnector(annotaion_db)
+        db = freehand_annotation_sqlite.SqliteConnector(annotaion_db)
         color = [[0, 0, 255, 255], [0, 255, 0, 255], [255, 0, 0, 255]]
         # print(db.get_lines())
 
@@ -165,7 +169,7 @@ def add_annotation_sever(app):
 
         pt_list_att = ('[x]', '[y]', '[grading]')
 
-        db = SqliteConnector(annotaion_db)
+        db = freehand_annotation_sqlite.SqliteConnector(annotaion_db)
 
         # In one round, the grading and pslv could be updated only once.
         data = []

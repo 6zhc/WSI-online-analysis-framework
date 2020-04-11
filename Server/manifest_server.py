@@ -1,5 +1,6 @@
 from flask import render_template, request, redirect
 from flask import jsonify
+from flask_login import login_required
 
 from Controller import manifest_controller
 from Controller import thread_controller
@@ -12,6 +13,7 @@ import uuid
 
 def add_manifest_server(app):
     @app.route('/slide_table')
+    @login_required
     def slide_table():
         page_no = request.args.get('page_no', default=1, type=int)
         item_per_page = request.args.get('item_per_page', default=15, type=int)

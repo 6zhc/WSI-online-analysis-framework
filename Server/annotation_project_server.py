@@ -1,12 +1,15 @@
 from flask import render_template, redirect, request
 from flask import jsonify
 
+from flask_login import login_required
+
 from Controller import thread_controller
 from Controller import annotation_project_controller
 
 
 def add_annotation_project_sever(app):
     @app.route('/annotation_project_table')
+    @login_required
     def annotation_project_table():
         return render_template('annotation_project_table.html')
 

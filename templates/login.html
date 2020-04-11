@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>OpenHI Login</title>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="static/bootstrap.min.css">
+    <link rel="stylesheet" href="static/css/login.css">
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="static/login_page/css/normalize.css"/>
+    <link rel="stylesheet" type="text/css" href="static/login_page/css/demo.css"/>
+    <!--必要样式-->
+    <link rel="stylesheet" type="text/css" href="static/login_page/css/component.css"/>
+
+    <!-- Favicons -->
+    <meta name="theme-color" content="#563d7c">
+
+</head>
+<body class="text-center">
+<div class="demo-1">
+    <div class="content">
+        <div id="large-header" class="large-header">
+            <canvas id="demo-canvas"></canvas>
+            <div class="logo_box">
+                {#                <h3>欢迎你</h3>#}
+                <form class="form-signin " action="#" method="POST">
+                    <img class="mb-1" src="/static/icon.png" alt="" width="100" height="100">
+                    <h1 class="h3 mb-1 font-weight-normal">Please sign in!</h1>
+                    {% with messages = get_flashed_messages() %}
+                        <div>{{ messages[0] }}</div>
+                        <div>{{ messages[1] }}</div>
+                    {% endwith %}
+                    <input type="text" name="user_name" id="user_name" class="form-control" placeholder="User ID"
+                           required
+                           autofocus>
+                    <label for="inputPassword" class="sr-only">Password</label>
+                    <input type="password" name="password" id="password" class="form-control" placeholder="Password"
+                           required>
+                    <div class="checkbox mb-3">
+                        <label>
+                            <input type="checkbox" value="True" name="remember_me" id="remember_me"> Remember me
+                        </label>
+                    </div>
+                    <button class="btn btn-lg btn-primary btn-block" type="submit" name="submit">Sign in</button>
+                    <p class="mt-4 mb-3  "> Powered by &copy; Haichuan Zhang <br/> Email:
+                        zhanghaichuan1998@gmail.com
+                    </p>
+                </form>
+            </div>
+        </div>
+    </div>
+</div><!-- /container -->
+<script src="static/login_page/js/TweenLite.min.js"></script>
+<script src="static/login_page/js/EasePack.min.js"></script>
+<script src="static/login_page/js/rAF.js"></script>
+<script src="static/login_page/js/demo-1.js"></script>
+
+
+{#<h1>Login</h1>#}
+{##}
+{#<form action="#" method="POST">#}
+{#    <input type="text" name="userid" id="userid" placeholder="用户ID"></input>#}
+{#    <input type="password" name="password" id="password" placeholder="密码"></input>#}
+{#    <input type="submit" name="submit"></input>#}
+{#</form>#}
+</body>
+</html>

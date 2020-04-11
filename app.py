@@ -1,12 +1,15 @@
 from flask import Flask, render_template, request, redirect
 from flask import jsonify
 
+from flask_login import login_required
+
 from Server import dzi_online_server
 from Server import freehand_annotation_server
 from Server import nuclei_annotation_server
 from Server import annotation_project_server
 from Server import manifest_server
 from Server import mission_server
+from Server import user_server
 
 from Controller import manifest_controller
 from Controller import thread_controller
@@ -32,6 +35,7 @@ except:
 
 
 app = Flask(__name__)
+user_server.add_user_server(app)
 dzi_online_server.add_dzi_sever(app)
 freehand_annotation_server.add_annotation_sever(app)
 nuclei_annotation_server.add_annotation_sever(app)
@@ -41,11 +45,14 @@ manifest_server.add_manifest_server(app)
 
 
 @app.route('/')
+@login_required
 def index():
+
     return redirect("/annotation_project_table")
 
 
 @app.route('/slide')
+@login_required
 def slide():
     slide_id = request.args.get('slide_id', default=1, type=int)
     mask_url = request.args.get('mask_url', default="", type=str)
@@ -64,16 +71,19 @@ def slide():
 
 
 @app.route('/available_slide')
+@login_required
 def available_slide():
     return jsonify(manifest_controller.get_available_slide_id())
 
 
 @app.route('/available_model')
+@login_required
 def available_model():
     return jsonify(mission_controller.get_available_model())
 
 
 @app.route('/make_bg_mask')
+@login_required
 def make_bg_mask():
     slide_id = request.args.get('slide_id', type=int)
     thread_controller.BackgroundThread(image_processing.make_bg, slide_id).start()
@@ -81,6 +91,7 @@ def make_bg_mask():
 
 
 @app.route('/make_pre_mask')
+@login_required
 def make_pre_mask():
     slide_id = request.args.get('slide_id', type=int)
     model_name = request.args.get('model_name', type=str, default="0")
@@ -89,12 +100,14 @@ def make_pre_mask():
 
 
 @app.route('/clear_db')
+@login_required
 def clear_db():
     dataset_controller.clear_database()
     return jsonify({"info": "Clear Successfully!", "time": "1"})
 
 
 @app.route('/upload')
+@login_required
 def upload_file():
     return render_template('upload.html')
 

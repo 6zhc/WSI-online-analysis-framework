@@ -1,10 +1,13 @@
 from flask import render_template, request
 from flask import jsonify
+from flask_login import login_required
+
 from Controller import mission_controller
 
 
 def add_mission_server(app):
     @app.route('/mission_table')
+    @login_required
     def mission_table():
         page_no = request.args.get('page_no', default=1, type=int)
         item_per_page = request.args.get('item_per_page', default=15, type=int)
