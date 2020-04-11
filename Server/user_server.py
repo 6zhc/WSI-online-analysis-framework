@@ -50,4 +50,4 @@ def add_user_server(app):
     @login_required
     def logout():
         logout_user()
-        redirect("/")
+        return redirect("/")
