@@ -163,7 +163,7 @@ def predict_mask_with_job_id(slide_id, model_name="0"):
         result_sub_sum = numpy.sum(result_sub)
         summary = ""
         for i in range(4):
-            result_sub[i] = int(result_sub[i] / result_sub_sum * 100)
+            result_sub[i] = round(result_sub[i] / result_sub_sum * 100, 2)
             summary = summary + sub[i] + ": " + str(result_sub[i]) + "%, "
         
         result = numpy.zeros((pre_result.shape[0], pre_result.shape[1], 3))
