@@ -20,10 +20,21 @@ def add_annotation_sever(app):
     @login_required
     def freehand_annotation():
 
-        slide_id = request.args.get('slide_id', default=4, type=int)
         annotator_id = current_user.get_id()
         # annotator_id = request.args.get('annotator_id', default=1, type=int)
         annotation_project = request.args.get('project', default="None", type=str)
+
+        slide_id = request.args.get('slide_id', default=-1, type=int)
+        if slide_id == -1:
+            try:
+                slide_id = current_user.slideID[annotator_id + '_' + annotation_project + "_" + "freehand"]
+            except:
+                temp = []
+                for wsi in open('export/' + annotation_project + '_slide_table.txt').readlines():
+                    slide_id = int(wsi.split('\t')[0])
+                    temp.append(slide_id)
+                slide_id = int(numpy.min(temp))
+        current_user.slideID[annotator_id + '_' + annotation_project + "_" + "freehand"] = slide_id
 
         info = manifest_controller.get_info_by_id(slide_id)
         dzi_file_path = "/static/data/dzi_data/" + str(info[1]) + '/' \

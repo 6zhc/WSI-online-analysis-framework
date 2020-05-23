@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect
 from flask import jsonify
 
-from flask_login import login_required
+from flask_login import login_required, current_user
 
 from Server import dzi_online_server
 from Server import freehand_annotation_server
@@ -47,7 +47,6 @@ manifest_server.add_manifest_server(app)
 @app.route('/')
 @login_required
 def index():
-
     return redirect("/annotation_project_table")
 
 
