@@ -103,8 +103,10 @@ var remove_mask = function () {
 };
 
 var OSD_open_function = function () {
-    update_region_bound();
-    update_scale_bar();
+    setTimeout(function () {
+        update_region_bound();
+        update_scale_bar();
+    }, 300)
 };
 
 var animation_start_function = function () {
