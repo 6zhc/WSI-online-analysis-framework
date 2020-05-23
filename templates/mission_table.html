@@ -23,12 +23,12 @@
 </head>
 
 
-<title>OpenHI Admin Panel</title>
+<title>WSI Processing Platform</title>
 </head>
 
 <body data-gr-c-s-loaded="true">
 <nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
-    <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">Admin Panel</a>
+    <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">WSI Processing Platform</a>
     <input class="form-control form-control-dark w-100" type="text" placeholder="Search" aria-label="Search">
     <ul class="navbar-nav px-3">
         <li class="nav-item text-nowrap">
@@ -41,20 +41,16 @@
     <div class="row">
         <nav class="col-md-2 d-none d-md-block bg-light sidebar">
             <div class="sidebar-sticky">
-                <ul class="nav flex-column">
+                <ul class="nav flex-column mt-2 ml-2">
                     <li class="nav-item">
-                        <a class="nav-link" href="slide_table">
+                        <a class="nav-link" href="slide_table?item_per_page=15">
                             Slide Table
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="slide_table?item_per_page=10000">
-                            All Slide Table
-                        </a>
-                    </li>
+
                     <li class="nav-item">
                         <a class="nav-link active" href="mission_table">
-                            Mission Table
+                            Analysis Task Table
                         </a>
                     </li>
                     <li class="nav-item">
@@ -67,7 +63,7 @@
         </nav>
 
         <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
-            <h2>Mission Info</h2>
+            <h2>Analysis Task Info</h2>
             {#            <form action="/predict_mask_make" method="POST"#}
             {#                  enctype="multipart/form-data">#}
             {#                Slide ID: <input type="text" name="slide_id"/>#}
