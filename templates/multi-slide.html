@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Muti-Slide</title>
+    <script type="text/javascript" src="{{ url_for('static', filename='openseadragon.js') }}"></script>
+    <link rel="stylesheet" href="static/select2.min.css">
+    <!-- 引入在线资源 -->
+    <script src="static/jquery-3.3.1.slim.min.js"></script>
+    <script src="static/popper.min.js"></script>
+    <script src="static/jquery.min.js"></script>
+    <script src="static/select2.min.js"></script>
+</head>
+<body oncontextmenu=self.event.returnValue=false>
+<div onchange="update_anno()">
+    Anno ID: <select class="form-control" id="anno_id_select" style="width:20%">
+    <option value=""></option>
+</select></div>
+<div id="openseadragon1" style="width:47%;height:900px;float: left"></div>
+<div id="controller" style="width:6%;height:900px;float: left;text-align:center">
+    <dl class="checkBox">
+        <p><input type="radio" name="level" value="0" checked="true">正常细胞</p>
+        <p><input type="radio" name="level" value="1"> 1 级细胞</p>
+        <p><input type="radio" name="level" value="2"> 2 级细胞</p>
+        <p><input type="radio" name="level" value="3"> 3 级细胞</p>
+        <p><input type="radio" name="level" value="4"> 4 级细胞</p>
+        <p><input type="radio" name="level" value="5">上皮细胞</p>
+        <p><input type="radio" name="level" value="6">淋巴细胞</p>
+    </dl>
+    <button onclick="undo()">撤销</button>
+    <button onclick="update_points()" style="margin: 10px">保存并刷新</button>
+    <div id="warning" style="color:#FF0000;background:#FFFF00"></div>
+</div>
+<div id="openseadragon2" style="width:47%;height:900px;float: right"></div>
+
+<script type="text/javascript">
+    anno_name = "{{ anno_name }}";
+    rand = "{{ rand }}"
+    background_image = 'static/data/nuclick/' + 'result_' + anno_name + '.png';
+    mask1 = '{{ image_root }}' + 'mask_' + anno_name + '_nuClick.png' + rand;
+    mask2 = '{{ image_root }}' + 'mask_' + anno_name + '_U-net.png' + rand;
+
+    info_url = '?anno_name=' + anno_name;
+
+    var viewer1 = OpenSeadragon({
+        id: "openseadragon1",
+        prefixUrl: "{{ url_for('static', filename='images/') }}",
+        tileSources: {
+            type: 'image',
+            url: background_image
+        },
+        minZoomImageRatio: 0,
+        maxZoomPixelRatio: 10,
+        autoResize: true,
+        visibilityRatio: 0,
+
+        gestureSettingsMouse: {
+            flickEnabled: false,
+        },
+        springStiffness: 5,// 5
+        animationTime: 0, //0.5
+
+        zoomPerSecond: 0.5,//0.5
+        zoomPerScroll: 1.3,
+
+        showNavigator: true,
+        navigatorPosition: "BOTTOM_RIGHT",
+    });
+
+    var viewer2 = OpenSeadragon({
+        id: "openseadragon2",
+        prefixUrl: "{{ url_for('static', filename='images/') }}",
+        tileSources: {
+            type: 'image',
+            url: background_image
+        },
+        minZoomImageRatio: 0,
+        maxZoomPixelRatio: 10,
+        autoResize: true,
+        visibilityRatio: 0,
+
+        gestureSettingsMouse: {
+            flickEnabled: false,
+        },
+        springStiffness: 5,// 5
+        animationTime: 0, //0.5
+
+        zoomPerSecond: 0.5,//0.5
+        zoomPerScroll: 1.3,
+
+        showNavigator: true,
+        navigatorPosition: "BOTTOM_RIGHT",
+    });
+
+    var point_x = [];
+    var point_y = [];
+    var grade = [];
+
+    var red_point = document.createElement("div");
+    red_point.style = "width:8px;height:8px;border-radius:50%;background-color:red;";
+    var green_point = document.createElement("div");
+    green_point.style = "width:8px;height:8px;border-radius:50%;background-color:green;";
+    var blue_point = document.createElement("div");
+    blue_point.style = "width:8px;height:8px;border-radius:50%;background-color:blue;";
+    var sky_blue_point = document.createElement("div");
+    sky_blue_point.style = "width:8px;height:8px;border-radius:50%;background-color:#00BFFF;";
+    var black_point = document.createElement("div");
+    black_point.style = "width:8px;height:8px;border-radius:50%;background-color:black;";
+    var yellow_point = document.createElement("div");
+    yellow_point.style = "width:8px;height:8px;border-radius:50%;background-color:yellow;";
+
+    point = [];
+    point.push(green_point);
+    point.push(blue_point);
+    point.push(yellow_point);
+    point.push(red_point);
+    point.push(red_point);
+    point.push(sky_blue_point);
+    point.push(black_point);
+
+    var add_points = function () {
+        viewer1.clearOverlays();
+        for (var i = 0; i < grade.length; i++) {
+            // console.log(point_x[i],point_y[i]);
+            viewer1.addOverlay({
+                element: point[grade[i]].cloneNode(true),
+                location: viewer1.world.getItemAt(0).imageToViewportCoordinates(
+                    point_x[i], point_y[i]
+                ),
+                placement: OpenSeadragon.Placement.CENTER
+            });
+        }
+    };
+
+    var update_points = function () {
+        document.getElementById("warning").innerText = "正在保存";
+        $.post("/update_grades" + info_url, {grade: grade, points_x: point_x, points_y: point_y},
+            (data) => {
+                console.log(data);
+                document.location.reload()
+            })
+    };
+
+    var update_anno = function () {
+        document.location.href = '/re_annotation?anno_name=' + $("#anno_id_select option:checked").val();
+    };
+
+    let undo = function () {
+        if (grade.length == 0) {
+            alert("已清空标注");
+        } else {
+            point_x.pop();
+            point_y.pop();
+            grade.pop();
+            add_points();
+        }
+    };
+
+    $('#anno_id_select').select2({
+        placeholder: 'Please select slideID'
+    });
+    $.get("available_re_annotation_region", function (data) {
+        console.log(data);
+        $('#anno_id_select').select2({
+            placeholder: 'Please select slideID',
+            data: data,
+        });
+    });
+
+    let update_points_grades = function () {
+        $.getJSON("points_grades" + info_url, function (result) {
+            console.log(result);
+            point_x = [];
+            point_y = [];
+            grades = [];
+            for (var i = 0; i < result.grades.length; i++) {
+                point_x.push(result.points[i][0]);
+                point_y.push(result.points[i][1]);
+                grade.push(result.grades[i]);
+            }
+            add_points();
+        });
+    };
+
+
+    let add_mask = function (viewer, mask_name) {
+        let Bound_Viewport = viewer.world.getItemAt(0).getBounds();
+        viewer.addTiledImage({
+            tileSource: {
+                type: 'image',
+                url: mask_name,
+            },
+            x: Bound_Viewport.x,
+            y: Bound_Viewport.y,
+            width: Bound_Viewport.width,
+            opacity: 0.3,
+            success: function () {
+                if (!mask) {
+                    remove_mask(viewer);
+                }
+            },
+            false: function () {
+                alert("no mask");
+            }
+        });
+    };
+
+    let remove_mask = function (viewer) {
+        while (viewer.world.getItemCount() >= 2)
+            viewer.world.removeItem(viewer.world.getItemAt(1));
+    };
+
+    viewer1.addHandler('open', function () {
+        add_mask(viewer1, mask1);
+        update_points_grades()
+    });
+    viewer2.addHandler('open', function () {
+        add_mask(viewer2, mask2);
+    });
+    let mask = 1;
+
+    viewer1.addHandler('animation', function () {
+        let Bound_Viewport = viewer1.viewport.getBounds(true);
+        viewer2.viewport.fitBounds(Bound_Viewport, true)
+    });
+    viewer2.addHandler('animation', function () {
+        let Bound_Viewport = viewer2.viewport.getBounds(true);
+        viewer1.viewport.fitBounds(Bound_Viewport, true)
+    });
+
+    viewer1.addHandler('canvas-nonprimary-press', function (inform) {
+        console.log(inform.position);
+        inform.position = viewer1.world.getItemAt(0).viewerElementToImageCoordinates(inform.position);
+        console.log(inform.position);
+        var grade_checked = 0;
+        var radio_obj = document.getElementsByName("level");
+        for (var i = 0; i < radio_obj.length; i++) {
+            if (radio_obj[i].checked) {
+                grade_checked = parseInt(radio_obj[i].value);
+            }
+        }
+        grade.push(grade_checked);
+        point_x.push(Math.round(inform.position.x));
+        point_y.push(Math.round(inform.position.y));
+        add_points();
+    });
+
+    document.onkeydown = function (e) {  //listen to the keboard;
+        let key = String.fromCharCode(window.event ? e.keyCode : e.which);
+        console.log(key);
+        if (key === 'B') {
+            mask = 1 - mask;
+            if (mask) {
+                add_mask(viewer2, mask2);
+            } else {
+                remove_mask(viewer2);
+            }
+        }
+    };
+
+</script>
+</body>
+</html>

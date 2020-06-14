@@ -10,6 +10,7 @@ from Server import annotation_project_server
 from Server import manifest_server
 from Server import mission_server
 from Server import user_server
+from Server import re_annotation_server
 
 from Controller import manifest_controller
 from Controller import thread_controller
@@ -42,6 +43,7 @@ nuclei_annotation_server.add_annotation_sever(app)
 annotation_project_server.add_annotation_project_sever(app)
 mission_server.add_mission_server(app)
 manifest_server.add_manifest_server(app)
+re_annotation_server.add_re_annotation_sever(app)
 
 
 @app.route('/')
@@ -118,6 +120,12 @@ def clear_db():
 @login_required
 def upload_file():
     return render_template('upload.html')
+
+
+@app.route('/muti-slide')
+@login_required
+def muti_slide():
+    return render_template('multi-slide.html')
 
 # @app.route('/graph')
 # def graph():
