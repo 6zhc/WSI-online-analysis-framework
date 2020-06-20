@@ -16,33 +16,41 @@
     Anno ID: <select class="form-control" id="anno_id_select" style="width:20%">
     <option value=""></option>
 </select></div>
-<div id="openseadragon1" style="width:47%;height:900px;float: left"></div>
-<div id="controller" style="width:6%;height:900px;float: left;text-align:center">
+<div id="openseadragon1" style="width:800px;height:800px;float: left;margin: 10px; margin-left: 20px"></div>
+<div id="controller" style="float: left;text-align:center;width: 200px">
     <dl class="checkBox">
-        <p><input type="radio" name="level" value="0" checked="true">正常细胞</p>
-        <p><input type="radio" name="level" value="1"> 1 级细胞</p>
-        <p><input type="radio" name="level" value="2"> 2 级细胞</p>
-        <p><input type="radio" name="level" value="3"> 3 级细胞</p>
-        <p><input type="radio" name="level" value="4"> 4 级细胞</p>
-        <p><input type="radio" name="level" value="5">上皮细胞</p>
-        <p><input type="radio" name="level" value="6">淋巴细胞</p>
+        <p><input type="radio" name="level" value="0" checked="true" id="type_0">删除细胞</p>
+        <p><input type="radio" name="level" value="1" id="type_1"> 1 级细胞</p>
+        <p><input type="radio" name="level" value="2" id="type_2"> 2 级细胞</p>
+        <p><input type="radio" name="level" value="3" id="type_3"> 3 级细胞</p>
+        <p><input type="radio" name="level" value="4" id="type_4"> 4 级细胞</p>
+        <p><input type="radio" name="level" value="5" id="type_5">上皮细胞</p>
+        <p><input type="radio" name="level" value="6" id="type_6">淋巴细胞</p>
     </dl>
-    <button onclick="undo()">撤销</button>
-    <button onclick="update_points()" style="margin: 10px">保存并刷新</button>
+
+    <div>
+        <button onclick="undo()" style="margin: 8px">撤销</button>
+    </div>
+    <div>
+        <button onclick="update_points()" style="margin: 8px">保存并刷新</button>
+    </div>
+    <div>
+        <button onclick="make_mask()" style="margin: 8px">生成掩膜</button>
+    </div>
     <div id="warning" style="color:#FF0000;background:#FFFF00"></div>
 </div>
-<div id="openseadragon2" style="width:47%;height:900px;float: right"></div>
+<div id="openseadragon2" style="width:800px;height:800px;float: left;margin: 10px"></div>
 
 <script type="text/javascript">
     anno_name = "{{ anno_name }}";
-    rand = "{{ rand }}"
+    rand = "{{ rand }}";
     background_image = 'static/data/nuclick/' + 'result_' + anno_name + '.png';
     mask1 = '{{ image_root }}' + 'mask_' + anno_name + '_nuClick.png' + rand;
     mask2 = '{{ image_root }}' + 'mask_' + anno_name + '_U-net.png' + rand;
 
     info_url = '?anno_name=' + anno_name;
 
-    var viewer1 = OpenSeadragon({
+    let viewer1 = OpenSeadragon({
         id: "openseadragon1",
         prefixUrl: "{{ url_for('static', filename='images/') }}",
         tileSources: {
@@ -67,7 +75,7 @@
         navigatorPosition: "BOTTOM_RIGHT",
     });
 
-    var viewer2 = OpenSeadragon({
+    let viewer2 = OpenSeadragon({
         id: "openseadragon2",
         prefixUrl: "{{ url_for('static', filename='images/') }}",
         tileSources: {
@@ -92,35 +100,42 @@
         navigatorPosition: "BOTTOM_RIGHT",
     });
 
-    var point_x = [];
-    var point_y = [];
-    var grade = [];
+    let point_x = [];
+    let point_y = [];
+    let grade = [];
 
-    var red_point = document.createElement("div");
+    let mask_flag_1 = 1;
+    let mask_flag_2 = 1;
+    let point_flag = 1;
+    let adding_flag = 0;
+
+    let red_point = document.createElement("div");
     red_point.style = "width:8px;height:8px;border-radius:50%;background-color:red;";
-    var green_point = document.createElement("div");
+    let green_point = document.createElement("div");
     green_point.style = "width:8px;height:8px;border-radius:50%;background-color:green;";
-    var blue_point = document.createElement("div");
-    blue_point.style = "width:8px;height:8px;border-radius:50%;background-color:blue;";
-    var sky_blue_point = document.createElement("div");
+    let orange_point = document.createElement("div");
+    orange_point.style = "width:8px;height:8px;border-radius:50%;background-color:#FFA500;";
+    let sky_blue_point = document.createElement("div");
     sky_blue_point.style = "width:8px;height:8px;border-radius:50%;background-color:#00BFFF;";
-    var black_point = document.createElement("div");
+    let black_point = document.createElement("div");
     black_point.style = "width:8px;height:8px;border-radius:50%;background-color:black;";
-    var yellow_point = document.createElement("div");
+    let yellow_point = document.createElement("div");
     yellow_point.style = "width:8px;height:8px;border-radius:50%;background-color:yellow;";
 
     point = [];
     point.push(green_point);
-    point.push(blue_point);
+    point.push(orange_point);
     point.push(yellow_point);
     point.push(red_point);
     point.push(red_point);
     point.push(sky_blue_point);
     point.push(black_point);
 
-    var add_points = function () {
+    let add_points = function () {
+        if (!point_flag)
+            return;
         viewer1.clearOverlays();
-        for (var i = 0; i < grade.length; i++) {
+        for (let i = 0; i < grade.length; i++) {
             // console.log(point_x[i],point_y[i]);
             viewer1.addOverlay({
                 element: point[grade[i]].cloneNode(true),
@@ -132,21 +147,24 @@
         }
     };
 
-    var update_points = function () {
+    let update_points = function () {
         document.getElementById("warning").innerText = "正在保存";
         $.post("/update_grades" + info_url, {grade: grade, points_x: point_x, points_y: point_y},
             (data) => {
                 console.log(data);
-                document.location.reload()
+                update_points_grades();
+                // document.location.reload()
+                document.getElementById("warning").innerText = "";
+                make_mask();
             })
     };
 
-    var update_anno = function () {
+    let update_anno = function () {
         document.location.href = '/re_annotation?anno_name=' + $("#anno_id_select option:checked").val();
     };
 
     let undo = function () {
-        if (grade.length == 0) {
+        if (grade.length === 0) {
             alert("已清空标注");
         } else {
             point_x.pop();
@@ -172,13 +190,26 @@
             console.log(result);
             point_x = [];
             point_y = [];
-            grades = [];
-            for (var i = 0; i < result.grades.length; i++) {
+            grade = [];
+            for (let i = 0; i < result.grades.length; i++) {
                 point_x.push(result.points[i][0]);
                 point_y.push(result.points[i][1]);
                 grade.push(result.grades[i]);
             }
             add_points();
+        });
+    };
+
+    let make_mask = function () {
+        adding_flag += 1;
+        document.getElementById("warning").innerText = "正在更新图片";
+        $.get("make_mask" + info_url, function (result) {
+            console.log(result);
+            mask2 = '{{ image_root }}' + result;
+            add_mask(viewer1, mask2);
+            adding_flag -= 1;
+            if (adding_flag === 0)
+                document.getElementById("warning").innerText = "";
         });
     };
 
@@ -195,12 +226,17 @@
             width: Bound_Viewport.width,
             opacity: 0.3,
             success: function () {
-                if (!mask) {
+                if (viewer.world.getItemCount() > 2)
+                    viewer.world.removeItem(viewer.world.getItemAt(1));
+                if (!mask_flag_1 && viewer === viewer1) {
+                    remove_mask(viewer);
+                }
+                if (!mask_flag_2 && viewer === viewer2) {
                     remove_mask(viewer);
                 }
             },
             false: function () {
-                alert("no mask");
+                alert("no mask_flag");
             }
         });
     };
@@ -217,7 +253,6 @@
     viewer2.addHandler('open', function () {
         add_mask(viewer2, mask2);
     });
-    let mask = 1;
 
     viewer1.addHandler('animation', function () {
         let Bound_Viewport = viewer1.viewport.getBounds(true);
@@ -232,9 +267,9 @@
         console.log(inform.position);
         inform.position = viewer1.world.getItemAt(0).viewerElementToImageCoordinates(inform.position);
         console.log(inform.position);
-        var grade_checked = 0;
-        var radio_obj = document.getElementsByName("level");
-        for (var i = 0; i < radio_obj.length; i++) {
+        let grade_checked = 0;
+        let radio_obj = document.getElementsByName("level");
+        for (let i = 0; i < radio_obj.length; i++) {
             if (radio_obj[i].checked) {
                 grade_checked = parseInt(radio_obj[i].value);
             }
@@ -249,12 +284,39 @@
         let key = String.fromCharCode(window.event ? e.keyCode : e.which);
         console.log(key);
         if (key === 'B') {
-            mask = 1 - mask;
-            if (mask) {
+            mask_flag_1 = 1 - mask_flag_1;
+            if (mask_flag_1) {
+                add_mask(viewer1, mask1);
+            } else {
+                remove_mask(viewer1);
+            }
+        } else if (key === 'N') {
+            mask_flag_2 = 1 - mask_flag_2;
+            if (mask_flag_2) {
                 add_mask(viewer2, mask2);
             } else {
                 remove_mask(viewer2);
             }
+        } else if (key === 'V') {
+            point_flag = 1 - point_flag;
+            if (point_flag === 1) {
+                add_points();
+            } else {
+                viewer1.clearOverlays();
+                point_flag = 0;
+            }
+        } else if (key <= '9' && key >= '0') {
+            document.getElementById("type_" + key).checked = true;
+        } else if (key === 'R') {
+            document.getElementById("type_" + "0").checked = true;
+        } else if (key === 'E') {
+            console.log(viewer1.viewport.getCenter())
+            viewer1.viewport.zoomTo(512 / document.getElementById("openseadragon1").offsetWidth / 2.9,
+                viewer1.viewport.getCenter(), true);
+        } else if (key === 'W') {
+            console.log(viewer1.viewport.getCenter())
+            viewer1.viewport.zoomTo(512 / document.getElementById("openseadragon1").offsetWidth / 1.12,
+                viewer1.viewport.getCenter(), true);
         }
     };
 

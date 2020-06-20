@@ -1,12 +1,13 @@
-import numpy as np
-from skimage.filters import gaussian
-from skimage import exposure
-from skimage.morphology import remove_small_objects, remove_small_holes, reconstruction, disk
-from Controller.nuclick.models.models import getModel
-from Controller.nuclick.data_handler.customImageGenerator import ImageDataGenerator
 from time import time
-import keras
+
+import numpy as np
 import tensorflow as tf
+from skimage import exposure
+from skimage.filters import gaussian
+from skimage.morphology import remove_small_objects, remove_small_holes, reconstruction, disk
+
+from Controller.nuclick.data_handler.customImageGenerator import ImageDataGenerator
+from Controller.nuclick.models.models import getModel
 
 seeddd = 1
 img_rows = 128

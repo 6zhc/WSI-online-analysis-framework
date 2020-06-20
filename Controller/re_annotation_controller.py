@@ -35,7 +35,7 @@ def boundary_2_point(anno, annotator_id):
     grades = []
 
     for i in range(numpy.max(boundary_file)):
-        if i == 0 or i == 1 or annotation_file[i] == 0:
+        if i == 0 or i == 1 or annotation_file[i] == 0 or annotation_file[i] > 6:
             continue
         temp = numpy.argwhere(boundary_file == i)
 
@@ -120,7 +120,7 @@ def boundary_2_mask(anno, mask_name, annotator_id):
 
     mask = numpy.zeros([512, 512, 4])
 
-    color = [[0, 128, 0, 0], [255, 0, 0, 255], [0, 255, 255, 255], [0, 0, 255, 255], [0, 0, 255, 255],
+    color = [[0, 128, 0, 0], [0, 165, 255, 255], [0, 255, 255, 255], [0, 0, 255, 255], [0, 0, 255, 255],
              [255, 191, 0, 255], [0, 0, 0, 255]]
     for i in range(len(annotation_file)):
         mask[boundary_file == i] = color[annotation_file[i]]
@@ -144,10 +144,13 @@ def boundary_2_mask_u_net(anno, annotator_id):
 
     mask = numpy.zeros([512, 512, 4])
 
-    color = [[0, 128, 0, 0], [255, 0, 0, 255], [0, 255, 255, 255], [0, 0, 255, 255], [0, 0, 255, 255],
+    color = [[0, 128, 0, 0], [0, 165, 255, 255], [0, 255, 255, 255], [0, 0, 255, 255], [0, 0, 255, 255],
              [255, 191, 0, 255], [0, 0, 0, 255]]
     for i in range(len(annotation_file)):
-        mask[boundary_file == i] = color[annotation_file[i]]
+        try:
+            mask[boundary_file == i] = color[annotation_file[i]]
+        except:
+            pass
     mask[boundary_file == -1] = [0, 255, 0, 255]
 
     cv2.imwrite(result_root + 'a' + annotator_id + '/' + 'mask_' + anno_name + '_U-net.png', mask)

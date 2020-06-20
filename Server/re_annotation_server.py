@@ -6,6 +6,8 @@ import numpy
 
 from flask_login import login_required, current_user
 from Controller import re_annotation_controller
+from Controller import thread_controller
+
 
 annotation_result_root = "/home1/zhc/resnet/annotation_record/whole/"
 boundary_result_root = "/home1/zhc/resnet/boundary_record/"
@@ -50,8 +52,8 @@ def add_re_annotation_sever(app):
         annotator_id = current_user.get_id()
         anno_name = request.args.get('anno_name', type=str, default="s178_r1974")
         mask_name = request.args.get('mask_name', type=str, default="nuClick")
-        re_annotation_controller.boundary_2_mask(anno_name, mask_name, annotator_id)
-        return True
+        re_annotation_make_mask(anno_name, annotator_id)
+        return 'mask_' + anno_name + '_' + mask_name + '.png' + '?a=' + str(uuid.uuid4())
 
     @app.route('/update_grades', methods=['POST'])
     @login_required
@@ -87,11 +89,11 @@ def add_re_annotation_sever(app):
 
         grades_file.close()
         points_file.close()
+        return jsonify({"msg": "True"})
 
+    def re_annotation_make_mask(anno_name, annotator_id):
         re_annotation_controller.point_2_boundary(anno_name, 'nuClick', annotator_id)
         re_annotation_controller.boundary_2_mask(anno_name, 'nuClick', annotator_id)
-
-        return jsonify({"msg": "True"})
 
     @app.route('/points_grades')
     @login_required
