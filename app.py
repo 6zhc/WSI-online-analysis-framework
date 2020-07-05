@@ -18,7 +18,7 @@ from Controller import image_processing
 from Controller import dataset_controller
 from Controller import mission_controller
 from Controller import annotation_project_controller
-import os
+import os, csv
 
 try:
     if os.path.exists('static/data'):
@@ -50,6 +50,20 @@ re_annotation_server.add_re_annotation_sever(app)
 @login_required
 def index():
     return redirect("/annotation_project_table")
+
+
+@app.route('/items')
+@login_required
+def items():
+    with open('test.csv')as f:
+        f_csv = csv.DictReader(f)
+        return jsonify({'data': list(f_csv), 'totals': len(list(f_csv))})
+
+
+@app.route('/table')
+@login_required
+def table():
+    return render_template('table.html')
 
 
 @app.route('/slide')

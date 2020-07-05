@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="static/bootstrap.min.css">
+    <link rel="stylesheet" href="static/css/AdminPanel.css">
+    <link rel="stylesheet" href="static/select2.min.css">
+    <!-- 引入在线资源 -->
+    <script src="static/g2.min.js"></script>
+    <script src="static/jquery-3.3.1.slim.min.js"></script>
+    <script src="static/popper.min.js"></script>
+    <script src="static/bootstrap.min.js"></script>
+    <script src="static/jquery.min.js"></script>
+    <script src="static/buttomOnclick.js"></script>
+    <script src="static/select2.min.js"></script>
+
+    {#    <script src="https://unpkg.com/ag-grid-community/dist/ag-grid-community.min.noStyle.js"></script>#}
+    <script src="https://unpkg.com/@ag-grid-enterprise/all-modules@23.2.0/dist/ag-grid-enterprise.min.js"></script>
+
+
+    <link rel="stylesheet" href="https://unpkg.com/ag-grid-community/dist/styles/ag-grid.css">
+    <link rel="stylesheet" href="https://unpkg.com/ag-grid-community/dist/styles/ag-theme-alpine.css">
+
+</head>
+
+
+<title>WSI Processing Platform</title>
+</head>
+
+<body data-gr-c-s-loaded="true">
+<nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
+    <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">WSI Processing Platform</a>
+    <input class="form-control form-control-dark w-100" type="text" placeholder="Search" aria-label="Search">
+    <ul class="navbar-nav px-3">
+        <li class="nav-item text-nowrap">
+            <a class="nav-link" href="/logout">Sign out</a>
+        </li>
+    </ul>
+</nav>
+
+<div class="container-fluid">
+    <div class="row">
+        <nav class="col-2 d-none d-md-block bg-light sidebar">
+            <div class="sidebar-sticky">
+                <ul class="nav flex-column mt-2 ml-2">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="slide_table?item_per_page=15">
+                            Slide Table
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="mission_table">
+                            Analysis Task Table
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="annotation_project_table">
+                            Annotation Project Table
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+            <h2>Slide Info</h2>
+
+            <div id="myGrid" style="height: 830px" class="ag-theme-alpine"></div>
+
+            <script>
+                columnDefs = [
+                    {
+                        field: 'bcr_patient_barcode', headerName: '名称', checkboxSelection: true,
+                        sortable: true, resizable: true, filter: 'agTextColumnFilter'
+                    }, {
+                        field: 'bcr_patient_uuid', headerName: '病人UUID',
+                        sortable: true, resizable: true, filter: 'agTextColumnFilter'
+                    }, {
+                        field: 'person_neoplasm_cancer_status', headerName: '肿瘤癌状况',
+                        sortable: true, resizable: true, filter: 'agTextColumnFilter'
+                    }, {
+                        field: 'tissue_source_site', headerName: '组织来源部位',
+                        sortable: true, resizable: true, filter: 'agTextColumnFilter'
+                    }, {
+                        field: 'age_at_initial_pathologic_diagnosis', headerName: '病发年龄',
+                        sortable: true, resizable: true, filter: 'agNumberColumnFilter'
+                    }, {
+                        field: 'days_to_initial_pathologic_diagnosis', headerName: '距离病发日期',
+                        sortable: true, resizable: true, filter: 'agNumberColumnFilter'
+                    }, {
+                        field: 'days_to_last_followup', headerName: '距离最后诊断日期',
+                        sortable: true, resizable: true, filter: 'agNumberColumnFilter'
+                    }, {
+                        field: 'days_to_death', headerName: '距离死亡日期',
+                        sortable: true, resizable: true, filter: 'agNumberColumnFilter'
+                    }, {
+                        field: 'gender', headerName: '性别',
+                        sortable: true, resizable: true, filter: 'agTextColumnFilter'
+                    }, {
+                        field: 'histological_type', headerName: '病理类型',
+                        sortable: true, resizable: true, filter: 'agTextColumnFilter'
+                    }, {
+                        field: 'lymph_node_examined_count', headerName: '淋巴结检测数量',
+                        sortable: true, resizable: true, filter: 'agNumberColumnFilter'
+                    }, {
+                        field: 'neoplasm_histologic_grade', headerName: '病理等级',
+                        sortable: true, resizable: true, filter: 'agTextColumnFilter'
+                    }, {
+                        field: 'tumor_type', headerName: '肿瘤类型',
+                        sortable: true, resizable: true, filter: 'agTextColumnFilter'
+                    }, {
+                        field: 'vital_status', headerName: '生存状态',
+                        sortable: true, resizable: true, filter: 'agTextColumnFilter'
+                    }
+                ];
+
+                var gridOptions = {
+                    columnDefs: columnDefs,
+                    rowData: []
+                };
+                gridOptions = {
+                    columnDefs: columnDefs,
+                    defaultColDef: {
+                        flex: 1,
+                        minWidth: 100,
+                        // allow every column to be aggregated
+                        enableValue: true,
+                        // allow every column to be grouped
+                        enableRowGroup: true,
+                        // allow every column to be pivoted
+                        enablePivot: true,
+                        sortable: true,
+                        filter: true,
+                    },
+                    sideBar: true,
+                    rowGroupPanelShow: 'always',
+                    rowSelection: 'multiple',
+                    rowMultiSelectWithClick: true,
+                    enableRangeSelection: true,
+                    enableRangeHandle: true,
+                    groupSelectsFiltered: true,
+                    groupSelectsChildren: true,
+                    checkbox: true,
+                };
+
+                document.addEventListener('DOMContentLoaded', function () {
+                    var gridDiv = document.querySelector('#myGrid');
+                    new agGrid.Grid(gridDiv, gridOptions);
+
+                    agGrid
+                        .simpleHttpRequest({
+                            url:
+                                'items',
+                        })
+                        .then(function (data) {
+                            gridOptions.api.setRowData(data.data);
+                            var allColumnIds = [];
+                            gridOptions.columnApi.getAllColumns().forEach(function (column) {
+                                allColumnIds.push(column.colId);
+                            });
+                            gridOptions.columnApi.autoSizeColumns(allColumnIds);
+                        });
+                });
+
+            </script>
+
+        </main>
+    </div>
+</div>
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+</body>
+
+</html>
