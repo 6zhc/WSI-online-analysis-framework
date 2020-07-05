@@ -1,6 +1,7 @@
 import os
 import numpy
 import cv2
+import random
 from Controller.nuclick.nuclick import gen_mask
 
 annotation_result_root = "/home1/zhc/resnet/annotation_record/whole/"
@@ -11,6 +12,40 @@ result_root = "Data/re_annotation_data/" + "results/"
 points_root = "Data/re_annotation_data/" + "points/"
 grades_root = "Data/re_annotation_data/" + "grades/"
 
+color = [[0, 128, 0, 0], [255, 0, 209, 255], [0, 255, 255, 255], [0, 0, 255, 255], [0, 0, 255, 255],
+         [255, 191, 0, 255], [0, 0, 0, 255], [0, 0, 0, 0]]
+
+import colorsys
+import random
+
+
+def get_n_hls_colors(num):
+    hls_colors = []
+    i = 0
+    step = 360.0 / num
+    while i < 360:
+        h = i
+        s = 90 + random.random() * 10
+        l = 50 + random.random() * 10
+        _hlsc = [h / 360.0, l / 100.0, s / 100.0]
+        hls_colors.append(_hlsc)
+        i += step
+
+    return hls_colors
+
+
+def ncolors(num):
+    rgb_colors = []
+    if num < 1:
+        return rgb_colors
+    hls_colors = get_n_hls_colors(num)
+    for hlsc in hls_colors:
+        _r, _g, _b = colorsys.hls_to_rgb(hlsc[0], hlsc[1], hlsc[2])
+        r, g, b = [int(x * 255.0) for x in (_r, _g, _b)]
+        rgb_colors.append([r, g, b, 255])
+
+    return rgb_colors
+
 
 def boundary_2_point(anno, annotator_id):
     anno_name = anno.split('.')[0]
@@ -19,7 +54,9 @@ def boundary_2_point(anno, annotator_id):
 
     if not os.path.exists(points_root + 'a' + annotator_id + '/'):
         os.mkdir(points_root + 'a' + annotator_id + '/')
+    if not os.path.exists(grades_root + 'a' + annotator_id + '/'):
         os.mkdir(grades_root + 'a' + annotator_id + '/')
+    if not os.path.exists(result_root + 'a' + annotator_id + '/'):
         os.mkdir(result_root + 'a' + annotator_id + '/')
 
     points_file_name = points_root + 'a' + annotator_id + '/' + anno_name + '.txt'
@@ -66,7 +103,9 @@ def point_2_boundary(anno, mask_name, annotator_id):
 
     if not os.path.exists(points_root + 'a' + annotator_id + '/'):
         os.mkdir(points_root + 'a' + annotator_id + '/')
+    if not os.path.exists(grades_root + 'a' + annotator_id + '/'):
         os.mkdir(grades_root + 'a' + annotator_id + '/')
+    if not os.path.exists(result_root + 'a' + annotator_id + '/'):
         os.mkdir(result_root + 'a' + annotator_id + '/')
 
     points_file_name = points_root + 'a' + annotator_id + '/' + anno_name + '.txt'
@@ -109,7 +148,9 @@ def boundary_2_mask(anno, mask_name, annotator_id):
 
     if not os.path.exists(points_root + 'a' + annotator_id + '/'):
         os.mkdir(points_root + 'a' + annotator_id + '/')
+    if not os.path.exists(grades_root + 'a' + annotator_id + '/'):
         os.mkdir(grades_root + 'a' + annotator_id + '/')
+    if not os.path.exists(result_root + 'a' + annotator_id + '/'):
         os.mkdir(result_root + 'a' + annotator_id + '/')
 
     boundary_file_name = result_root + 'a' + annotator_id + '/' + anno_name + "_boundary_" + mask_name + ".txt"
@@ -120,8 +161,6 @@ def boundary_2_mask(anno, mask_name, annotator_id):
 
     mask = numpy.zeros([512, 512, 4])
 
-    color = [[0, 128, 0, 0], [0, 165, 255, 255], [0, 255, 255, 255], [0, 0, 255, 255], [0, 0, 255, 255],
-             [255, 191, 0, 255], [0, 0, 0, 255]]
     for i in range(len(annotation_file)):
         mask[boundary_file == i] = color[annotation_file[i]]
     mask[boundary_file == -1] = [0, 255, 0, 255]
@@ -132,7 +171,9 @@ def boundary_2_mask(anno, mask_name, annotator_id):
 def boundary_2_mask_u_net(anno, annotator_id):
     if not os.path.exists(points_root + 'a' + annotator_id + '/'):
         os.mkdir(points_root + 'a' + annotator_id + '/')
+    if not os.path.exists(grades_root + 'a' + annotator_id + '/'):
         os.mkdir(grades_root + 'a' + annotator_id + '/')
+    if not os.path.exists(result_root + 'a' + annotator_id + '/'):
         os.mkdir(result_root + 'a' + annotator_id + '/')
 
     anno_name = anno.split('.')[0]
@@ -144,8 +185,6 @@ def boundary_2_mask_u_net(anno, annotator_id):
 
     mask = numpy.zeros([512, 512, 4])
 
-    color = [[0, 128, 0, 0], [0, 165, 255, 255], [0, 255, 255, 255], [0, 0, 255, 255], [0, 0, 255, 255],
-             [255, 191, 0, 255], [0, 0, 0, 255]]
     for i in range(len(annotation_file)):
         try:
             mask[boundary_file == i] = color[annotation_file[i]]
@@ -154,3 +193,32 @@ def boundary_2_mask_u_net(anno, annotator_id):
     mask[boundary_file == -1] = [0, 255, 0, 255]
 
     cv2.imwrite(result_root + 'a' + annotator_id + '/' + 'mask_' + anno_name + '_U-net.png', mask)
+
+
+def boundary_2_mask_separate_nuclei(anno, mask_name, annotator_id):
+    anno_name = anno.split('.')[0]
+
+    if not os.path.exists(points_root + 'a' + annotator_id + '/'):
+        os.mkdir(points_root + 'a' + annotator_id + '/')
+    if not os.path.exists(grades_root + 'a' + annotator_id + '/'):
+        os.mkdir(grades_root + 'a' + annotator_id + '/')
+    if not os.path.exists(result_root + 'a' + annotator_id + '/'):
+        os.mkdir(result_root + 'a' + annotator_id + '/')
+
+    boundary_file_name = result_root + 'a' + annotator_id + '/' + anno_name + "_boundary_" + mask_name + ".txt"
+    annotation_file_name = result_root + 'a' + annotator_id + '/' + anno_name + "_annotation_file_" + mask_name + ".txt"
+
+    boundary_file = numpy.loadtxt(boundary_file_name, dtype=int, delimiter=',')
+    annotation_file = numpy.loadtxt(annotation_file_name, dtype=int, delimiter=',')
+
+    mask = numpy.zeros([512, 512, 4])
+
+    region_color = ncolors(len(annotation_file))
+    random.shuffle(region_color)
+
+    for i in range(1, len(annotation_file)):
+        mask[boundary_file == i] = region_color[i]
+    mask[boundary_file == -1] = [0, 255, 0, 255]
+
+    cv2.imwrite(result_root + 'a' + annotator_id + '/' + 'mask_' + anno_name + '_' + mask_name + '_separate_nuclei.png',
+                mask)

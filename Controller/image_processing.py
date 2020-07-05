@@ -169,6 +169,20 @@ def predict_mask_with_job_id(slide_id, model_name="0"):
         result = numpy.zeros((pre_result.shape[0], pre_result.shape[1], 3))
         for i in range(3):
             result[:, :, i] = pre_result[:, :, i + 1]
+        mask_file_name = 'result_mission' + str(job_id) + '_' + str(model_name) + '.png'
+        cv2.imwrite(analysis_data_folder + mask_file_name, result)
+
+        result = numpy.zeros((pre_result.shape[0], pre_result.shape[1], 3))
+
+        i = 1
+        result[:, :, 0] = pre_result[:, :, i + 1] * [15] / 255
+        result[:, :, 1] = pre_result[:, :, i + 1] * [147] / 255
+        result[:, :, 2] = pre_result[:, :, i + 1] * [254] / 255
+        i = 0
+        result[:, :, i] += pre_result[:, :, i + 1]
+        i = 2
+        result[:, :, i] += pre_result[:, :, i + 1]
+
         mask_file_name = 'mission' + str(job_id) + '_' + str(model_name) + '.png'
         cv2.imwrite(analysis_data_folder + mask_file_name, result)
         
@@ -200,7 +214,7 @@ def predict_mask_with_job_id(slide_id, model_name="0"):
             
         result = numpy.zeros((pre_result.shape[0], pre_result.shape[1], 3))
         for i in range(3):
-            result[:,:,i] = pre_result[:,:,i]
+            result[:, :, i] = pre_result[:, :, i]
         mask_file_name = 'mission' + str(job_id) + '_' + str(model_name) + '.png'
         cv2.imwrite(analysis_data_folder + mask_file_name, result)
         

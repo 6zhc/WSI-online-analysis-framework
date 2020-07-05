@@ -31,17 +31,25 @@ def add_re_annotation_sever(app):
             re_annotation_controller.boundary_2_point(anno_name, annotator_id)
             re_annotation_controller.point_2_boundary(anno_name, 'nuClick', annotator_id)
             re_annotation_controller.boundary_2_mask(anno_name, 'nuClick', annotator_id)
+            re_annotation_controller.boundary_2_mask_separate_nuclei(anno_name, 'nuClick', annotator_id)
             re_annotation_controller.boundary_2_mask_u_net(anno_name, annotator_id)
         return render_template('multi-slide.html', anno_name=anno_name, rand=rand, image_root=image_root)
 
+    @login_required
     @app.route('/available_re_annotation_region')
     def available_re_annotation_region():
+        annotator_id = current_user.get_id()
         result = []
         index = 0
         file_list = os.listdir(annotation_result_root)
         for file in file_list:
             if file[-4:] == ".txt":
-                temp = {"id": file.split('.')[0], "text": '【' + str(index) + '】 ' + file.split('.')[0]}
+                # print(result_root + 'a' + annotator_id + '/' + file.split('.')[0] + "_annotation_file_nuClick.txt")
+                if os.path.exists(
+                        result_root + 'a' + annotator_id + '/' + file.split('.')[0] + "_annotation_file_nuClick.txt"):
+                    temp = {"id": file.split('.')[0], "text": '【' + str(index) + '】 ' + file.split('.')[0] + ' *'}
+                else:
+                    temp = {"id": file.split('.')[0], "text": '【' + str(index) + '】 ' + file.split('.')[0]}
                 result.append(temp)
                 index += 1
         return jsonify(result)
@@ -53,7 +61,11 @@ def add_re_annotation_sever(app):
         anno_name = request.args.get('anno_name', type=str, default="s178_r1974")
         mask_name = request.args.get('mask_name', type=str, default="nuClick")
         re_annotation_make_mask(anno_name, annotator_id)
-        return 'mask_' + anno_name + '_' + mask_name + '.png' + '?a=' + str(uuid.uuid4())
+        result = {
+            "mask1": 'mask_' + anno_name + '_' + mask_name + '.png' + '?a=' + str(uuid.uuid4()),
+            "mask2": 'mask_' + anno_name + '_' + mask_name + '_separate_nuclei.png' + '?a=' + str(uuid.uuid4()),
+        }
+        return jsonify(result)
 
     @app.route('/update_grades', methods=['POST'])
     @login_required
@@ -79,13 +91,30 @@ def add_re_annotation_sever(app):
 
         for i in range(len(data['grade'])):
             nuclei_id = int(boundary_file[int(data['points_y'][i]), int(data['points_x'][i])])
+            if nuclei_id == -1:
+                try:
+                    nuclei_id = int(boundary_file[int(data['points_y'][i]), int(data['points_x'][i]) - 1])
+                except:
+                    pass
+                if nuclei_id == 0:
+                    try:
+                        nuclei_id = int(boundary_file[int(data['points_y'][i]), int(data['points_x'][i]) + 1])
+                    except:
+                        pass
             if nuclei_id != i + 1 and nuclei_id != 0:
-                data['grade'][nuclei_id - 1] = data['grade'][i]
+                if nuclei_id != -1:
+                    data['grade'][nuclei_id - 1] = data['grade'][i]
+                    if int(data['grade'][i]) == 0:
+                        boundary_file[boundary_file == nuclei_id] = 0
                 data['grade'][i] = 0
+
         for i in range(len(data['grade'])):
-            if int(data['grade'][i]) != 0:
-                points_file.write(str(data['points_x'][i]) + ' ' + str(data['points_y'][i]) + '\n')
-                grades_file.write(str(data['grade'][i]) + '\n')
+            try:
+                if int(data['grade'][i]) != 0:
+                    points_file.write(str(data['points_x'][i]) + ' ' + str(data['points_y'][i]) + '\n')
+                    grades_file.write(str(data['grade'][i]) + '\n')
+            except:
+                pass
 
         grades_file.close()
         points_file.close()
@@ -94,6 +123,7 @@ def add_re_annotation_sever(app):
     def re_annotation_make_mask(anno_name, annotator_id):
         re_annotation_controller.point_2_boundary(anno_name, 'nuClick', annotator_id)
         re_annotation_controller.boundary_2_mask(anno_name, 'nuClick', annotator_id)
+        re_annotation_controller.boundary_2_mask_separate_nuclei(anno_name, 'nuClick', annotator_id)
 
     @app.route('/points_grades')
     @login_required

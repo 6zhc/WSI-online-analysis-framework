@@ -15,7 +15,12 @@
 <div onchange="update_anno()">
     Anno ID: <select class="form-control" id="anno_id_select" style="width:20%">
     <option value=""></option>
-</select></div>
+</select>
+    <div id="current_id" style="display:inline-block">
+        当前 ID： 【】{{ anno_name }}
+    </div>
+</div>
+
 <div id="openseadragon1" style="width:800px;height:800px;float: left;margin: 10px; margin-left: 20px"></div>
 <div id="controller" style="float: left;text-align:center;width: 200px">
     <dl class="checkBox">
@@ -45,8 +50,9 @@
     anno_name = "{{ anno_name }}";
     rand = "{{ rand }}";
     background_image = 'static/data/nuclick/' + 'result_' + anno_name + '.png';
-    mask1 = '{{ image_root }}' + 'mask_' + anno_name + '_nuClick.png' + rand;
-    mask2 = '{{ image_root }}' + 'mask_' + anno_name + '_U-net.png' + rand;
+    let mask1 = '{{ image_root }}' + 'mask_' + anno_name + '_nuClick.png' + rand;
+    let mask2 = '{{ image_root }}' + 'mask_' + anno_name + '_U-net.png' + rand;
+    let mask3 = '{{ image_root }}' + 'mask_' + anno_name + '_nuClick_separate_nuclei.png' + rand;
 
     info_url = '?anno_name=' + anno_name;
 
@@ -121,10 +127,12 @@
     black_point.style = "width:8px;height:8px;border-radius:50%;background-color:black;";
     let yellow_point = document.createElement("div");
     yellow_point.style = "width:8px;height:8px;border-radius:50%;background-color:yellow;";
+    let purple_point = document.createElement("div");
+    purple_point.style = "width:8px;height:8px;border-radius:50%;background-color:#D100FF;";
 
     point = [];
     point.push(green_point);
-    point.push(orange_point);
+    point.push(purple_point);
     point.push(yellow_point);
     point.push(red_point);
     point.push(red_point);
@@ -183,6 +191,10 @@
             placeholder: 'Please select slideID',
             data: data,
         });
+        for (let i = 0; i < data.length; i++) {
+            if (data[i].id == "{{ anno_name }}")
+                document.getElementById("current_id").innerText = " 当前 ID：" + data[i].text;
+        }
     });
 
     let update_points_grades = function () {
@@ -205,8 +217,9 @@
         document.getElementById("warning").innerText = "正在更新图片";
         $.get("make_mask" + info_url, function (result) {
             console.log(result);
-            mask2 = '{{ image_root }}' + result;
-            add_mask(viewer1, mask2);
+            mask1 = '{{ image_root }}' + result.mask1;
+            mask3 = '{{ image_root }}' + result.mask2;
+            add_mask(viewer1, mask1);
             adding_flag -= 1;
             if (adding_flag === 0)
                 document.getElementById("warning").innerText = "";
@@ -224,7 +237,7 @@
             x: Bound_Viewport.x,
             y: Bound_Viewport.y,
             width: Bound_Viewport.width,
-            opacity: 0.3,
+            opacity: 0.5,
             success: function () {
                 if (viewer.world.getItemCount() > 2)
                     viewer.world.removeItem(viewer.world.getItemAt(1));
@@ -297,6 +310,12 @@
             } else {
                 remove_mask(viewer2);
             }
+        } else if (key === 'C') {
+            let temp = mask1;
+            mask1 = mask3;
+            mask3 = temp;
+            remove_mask(viewer1);
+            add_mask(viewer1, mask1);
         } else if (key === 'V') {
             point_flag = 1 - point_flag;
             if (point_flag === 1) {
@@ -309,14 +328,18 @@
             document.getElementById("type_" + key).checked = true;
         } else if (key === 'R') {
             document.getElementById("type_" + "0").checked = true;
-        } else if (key === 'E') {
-            console.log(viewer1.viewport.getCenter())
+        } else if (key === 'F') {
+            // console.log(viewer1.viewport.getCenter());
+            console.log(512 / document.getElementById("openseadragon1").offsetWidth / 2.9);
+            zoom_level = viewer1.world.getItemAt(0).imageToViewportZoom(512 / document.getElementById("openseadragon1").offsetWidth / 2.9)
+            console.log(zoom_level)
             viewer1.viewport.zoomTo(512 / document.getElementById("openseadragon1").offsetWidth / 2.9,
-                viewer1.viewport.getCenter(), true);
-        } else if (key === 'W') {
-            console.log(viewer1.viewport.getCenter())
+                viewer2.viewport.getCenter(), true);
+            // viewer1.viewport.panTo(center, true)
+        } else if (key === 'G') {
+            console.log(512 / document.getElementById("openseadragon1").offsetWidth / 1.12);
             viewer1.viewport.zoomTo(512 / document.getElementById("openseadragon1").offsetWidth / 1.12,
-                viewer1.viewport.getCenter(), true);
+                viewer2.viewport.getCenter(), true);
         }
     };
 
