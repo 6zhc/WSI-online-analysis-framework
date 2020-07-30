@@ -20,6 +20,8 @@ from Controller import mission_controller
 from Controller import annotation_project_controller
 import os, csv
 
+from Model import manifest
+
 try:
     if os.path.exists('static/data'):
         os.remove('static/data')
@@ -45,11 +47,18 @@ mission_server.add_mission_server(app)
 manifest_server.add_manifest_server(app)
 re_annotation_server.add_re_annotation_sever(app)
 
+app.config['JSON_AS_ASCII'] = False
 
 @app.route('/')
 @login_required
 def index():
     return redirect("/annotation_project_table")
+
+
+@app.route('/table')
+@login_required
+def table():
+    return render_template('table.html')
 
 
 @app.route('/items')
@@ -60,10 +69,65 @@ def items():
         return jsonify({'data': list(f_csv), 'totals': len(list(f_csv))})
 
 
-@app.route('/table')
+@app.route('/table2')
 @login_required
-def table():
-    return render_template('table.html')
+def table2():
+    return render_template('table2.html')
+
+
+def is_number(s):
+    try:
+        float(s)
+        return True
+    except ValueError:
+        pass
+
+    try:
+        import unicodedata
+        unicodedata.numeric(s)
+        return True
+    except (TypeError, ValueError):
+        pass
+
+    return False
+
+@app.route('/item2')
+@login_required
+def items2():
+    with open('test2.csv', encoding='utf-8')as f:
+        f_csv = csv.DictReader(f)
+        f_csv = list(f_csv)
+        for i in range(len(f_csv)):
+            for key in f_csv[i]:
+                if is_number(f_csv[i][key]):
+                    f_csv[i][key] = int(f_csv[i][key])
+
+        return jsonify({'data': f_csv, 'totals': len(f_csv)})
+
+
+@app.route('/find_slide')
+@login_required
+def find_slide():
+    svs_file = request.args.get('svs_file', default="None", type=str)
+    annotation_project = request.args.get('project', default="None", type=str)
+    result = manifest_controller.get_project_by_similar_svs_file(svs_file)
+    if 0 == len(result):
+        return "未查询到相关切片。"
+    # elif 1 == len(result):
+    #     return redirect("/slide?slide_id=" + str(result[0][0]))
+    else:
+        result_string = ""
+        count = 0
+        for item in result:
+            count += 1
+            result_string += "<p><a href='" + "/slide?slide_id=" + str(item[0]) + "'>【" + str(count) + "】</a> "
+            result_string += str(item)
+            result_string += " <a target='_blank' href='" + "/freehand_annotation?slide_id=" \
+                             + str(item[0]) + "&project=" + annotation_project + "'>【区域标注】</a> "
+            result_string += " <a target='_blank' href='" + "/nuclei_annotation?slide_id=" \
+                             + str(item[0]) + "&project=" + annotation_project + "'>【细胞核标注】</a> "
+            result_string += " </p>"
+        return result_string
 
 
 @app.route('/slide')
@@ -93,10 +157,11 @@ def available_slide():
         return jsonify(manifest_controller.get_available_slide_id())
     else:
         data = []
-        for wsi in open('export/' + project + '_slide_table.txt').readlines():
-            slide_id = int(wsi.split('\t')[0])
-            temp = {"id": slide_id, "text": slide_id}
-            data.append(temp)
+        if os.path.exists('export/' + project + '_slide_table.txt'):
+            for wsi in open('export/' + project + '_slide_table.txt').readlines():
+                slide_id = int(wsi.split('\t')[0])
+                temp = {"id": slide_id, "text": slide_id}
+                data.append(temp)
         return jsonify(data)
 
 

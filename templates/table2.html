@@ -20,7 +20,7 @@
     <script src="static/select2.min.js"></script>
 
     {#    <script src="https://unpkg.com/ag-grid-community/dist/ag-grid-community.min.noStyle.js"></script>#}
-    <script src="https://unpkg.com/@ag-grid-enterprise/all-modules@23.2.1/dist/ag-grid-enterprise.min.js"></script>
+    <script src="https://unpkg.com/@ag-grid-enterprise/all-modules@23.2.0/dist/ag-grid-enterprise.min.js"></script>
 
 
     <link rel="stylesheet" href="https://unpkg.com/ag-grid-community/dist/styles/ag-grid.css">
@@ -73,58 +73,40 @@
 
             <div id="myGrid" style="height: 830px" class="ag-theme-alpine"></div>
 
-            <script>
+            <script charset = "utf-8">
                 test_function = function(test){
                     console.log(test.value);
-                    window.open("/find_slide?svs_file=" + test.value + "&project=table","_blank","")
+                    window.open("/find_slide?svs_file=" + test.value + "&project=table2","_blank","")
                 };
                 columnDefs = [
                     {
                         field: '', headerName: '', checkboxSelection: true, width: '2',
                         sortable: false, resizable: true, filter: 'agTextColumnFilter',pinned :'left',
                     },{
-                        field: 'bcr_patient_barcode', headerName: '名称',
+                        field: '病理号', headerName: '病理号',
                         sortable: true, resizable: true, filter: 'agTextColumnFilter',pinned :'left',
                         onCellClicked: test_function
                     },  {
-                        field: 'bcr_patient_uuid', headerName: '病人UUID',
+                        field: '性别', headerName: '性别',
                         sortable: true, resizable: true, filter: 'agTextColumnFilter'
                     }, {
-                        field: 'person_neoplasm_cancer_status', headerName: '肿瘤癌状况',
-                        sortable: true, resizable: true, filter: 'agTextColumnFilter'
-                    }, {
-                        field: 'tissue_source_site', headerName: '组织来源部位',
-                        sortable: true, resizable: true, filter: 'agTextColumnFilter'
-                    }, {
-                        field: 'age_at_initial_pathologic_diagnosis', headerName: '病发年龄',
+                        field: '年龄', headerName: '年龄',
                         sortable: true, resizable: true, filter: 'agNumberColumnFilter'
                     }, {
-                        field: 'days_to_initial_pathologic_diagnosis', headerName: '距离病发日期',
+                        field: '病理诊断', headerName: '病理诊断',
+                        sortable: true, resizable: true, filter: 'agTextColumnFilter'
+                    }, {
+                        field: '肉眼所见', headerName: '肉眼所见',
+                        sortable: true, resizable: true, filter: 'agTextColumnFilter'
+                    }, {
+                        field: '病理类型', headerName: '病理类型',
+                        sortable: true, resizable: true, filter: 'agTextColumnFilter'
+                    }, {
+                        field: '病理等级', headerName: '病理等级',
                         sortable: true, resizable: true, filter: 'agNumberColumnFilter'
                     }, {
-                        field: 'days_to_last_followup', headerName: '距离最后诊断日期',
+                        field: '肿瘤类型', headerName: '肿瘤类型',
                         sortable: true, resizable: true, filter: 'agNumberColumnFilter'
-                    }, {
-                        field: 'days_to_death', headerName: '距离死亡日期',
-                        sortable: true, resizable: true, filter: 'agNumberColumnFilter'
-                    }, {
-                        field: 'gender', headerName: '性别',
-                        sortable: true, resizable: true, filter: 'agTextColumnFilter'
-                    }, {
-                        field: 'histological_type', headerName: '病理类型',
-                        sortable: true, resizable: true, filter: 'agTextColumnFilter'
-                    }, {
-                        field: 'lymph_node_examined_count', headerName: '淋巴结检测数量',
-                        sortable: true, resizable: true, filter: 'agNumberColumnFilter'
-                    }, {
-                        field: 'neoplasm_histologic_grade', headerName: '病理等级',
-                        sortable: true, resizable: true, filter: 'agTextColumnFilter'
-                    }, {
-                        field: 'tumor_type', headerName: '肿瘤类型',
-                        sortable: true, resizable: true, filter: 'agTextColumnFilter'
-                    }, {
-                        field: 'vital_status', headerName: '生存状态',
-                        sortable: true, resizable: true, filter: 'agTextColumnFilter'
                     }
                 ];
 
@@ -165,10 +147,15 @@
                     agGrid
                         .simpleHttpRequest({
                             url:
-                                'items',
+                                'item2',
                         })
                         .then(function (data) {
-                            console.log(data)
+                            /* data2 = data;
+                            jsonstr = JSON.stringify(data);
+                            jsonstr = decodeURI(jsonstr);
+                            data = JSON.parse(jsonstr);
+                            data2 = data;*/
+                            console.log(data);
                             gridOptions.api.setRowData(data.data);
                             var allColumnIds = [];
                             gridOptions.columnApi.getAllColumns().forEach(function (column) {

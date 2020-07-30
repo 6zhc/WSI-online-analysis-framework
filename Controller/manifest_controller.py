@@ -111,3 +111,9 @@ def continue_slide_id():
     mani = manifest.Manifest()
     mani.continue_id()
     return
+
+
+def get_project_by_similar_svs_file(svs_file):
+    mani = manifest.Manifest()
+    result = mani.get_project_by_similar_svs_file(svs_file)
+    return result

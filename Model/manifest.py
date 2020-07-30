@@ -67,6 +67,16 @@ class Manifest:
         db.close()
         return result
 
+    def get_project_by_similar_svs_file(self, svs_file):
+        db = self.db_connect()
+        cursor = db.cursor()
+        svs_file = '%' + svs_file + '%'
+        cursor.execute("SELECT * FROM MANIFEST WHERE (SVS_file like %s)", (svs_file,))
+        result = cursor.fetchall()
+        cursor.close()
+        db.close()
+        return result
+
     def update_svs_file_by_id(self, slide_id, svs_file):
         db = self.db_connect()
         cursor = db.cursor()
