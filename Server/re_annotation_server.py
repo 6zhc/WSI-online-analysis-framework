@@ -9,7 +9,7 @@ from Controller import re_annotation_controller
 from Controller import thread_controller
 
 
-annotation_result_root = "/home1/zhc/resnet/annotation_record/whole/"
+annotation_result_root = "/home1/zhc/resnet/annotation_record/whole/" # "/home1/zhc/Dr-Wang-Grading/"
 boundary_result_root = "/home1/zhc/resnet/boundary_record/"
 region_image_root = "/home1/zhc/resnet/anno_data/"
 
@@ -42,6 +42,7 @@ def add_re_annotation_sever(app):
         result = []
         index = 0
         file_list = os.listdir(annotation_result_root)
+        file_list.sort()
         for file in file_list:
             if file[-4:] == ".txt":
                 # print(result_root + 'a' + annotator_id + '/' + file.split('.')[0] + "_annotation_file_nuClick.txt")
@@ -87,7 +88,7 @@ def add_re_annotation_sever(app):
 
         points_file = open(points_file_name, 'w')
         grades_file = open(grades_file_name, 'w')
-        boundary_file = numpy.loadtxt(boundary_file_name, dtype=int, delimiter=',')
+        boundary_file = numpy.loadtxt(boundary_file_name, dtype=numpy.int16, delimiter=',')
 
         for i in range(len(data['grade'])):
             nuclei_id = int(boundary_file[int(data['points_y'][i]), int(data['points_x'][i])])
@@ -103,19 +104,29 @@ def add_re_annotation_sever(app):
                         pass
             if nuclei_id != i + 1 and nuclei_id != 0:
                 if nuclei_id != -1:
-                    data['grade'][nuclei_id - 1] = data['grade'][i]
-                    if int(data['grade'][i]) == 0:
-                        boundary_file[boundary_file == nuclei_id] = 0
+                    try:
+                        data['grade'][nuclei_id - 1] = data['grade'][i]
+                        if int(data['grade'][i]) == 0:
+                            boundary_file[boundary_file == nuclei_id] = 0
+                    except:
+                        print("------------- error: " + nuclei_id + "++++++++++++")
                 data['grade'][i] = 0
 
+        current_nuclei_id = 0
         for i in range(len(data['grade'])):
             try:
                 if int(data['grade'][i]) != 0:
                     points_file.write(str(data['points_x'][i]) + ' ' + str(data['points_y'][i]) + '\n')
                     grades_file.write(str(data['grade'][i]) + '\n')
+                    old_nuclei_id = boundary_file[int(data['points_y'][i]), int(data['points_x'][i])]
+                    current_nuclei_id += 1
+                    if old_nuclei_id > 0:
+                        boundary_file[boundary_file == old_nuclei_id] = current_nuclei_id
+
             except:
                 pass
 
+        numpy.savetxt(boundary_file_name, boundary_file, fmt='%d', delimiter=",")
         grades_file.close()
         points_file.close()
         return jsonify({"msg": "True"})

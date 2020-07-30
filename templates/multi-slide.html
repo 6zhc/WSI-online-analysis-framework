@@ -31,6 +31,7 @@
         <p><input type="radio" name="level" value="4" id="type_4"> 4 级细胞</p>
         <p><input type="radio" name="level" value="5" id="type_5">上皮细胞</p>
         <p><input type="radio" name="level" value="6" id="type_6">淋巴细胞</p>
+        <p><input type="radio" name="level" value="-1" id="type_-1">橡皮擦</p>
     </dl>
 
     <div>
@@ -49,7 +50,7 @@
 <script type="text/javascript">
     anno_name = "{{ anno_name }}";
     rand = "{{ rand }}";
-    background_image = 'static/data/nuclick/' + 'result_' + anno_name + '.png';
+    background_image = 'static/data/anno_data/' + anno_name + '.png';
     let mask1 = '{{ image_root }}' + 'mask_' + anno_name + '_nuClick.png' + rand;
     let mask2 = '{{ image_root }}' + 'mask_' + anno_name + '_U-net.png' + rand;
     let mask3 = '{{ image_root }}' + 'mask_' + anno_name + '_nuClick_separate_nuclei.png' + rand;
@@ -182,6 +183,8 @@
         }
     };
 
+    let next_id = "";
+    let former_id = "";
     $('#anno_id_select').select2({
         placeholder: 'Please select slideID'
     });
@@ -192,8 +195,13 @@
             data: data,
         });
         for (let i = 0; i < data.length; i++) {
-            if (data[i].id == "{{ anno_name }}")
+            if (data[i].id == "{{ anno_name }}") {
                 document.getElementById("current_id").innerText = " 当前 ID：" + data[i].text;
+                if(i != data.length)
+                    next_id = data[i + 1].id;
+                if(i != 0)
+                    former_id = data[i - 1].id;
+            }
         }
     });
 
@@ -287,10 +295,20 @@
                 grade_checked = parseInt(radio_obj[i].value);
             }
         }
-        grade.push(grade_checked);
-        point_x.push(Math.round(inform.position.x));
-        point_y.push(Math.round(inform.position.y));
-        add_points();
+        if(grade_checked==-1){
+            for(i=0; i<grade.length; i++){
+                if (point_x[i]>inform.position.x - 10 && point_x[i] < inform.position.x + 10
+                && point_y[i]>inform.position.y - 10 && point_y[i] < inform.position.y + 10)
+                    grade[i] = 0;
+            }
+            add_points();
+        }else{
+            grade.push(grade_checked);
+            point_x.push(Math.round(inform.position.x));
+            point_y.push(Math.round(inform.position.y));
+            add_points();
+        }
+
     });
 
     document.onkeydown = function (e) {  //listen to the keboard;
@@ -328,11 +346,16 @@
             document.getElementById("type_" + key).checked = true;
         } else if (key === 'R') {
             document.getElementById("type_" + "0").checked = true;
-        } else if (key === 'F') {
+        } else if(key === 'Q'){
+            document.location.href = '/re_annotation?anno_name=' + former_id;
+        } else if(key === 'W'){
+            document.location.href = '/re_annotation?anno_name=' + next_id;
+        }
+        else if (key === 'F') {
             // console.log(viewer1.viewport.getCenter());
             console.log(512 / document.getElementById("openseadragon1").offsetWidth / 2.9);
             zoom_level = viewer1.world.getItemAt(0).imageToViewportZoom(512 / document.getElementById("openseadragon1").offsetWidth / 2.9)
-            console.log(zoom_level)
+            console.log(zoom_level);
             viewer1.viewport.zoomTo(512 / document.getElementById("openseadragon1").offsetWidth / 2.9,
                 viewer2.viewport.getCenter(), true);
             // viewer1.viewport.panTo(center, true)

@@ -4,7 +4,7 @@ import cv2
 import random
 from Controller.nuclick.nuclick import gen_mask
 
-annotation_result_root = "/home1/zhc/resnet/annotation_record/whole/"
+annotation_result_root = "/home1/zhc/resnet/annotation_record/whole/" # "/home1/zhc/Dr-Wang-Grading/"
 boundary_result_root = "/home1/zhc/resnet/boundary_record/"
 region_image_root = "/home1/zhc/resnet/anno_data/"
 
@@ -62,8 +62,8 @@ def boundary_2_point(anno, annotator_id):
     points_file_name = points_root + 'a' + annotator_id + '/' + anno_name + '.txt'
     grades_file_name = grades_root + 'a' + annotator_id + '/' + anno_name + '.txt'
 
-    boundary_file = numpy.loadtxt(boundary_file_name, dtype=int, delimiter=',')
-    annotation_file = numpy.loadtxt(annotation_file_name, dtype=int, delimiter=',')
+    boundary_file = numpy.loadtxt(boundary_file_name, dtype=numpy.int16, delimiter=',')
+    annotation_file = numpy.loadtxt(annotation_file_name, dtype=numpy.int16, delimiter=',')
 
     points_file = open(points_file_name, 'w')
     grades_file = open(grades_file_name, 'w')
@@ -129,16 +129,15 @@ def point_2_boundary(anno, mask_name, annotator_id):
 
     ret, binary = cv2.threshold(result, 1, 255, cv2.THRESH_BINARY)
     contours, hierarchy = cv2.findContours(cv2.convertScaleAbs(binary), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    result.astype(numpy.int8)
     result = cv2.drawContours(result, contours, -1, 255, 1)
-    result = result.astype(numpy.int8)
+    result = result.astype(numpy.int16)
     result[result == 255] = -1
 
     numpy.savetxt(result_root + 'a' + annotator_id + '/' + anno_name + "_boundary_" + mask_name + ".txt",
                   result, fmt='%d', delimiter=",")
 
     grades.insert(0, 0)
-    grades = numpy.array(grades, dtype=int)
+    grades = numpy.array(grades, dtype=numpy.int16)
     numpy.savetxt(result_root + 'a' + annotator_id + '/' + anno_name + "_annotation_file_" + mask_name + ".txt",
                   grades, fmt='%d', delimiter=",")
 
@@ -156,8 +155,8 @@ def boundary_2_mask(anno, mask_name, annotator_id):
     boundary_file_name = result_root + 'a' + annotator_id + '/' + anno_name + "_boundary_" + mask_name + ".txt"
     annotation_file_name = result_root + 'a' + annotator_id + '/' + anno_name + "_annotation_file_" + mask_name + ".txt"
 
-    boundary_file = numpy.loadtxt(boundary_file_name, dtype=int, delimiter=',')
-    annotation_file = numpy.loadtxt(annotation_file_name, dtype=int, delimiter=',')
+    boundary_file = numpy.loadtxt(boundary_file_name, dtype=numpy.int16, delimiter=',')
+    annotation_file = numpy.loadtxt(annotation_file_name, dtype=numpy.int16, delimiter=',')
 
     mask = numpy.zeros([512, 512, 4])
 
@@ -180,8 +179,8 @@ def boundary_2_mask_u_net(anno, annotator_id):
     boundary_file_name = boundary_result_root + anno_name + '.txt'
     annotation_file_name = annotation_result_root + anno_name + '.txt'
 
-    boundary_file = numpy.loadtxt(boundary_file_name, dtype=int, delimiter=',')
-    annotation_file = numpy.loadtxt(annotation_file_name, dtype=int, delimiter=',')
+    boundary_file = numpy.loadtxt(boundary_file_name, dtype=numpy.int16, delimiter=',')
+    annotation_file = numpy.loadtxt(annotation_file_name, dtype=numpy.int16, delimiter=',')
 
     mask = numpy.zeros([512, 512, 4])
 
@@ -208,8 +207,8 @@ def boundary_2_mask_separate_nuclei(anno, mask_name, annotator_id):
     boundary_file_name = result_root + 'a' + annotator_id + '/' + anno_name + "_boundary_" + mask_name + ".txt"
     annotation_file_name = result_root + 'a' + annotator_id + '/' + anno_name + "_annotation_file_" + mask_name + ".txt"
 
-    boundary_file = numpy.loadtxt(boundary_file_name, dtype=int, delimiter=',')
-    annotation_file = numpy.loadtxt(annotation_file_name, dtype=int, delimiter=',')
+    boundary_file = numpy.loadtxt(boundary_file_name, dtype=numpy.int16, delimiter=',')
+    annotation_file = numpy.loadtxt(annotation_file_name, dtype=numpy.int16, delimiter=',')
 
     mask = numpy.zeros([512, 512, 4])
 
