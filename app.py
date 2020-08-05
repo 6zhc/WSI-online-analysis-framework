@@ -57,22 +57,40 @@ def index():
 
 @app.route('/table')
 @login_required
-def table():
-    return render_template('table.html')
+def table1():
+    table = request.args.get('table', type=str)
+    # print(table)
+    if table is None:
+        return redirect("table?table=test_predict.csv")
+    # table = request.args.get('table', default='test_predict.csv', type=str)
+    return render_template('table.html', table=table)
 
 
 @app.route('/items')
 @login_required
 def items():
-    with open('test.csv')as f:
+    table = request.args.get('table', type=str)
+    with open(table, encoding='utf-8')as f:
         f_csv = csv.DictReader(f)
-        return jsonify({'data': list(f_csv), 'totals': len(list(f_csv))})
+        f_csv = list(f_csv)
+        for i in range(len(f_csv)):
+            for key in f_csv[i]:
+                if is_number(f_csv[i][key]):
+                    try:
+                        f_csv[i][key] = int(f_csv[i][key])
+                    except:
+                        pass
 
+        return jsonify({'data': f_csv, 'totals': len(f_csv)})
 
 @app.route('/table2')
 @login_required
 def table2():
-    return render_template('table2.html')
+    table = request.args.get('table', type=str)
+    if table is None:
+        return redirect("table2?table=test2.csv")
+    # table = request.args.get('table', default='test2.csv', type=str)
+    return render_template('table2.html', table=table)
 
 
 def is_number(s):
@@ -126,6 +144,10 @@ def find_slide():
                              + str(item[0]) + "&project=" + annotation_project + "'>【区域标注】</a> "
             result_string += " <a target='_blank' href='" + "/nuclei_annotation?slide_id=" \
                              + str(item[0]) + "&project=" + annotation_project + "'>【细胞核标注】</a> "
+            if os.path.exists("static/data/analysis_data/" + str(item[1]) + '/'):
+                for mask in sorted(os.listdir("static/data/analysis_data/" + str(item[1]) + '/')):
+                    result_string += "<p style='text-indent:3em;'> <a target='_blank' href='" + "/slide?slide_id=" \
+                                     + str(item[0]) + "&mask_url=" + mask + "'>" + str(mask) + "</a> </p>"
             result_string += " </p>"
         return result_string
 
