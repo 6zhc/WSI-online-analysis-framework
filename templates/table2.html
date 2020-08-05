@@ -107,8 +107,22 @@
                     }, {
                         field: '肿瘤类型', headerName: '肿瘤类型',
                         sortable: true, resizable: true, filter: 'agNumberColumnFilter'
-                    }
+                    },
                 ];
+
+                function MedalCellRenderer() {
+                }
+
+                // init method gets the details of the cell to be renderer
+                MedalCellRenderer.prototype.init = function (params) {
+                    this.eGui = document.createElement('span');
+                    if (typeof (params.value) != "undefined")
+                        this.eGui.innerHTML = params.value;
+                };
+
+                MedalCellRenderer.prototype.getGui = function () {
+                    return this.eGui;
+                };
 
                 var gridOptions = {
                     columnDefs: columnDefs,
@@ -116,6 +130,9 @@
                 };
                 gridOptions = {
                     columnDefs: columnDefs,
+                    components: {
+                        'medalCellRenderer': MedalCellRenderer
+                    },
                     defaultColDef: {
                         flex: 1,
                         minWidth: 100,
@@ -127,6 +144,7 @@
                         enablePivot: true,
                         sortable: true,
                         filter: true,
+                        cellRenderer: 'medalCellRenderer',
                     },
                     sideBar: true,
                     rowGroupPanelShow: 'always',
@@ -147,7 +165,7 @@
                     agGrid
                         .simpleHttpRequest({
                             url:
-                                'item2',
+                                '/items?table=' + '{{ table }}',
                         })
                         .then(function (data) {
                             /* data2 = data;

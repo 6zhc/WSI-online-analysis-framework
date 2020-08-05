@@ -90,6 +90,9 @@
                         field: 'bcr_patient_uuid', headerName: '病人UUID',
                         sortable: true, resizable: true, filter: 'agTextColumnFilter'
                     }, {
+                        field: 'predict_result', headerName: '预测结果',
+                        sortable: true, resizable: true, filter: 'agNumberColumnFilter'
+                    }, {
                         field: 'person_neoplasm_cancer_status', headerName: '肿瘤癌状况',
                         sortable: true, resizable: true, filter: 'agTextColumnFilter'
                     }, {
@@ -145,6 +148,10 @@
                         enablePivot: true,
                         sortable: true,
                         filter: true,
+                        cellRenderer: 'medalCellRenderer',
+                    },
+                    components: {
+                        'medalCellRenderer': MedalCellRenderer
                     },
                     sideBar: true,
                     rowGroupPanelShow: 'always',
@@ -158,6 +165,20 @@
                     suppressRowClickSelection: true
                 };
 
+                function MedalCellRenderer() {
+                }
+
+                // init method gets the details of the cell to be renderer
+                MedalCellRenderer.prototype.init = function (params) {
+                    this.eGui = document.createElement('span');
+                    if (typeof (params.value) != "undefined")
+                        this.eGui.innerHTML = params.value;
+                };
+
+                MedalCellRenderer.prototype.getGui = function () {
+                    return this.eGui;
+                };
+
                 document.addEventListener('DOMContentLoaded', function () {
                     var gridDiv = document.querySelector('#myGrid');
                     new agGrid.Grid(gridDiv, gridOptions);
@@ -165,7 +186,7 @@
                     agGrid
                         .simpleHttpRequest({
                             url:
-                                'items',
+                                '/items?table=' + '{{ table }}',
                         })
                         .then(function (data) {
                             console.log(data)
