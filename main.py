@@ -58,7 +58,8 @@ def save_data(old_files_name, old_mask_region, old_mask_type):
 
         for index_temp in range(len(tcga_data["bcr_patient_barcode"])):
             if old_files_name.find(tcga_data["bcr_patient_barcode"][index_temp]) != -1:
-                tcga_data["predict_result"][index_temp] += summary_region + " " + summary_type + "; "
+                tcga_data["predict_result"][index_temp] += sub[numpy.argmax(
+                    result_sub)] + " " + summary_region + " " + summary_type + "; "
         tcga_data.to_csv("test_predict.csv")
         print(old_files_name)
 
@@ -112,8 +113,8 @@ for index in range(len(files)):
             = 255
         old_mask_type[int(y[index] / 100):int(y[index] / 100 + times),
         int(x[index] / 100):int(x[index] / 100 + times),
-        numpy.argmax(type_predict[0])] \
-            = type_predict[int(numpy.argmax(type_predict[0]))]
+        numpy.argmax(type_predict)] \
+            = type_predict[int(numpy.argmax(type_predict))]
         old_mask_type[int(y[index] / 100):int(y[index] / 100 + times),
         int(x[index] / 100):int(x[index] / 100 + times),
         3] \
