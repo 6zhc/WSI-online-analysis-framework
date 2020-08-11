@@ -356,6 +356,7 @@ def refresh_npy():
     for item in manifest_controller.get_available_slide_id():
         available_slide_id.append(item['id'])
     file_list = os.listdir(manifest_root)
+    file_list.sort()
     mani = manifest.Manifest()
     for file in file_list:
         temp = []
