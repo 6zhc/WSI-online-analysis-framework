@@ -24,7 +24,7 @@ def get_table(start_no=0, end_no=0, make_icon_mask=1):
         svs_file_path = original_data_root + wsi[1] + '/' + wsi[2]
         try:  # image_size
             icon_file_path = icon_root + wsi[1] + '/' + 'icon.png'
-            if os.path.exists(icon_file_path) and (end_no - start_no) > 50:
+            if os.path.exists(icon_file_path):
                 dimensions = [-1, -1]
             else:
                 raise Exception("error")
