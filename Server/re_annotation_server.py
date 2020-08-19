@@ -23,7 +23,15 @@ def add_re_annotation_sever(app):
     @login_required
     def re_annotation():
         annotator_id = current_user.get_id()
-        anno_name = request.args.get('anno_name', type=str, default="s178_r1974")
+        anno_name = request.args.get('anno_name', type=str, default="")
+
+        if anno_name == "":
+            try:
+                anno_name = current_user.slideID[annotator_id + "_" + "re-annotation"]
+            except:
+                anno_name = "s178_r1974"
+        current_user.slideID[annotator_id + "_" + "re-annotation"] = anno_name
+
         image_root = request.args.get('image_root', type=str,
                                       default='static/data/re_annotation_data/results/a' + annotator_id + '/')
         rand = '?a=' + str(uuid.uuid4())
