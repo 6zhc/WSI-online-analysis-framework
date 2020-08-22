@@ -284,7 +284,8 @@ def export_freehand_annotation_data(manifest_file_url):
                 if not dimensions:
                     try:
                         dimensions = openslide.open_slide(original_data_root + info[0] + '/' + info[1]).dimensions
-                    except:
+                    except Exception as e:
+                        print('Error:', e)
                         continue
                 img_height = dimensions[1]
                 img_width = dimensions[0]

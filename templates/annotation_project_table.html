@@ -129,6 +129,13 @@
                                 for (; j < data[i].length; j++) {
                                     temp2 = document.createElement("td");
                                     temp2.innerHTML = data[i][j];
+                                    if (data[i][j][0] != "<" && data[i][j].indexOf("<") == -1) {
+                                        temp2.title = data[i][j];
+                                        if (data[i][j].length > 100) {
+                                            temp2.innerHTML = data[i][j].slice(0, 100) + "...";
+                                            temp2.style.width = "250px"
+                                        }
+                                    }
                                     temp.appendChild(temp2)
                                 }
                                 for (; j <= 9; j++) {
@@ -139,7 +146,7 @@
                                 document.getElementById('MyTable').appendChild(temp);
                             }
                         });
-                    setTimeout(loop, 3000);
+                    setTimeout(loop, 20000);
                 };
                 loop();
 
