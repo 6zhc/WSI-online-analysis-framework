@@ -121,7 +121,8 @@ var change_slide_id = function () {
     //         update_slide_id();
     //     }
     // );
-    var new_slide_id = parseInt($('input[name="slide_id"]').val())
+
+    var new_slide_id = Number($('#slide_id_select').select2('val')); //parseInt($('input[name="slide_id"]').val())
     if (available_slide.indexOf(new_slide_id) == -1) {
         alert("非法Slide ID!");
         return false;
@@ -185,6 +186,8 @@ var create_grading_controls = function () {
             var text = document.createTextNode(' ' + 'Endothelial 上皮细胞[5]' + '\u00A0\u00A0')
         } else if (i == 6) {
             var text = document.createTextNode(' ' + 'Lymphocytes 淋巴细胞[6]' + '\u00A0\u00A0')
+        } else if (i == 7) {
+            var text = document.createTextNode(' ' + '快速增加DA [7]' + '\u00A0\u00A0')
         } else {
             var text = document.createTextNode(' ' + 'Unmark [0]' + '\u00A0\u00A0');
         }
@@ -367,6 +370,7 @@ var update_tb_list = function (add_last_mask = false) {
         }
         document.getElementById('tb_list').innerHTML = "";
         document.getElementById('tb_list').appendChild(makeUL(reg_list));
+        add_points();
         if (add_last_mask) {
             change_region("regid_" + data.reg_list[max_region - 1][0]);
         }

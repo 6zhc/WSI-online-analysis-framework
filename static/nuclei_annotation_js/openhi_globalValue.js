@@ -3,7 +3,7 @@ window.oncontextmenu = function (e) {
 };
 
 var Const_number = {
-    Max_grading: 6,
+    Max_grading: 7,
     keyboard: ['Z', 'X', 'C', 'V', 'B', 'N', 'M'],
     Max_Slide_grading: 4,
     //MAX_ps_lv   : 2,

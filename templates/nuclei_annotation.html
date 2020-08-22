@@ -17,6 +17,8 @@
             src="{{ url_for('static', filename='nuclei_annotation_js/openhi_slideInfo.js') }}"></script>
 
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/nuclei_annotation.css') }}">
+    <link rel="stylesheet" href="static/select2.min.css">
+    <script src="static/select2.min.js"></script>
     <style>
 
     </style>
@@ -71,11 +73,12 @@
             <!-- Slide control -->
             <div class="container" style="margin: 0 0 10px 0; width: calc(100% - 10px); float: left;">
                 <span class="control_header" style="height: 100%; margin:0 10px 0 0; float: left;">Slide ID: </span>
-
+                <select class="form-control" id="slide_id_select" style="width:200px">
+                    <option value=""></option>
+                </select>
                 <form>
                     <input type="number" id="slide_id_input_box" style="float: left; margin-right: 4px; width: 60px"
-                           type=text
-                           name=slide_id>
+                           name=slide_id hidden>
                     <p id="change_result_flash" style="color:red"></p>
                     <a href=# id=slide_id style="float:left;">
                         <button class='btn btn-default'>Change Slide</button>
@@ -167,6 +170,18 @@
         }
     });
 
+    $('#slide_id_select').select2({
+        placeholder: 'Please select slideID'
+    });
+    $.get("available_slide" + info_url, function (data) {
+        console.log(data);
+        $('#slide_id_select').select2({
+            placeholder: 'Please select slideID',
+            data: data,
+        });
+        $('#slide_id_select').val("{{ slide_id }}").select2();
+    });
+
     var viewer = OpenSeadragon({
         id: "openseadragon1",
         prefixUrl: "{{ url_for('static', filename='images/') }}",
@@ -203,6 +218,32 @@
         },
     });
 
+    flag_add_points = false;
+    let add_points = function () {
+        viewer.clearOverlays();
+        if (!flag_add_points) return;
+        for (let i = 0; i < Object.keys(TBA_list).length; i++) {
+            // console.log(TBA_list["" + i][0], TBA_list["" + i][1]);
+            temp = document.createElement("div");
+            if (i < 5) {
+                temp.style = "width:15px;height:15px;border-radius:50%;background-color:red;text-align:center;";
+            } else {
+                temp.style = "width:15px;height:15px;border-radius:50%;background-color:green;text-align:center;";
+            }
+            temp.innerHTML = "<a href='javascript:;' onclick='javascript:document.getElementById(\"regid_" +
+                Object.keys(TBA_list)[i] + "\").onclick()'>"
+                + Object.keys(TBA_list)[i] + "</a>";
+            //temp.innerHTML = "<a href='javascript:document.getElementById(\"regid_" + i + "\")'>" +  + Object.keys(TBA_list)[i] + "</a>";
+            viewer.addOverlay({
+                element: temp,
+                location: viewer.world.getItemAt(0).imageToViewportCoordinates(
+                    TBA_list[Object.keys(TBA_list)[i]][0], TBA_list[Object.keys(TBA_list)[i]][1]
+                ),
+                placement: OpenSeadragon.Placement.CENTER
+            });
+        }
+    };
+
     viewer.addHandler('open', OSD_open_function);
     viewer.addHandler('animation-finish', animation_finsh_function);
     viewer.addHandler('animation', animation_function);
@@ -211,8 +252,21 @@
 
     viewer.addHandler('canvas-nonprimary-press', function (e) {
         if (e.button == 2) {
-            OSD_control.point_record_controller = 1;
-            recording_point();
+            if (OSD_control.grading == 7) {
+                $.getJSON('/nuclei_annotation/_add_sw' + info_url, {x: mouse_location.X, y: mouse_location.Y,},
+                    function (data) {
+                        if (parseInt(data.num_status) == 1) {
+                            console.log(data.status);
+                            update_tb_list(false);
+                        } else {
+                            console.log("Adding sub-window has failed.")
+                        }
+                    }
+                );
+            } else {
+                OSD_control.point_record_controller = 1;
+                recording_point();
+            }
         }
         if (e.button == 1) {
             OSD_control.point_mid_record_controller = 1;
@@ -221,7 +275,7 @@
     });
 
     viewer.addHandler('canvas-nonprimary-release', function (e) {
-        if (e.button == 2) {
+        if (e.button == 2 && OSD_control.point_record_controller == 1) {
             OSD_control.point_record_controller = 0;
             post_record();
         }
@@ -251,6 +305,32 @@
                 document.getElementById("0").checked = true;
                 document.getElementById("0").onchange();
             }
+        }
+        if (key == 'G') {
+            flag_add_points = !flag_add_points;
+            add_points();
+        }
+        if (key == "O") {
+            var new_slide_id = {{ slide_id }};
+            if (available_slide.indexOf(new_slide_id) < 0 ||
+                available_slide.indexOf(new_slide_id) == 0) {
+                alert("非法Slide ID!");
+                return false;
+            } else
+                window.location.href = "/nuclei_annotation?annotation_id=" + annotatorID
+                    + '&slide_id=' + available_slide[available_slide.indexOf(new_slide_id) - 1].toString() + '&project=' + project;
+            return false;
+        }
+        if (key == "P") {
+            var new_slide_id = {{ slide_id }};
+            if (available_slide.indexOf(new_slide_id) < 0 ||
+                available_slide.indexOf(new_slide_id) == available_slide.length) {
+                alert("非法Slide ID!");
+                return false;
+            } else
+                window.location.href = "/nuclei_annotation?annotation_id=" + annotatorID
+                    + '&slide_id=' + available_slide[available_slide.indexOf(new_slide_id) + 1].toString() + '&project=' + project;
+            return false;
         }
 
     };

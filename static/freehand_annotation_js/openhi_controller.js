@@ -118,7 +118,7 @@ var change_slide_id = function () {
     //         update_slide_id();
     //     }
     // );
-    var new_slide_id = parseInt($('input[name="slide_id"]').val());
+    var new_slide_id = Number($('#slide_id_select').select2('val')); //parseInt($('input[name="slide_id"]').val());
     if (available_slide.indexOf(new_slide_id) == -1) {
         alert("非法Slide ID!");
         return false;

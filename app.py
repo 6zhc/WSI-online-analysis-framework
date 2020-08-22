@@ -18,8 +18,9 @@ from Controller import image_processing
 from Controller import dataset_controller
 from Controller import mission_controller
 from Controller import annotation_project_controller
-import os, csv
+import os, csv, openslide, shutil
 
+from Model import nuclei_annotation_sqlite
 from Model import manifest
 
 try:
@@ -179,11 +180,21 @@ def available_slide():
         return jsonify(manifest_controller.get_available_slide_id())
     else:
         data = []
+        count = 0
         if os.path.exists('export/' + project + '_slide_table.txt'):
             for wsi in open('export/' + project + '_slide_table.txt').readlines():
+
                 slide_id = int(wsi.split('\t')[0])
-                temp = {"id": slide_id, "text": slide_id}
+                temp = {"id": slide_id, "text": str(slide_id)}
                 data.append(temp)
+
+        def takeSecond(elem):
+            return elem["id"]
+
+        data.sort(key=takeSecond)
+        for index in range(len(data)):
+            count += 1
+            data[index]["text"] = "【" + str(count) + "】" + data[index]["text"]
         return jsonify(data)
 
 
@@ -223,10 +234,50 @@ def upload_file():
     return render_template('upload.html')
 
 
-@app.route('/muti-slide')
+@app.route('/export_region')
 @login_required
-def muti_slide():
-    return render_template('multi-slide.html')
+def export_region():
+    return render_template('export_region.html')
+
+
+@app.route('/make_region')
+@login_required
+def make_region():
+    manifest_name = request.args.get('manifest_name', type=str)
+    region_size = request.args.get('region_size', type=int)
+    if os.path.exists("static/export/" + manifest_name + "_" + str(region_size) + ".zip"):
+        os.remove("static/export/" + manifest_name + "_" + str(region_size) + ".zip")
+
+    thread_controller.BackgroundThread(make_region_back, manifest_name, region_size).start()
+    return "static/export/" + manifest_name + "_" + str(region_size) + ".zip"
+
+
+def make_region_back(manifest_name, region_size):
+    original_data_root = 'static/data/Original_data/'
+    nuclei_annotation_data_root = "static/data/nuclei_annotation_data/"
+    export_folder = "region/" + manifest_name + "_" + str(region_size) + "/"
+    if os.path.exists(export_folder):
+        shutil.rmtree(export_folder)
+    os.mkdir(export_folder)
+    slide_ids = os.listdir(nuclei_annotation_data_root + manifest_name + '/')
+    for slide_ID in slide_ids:
+        print(slide_ID)
+        wsi = manifest_controller.get_info_by_uuid(slide_ID)
+        svs_file_path = original_data_root + wsi[1] + '/' + wsi[2]
+        tba_list_db = nuclei_annotation_data_root + manifest_name + '/' + wsi[1] + '/' + 'tba_list.db'
+        db = nuclei_annotation_sqlite.SqliteConnector(tba_list_db)
+        tba_result = db.get_RegionID_Centre()
+        if len(tba_result) > 0:
+            if not os.path.exists(export_folder + wsi[2]):
+                os.mkdir(export_folder + wsi[2])
+            oslide = openslide.OpenSlide(svs_file_path)
+            for item in tba_result:
+                patch = oslide.read_region((item[1] - 256, item[2] - 256), 0, (region_size, region_size))
+                patch.save(
+                    export_folder + wsi[2] + '/' + str(item[1]) + '_' + str(item[2]) + '_' + str(region_size) + '.png')
+            oslide.close()
+    shutil.make_archive("export/" + manifest_name + "_" + str(region_size) + "/", 'zip', export_folder)
+
 
 # @app.route('/graph')
 # def graph():

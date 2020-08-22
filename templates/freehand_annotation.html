@@ -17,6 +17,8 @@
             src="{{ url_for('static', filename='freehand_annotation_js/openhi_slideInfo.js') }}"></script>
 
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/freehand_annotation.css') }}">
+    <link rel="stylesheet" href="static/select2.min.css">
+    <script src="static/select2.min.js"></script>
     <style>
 
     </style>
@@ -77,11 +79,12 @@
             <!-- Slide control -->
             <div class="container" style="margin: 0 0 10px 0; width: calc(100% - 10px); float: left;">
                 <span class="control_header" style="height: 100%; margin:0 10px 0 0; float: left;">Slide ID: </span>
-
+                <select class="form-control" id="slide_id_select" style="width:200px">
+                    <option value=""></option>
+                </select>
                 <form>
                     <input type="number" id="slide_id_input_box" style="float: left; margin-right: 4px; width: 60px"
-                           type=text
-                           name=slide_id>
+                           name=slide_id hidden>
                     <p id="change_result_flash" style="color:red"></p>
                     <a href=# id=slide_id style="float:left;">
                         <button class='btn btn-default'>Change Slide</button>
@@ -233,6 +236,17 @@
             available_slide.push(data[i].id)
         }
     });
+    $('#slide_id_select').select2({
+        placeholder: 'Please select slideID'
+    });
+    $.get("available_slide" + info_url, function (data) {
+        console.log(data);
+        $('#slide_id_select').select2({
+            placeholder: 'Please select slideID',
+            data: data,
+        });
+        $('#slide_id_select').val("{{ slide_id }}").select2();
+    });
 
     var viewer = OpenSeadragon({
         id: "openseadragon1",
@@ -320,7 +334,28 @@
                 document.getElementById("0").onchange();
             }
         }
-
+        if (key == "O") {
+            var new_slide_id = {{ slide_id }};
+            if (available_slide.indexOf(new_slide_id) < 0 ||
+                available_slide.indexOf(new_slide_id) == 0) {
+                alert("非法Slide ID!");
+                return false;
+            } else
+                window.location.href = "/freehand_annotation?annotation_id=" + annotatorID
+                    + '&slide_id=' + available_slide[available_slide.indexOf(new_slide_id) - 1].toString() + '&project=' + project;
+            return false;
+        }
+        if (key == "P") {
+            var new_slide_id = {{ slide_id }};
+            if (available_slide.indexOf(new_slide_id) < 0 ||
+                available_slide.indexOf(new_slide_id) == available_slide.length) {
+                alert("非法Slide ID!");
+                return false;
+            } else
+                window.location.href = "/freehand_annotation?annotation_id=" + annotatorID
+                    + '&slide_id=' + available_slide[available_slide.indexOf(new_slide_id) + 1].toString() + '&project=' + project;
+            return false;
+        }
     };
 
     // Toggle sub-region boundary
