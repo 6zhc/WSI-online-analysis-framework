@@ -81,6 +81,11 @@ def get_info_by_id(slide_id):
     return mani.get_project_by_id(slide_id)
 
 
+def get_info_by_uuid(slide_uuid):
+    mani = manifest.Manifest()
+    return mani.get_project_by_uuid(slide_uuid)
+
+
 def remove_wsi_by_id(slide_id):
     mani = manifest.Manifest()
     mani.delete_project_by_id(slide_id)
