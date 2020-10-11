@@ -93,6 +93,17 @@
                     console.log(test.value);
                     window.open("/find_slide?svs_file=" + test.value + "&project=table","_blank","")
                 };
+
+                function entityToString(entity) {
+                    var div = document.createElement('div');
+                    div.innerHTML = entity;
+                    var res = div.innerText || div.textContent;
+                    console.log(entity, '->', res);
+                    return res;
+                }
+
+                //test
+                console.log(entityToString("{{column_addition}}"));
                 columnDefs = [
                     {
                         field: '', headerName: '', checkboxSelection: true, width: '2',
@@ -143,8 +154,8 @@
                     }, {
                         field: 'vital_status', headerName: '生存状态',
                         sortable: true, resizable: true, filter: 'agTextColumnFilter'
-                    }
-                ];
+                    },
+                ].concat(JSON.parse(entityToString("{{column_addition}}")));
 
                 var gridOptions = {
                     columnDefs: columnDefs,

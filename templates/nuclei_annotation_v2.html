@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>OpenHI</title>
+    <script type="text/javascript" src="{{ url_for('static', filename='jquery.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='openseadragon.js') }}"></script>
+    <script type="text/javascript"
+            src="{{ url_for('static', filename='nuclei_annotation_v2_js/openhi_globalValue.js') }}"></script>
+    <script type="text/javascript"
+            src="{{ url_for('static', filename='nuclei_annotation_v2_js/openhi_viewer.js') }}"></script>
+    <script type="text/javascript"
+            src="{{ url_for('static', filename='nuclei_annotation_v2_js/openhi_controller.js') }}"
+            charset="GBK"></script>
+    <script type="text/javascript"
+            src="{{ url_for('static', filename='nuclei_annotation_v2_js/openhi_status.js') }}"></script>
+    <script type="text/javascript"
+            src="{{ url_for('static', filename='nuclei_annotation_v2_js/openhi_slideInfo.js') }}"></script>
+
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/nuclei_annotation.css') }}">
+    <link rel="stylesheet" href="static/select2.min.css">
+    <script src="static/select2.min.js"></script>
+    <style>
+
+    </style>
+</head>
+<body>
+
+
+<div class="heading">
+    <h1>
+        OpenHI <span style="font-size: 50%; color: #3f3e3e;">v2</span>
+    </h1>
+
+    <form name="logout" action="/logout" method="get">
+        <input id="logout" type="submit" value="Logout">
+    </form>
+</div>
+
+<div class="area_container" id="operation">
+
+    <div id="openseadragon1"></div>
+    <div id="side_panel">
+        <div id="main_control">
+            {#            <h2 class="control_header">Pre-segmentation level</h2>#}
+            {#                <div class="control_content" id="PS_lv"></div>#}
+
+            <h2 class="control_header">Tumor grading</h2>
+            <div class="control_content" id="grading"></div>
+            <div>
+                <button onclick="undo()" style="margin: 8px">撤销</button>
+                <button onclick="save_points_annotation()" style="margin: 8px">保存并刷新</button>
+                <button onclick="make_mask()" style="margin: 8px">生成掩膜</button>
+            </div>
+
+            {#            <div style="padding: 10px 0 10px 0;">#}
+            {#                <span class="" style="height: 100%; margin-right: 10px">Click to undo: </span>#}
+            {##}
+            {#                <a href=# id=undo><button class='btn btn-default'>Undo</button></a>#}
+            {#            </div>#}
+
+            <div style="padding: 10px 0 0 0;">
+                <span class="control_header" style="height: 100%; margin-right: 10px">Show/hide: </span>
+                <a href=# id=tog_boun>
+                    <button class='btn btn-default'>Boundary</button>
+                </a>
+                <p id="tog_result" style="margin-top: 5px; margin-bottom: 5px">Toggle switch: ...</p>
+            </div>
+
+            <div style="padding: 10px 0 0 0;">
+                <span class="control_header" style="height: 100%; margin-right: 10px">Viewing Position Record: </span>
+                <a href=# id=Viewing_Position_Record>
+                    <button class='btn btn-default'>button</button>
+                </a>
+                <p id="Viewing_Position_result" style="margin-top: 5px; margin-bottom: 5px">Viewing Position Record:
+                    off</p>
+            </div>
+
+            <!-- Slide control -->
+            <div class="container" style="margin: 0 0 10px 0; width: calc(100% - 10px); float: left;">
+                <span class="control_header" style="height: 100%; margin:0 10px 0 0; float: left;">Slide ID: </span>
+                <select class="form-control" id="slide_id_select" style="width:200px">
+                    <option value=""></option>
+                </select>
+                <form>
+                    <input type="number" id="slide_id_input_box" style="float: left; margin-right: 4px; width: 60px"
+                           name=slide_id hidden>
+                    <p id="change_result_flash" style="color:red"></p>
+                    <a href=# id=slide_id style="float:left;">
+                        <button class='btn btn-default'>Change Slide</button>
+                    </a>
+                </form>
+
+                <span id=slide_result>Current slide: unknown</span>
+            </div>
+
+            <!-- High-low magnification control  -->
+            <div class="container" style="margin: 0 0 10px 0; width: calc(100% - 10px); float: left; clear: both;">
+                <span class="control_header" style="float: left; height: 100%; margin:0 10px 0 0; font-size: 80%;">
+                    Magnification Control:
+                </span>
+                <!-- Use id="mag_l_rp" and so on for "resolving power mode"-->
+                <a href=# id="mag_l">
+                    <button class='btn btn-default' id="hl_btn">Low</button>
+                </a>
+                <a href=# id="mag_h">
+                    <button class='btn btn-default' id="hl_btn">High</button>
+                </a>
+            </div>
+
+            <!-- TBA list -->
+            <div class="container" style="margin: 0 0 10px 0; width: calc(100% - 10px); float: left; clear: both;">
+                <span class="control_header" style="float: left; height: 100%; margin:0 10px 0 0; font-size: 80%;">
+                    To be annotated list:
+                </span>
+                <a href=# id="add_sw">
+                    <button class='btn btn-default' id="hl_btn">Add current region</button>
+                </a>
+                <a href=# id="rm_sw">
+                    <button class='btn btn-default' id="hl_btn">Remove latest region</button>
+                </a>
+                <div id="tb_list"></div>
+                <div id="tb_warn"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- This is the scale bar -->
+    <div id="scale_bar">
+        ...
+    </div>
+
+    <!-- Status bar container -->
+    <div id="status_bar_container">
+        <div id="vmag_container">
+            <div style="float: left;">Virtual Magnification: x<span id="mag_show"></span></div>
+            <br/>
+            <div style="display: none;">
+                <div style="float: left; margin-right: 5px;">Adjust virtual magnification: x</div>
+                <div>
+                    <input type=text size=5 id="input-vmag" value="100">
+                    <a href=# id="virtual-mag-usr-input">
+                        <button class='btn btn-default'>Update vMag</button>
+                    </a>
+                    <span style="font-style: italic"> - Do not change</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="status_bar" id="status_container">
+            <div style="float: left;">
+                Status: <span id="status_show"></span>
+                <span id="status_block" style="color: rgb(80,80,80)"> </span></div>
+        </div>
+
+        <div id="error_container">
+            <div style="float: left;background-color:#FF0000"><span id="error_show"></span></div>
+        </div>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+    var slideID = {{ slide_id }};
+    var annotatorID = {{ annotator_id }};
+    var slideUUID = "{{ slide_uuid }}";
+    var project = "{{ project }}";
+    var info_url = "?slide_id={{ slide_id }}&annotator_id={{ annotator_id }}&slide_uuid={{ slide_uuid }}&project={{ project }}";
+
+    var available_slide = [];
+    $.get("available_slide" + info_url, function (data) {
+        console.log(data);
+        for (var i = 0; i < data.length; i++) {
+            available_slide.push(data[i].id)
+        }
+    });
+
+    $('#slide_id_select').select2({
+        placeholder: 'Please select slideID'
+    });
+    $.get("available_slide" + info_url, function (data) {
+        console.log(data);
+        $('#slide_id_select').select2({
+            placeholder: 'Please select slideID',
+            data: data,
+        });
+        $('#slide_id_select').val("{{ slide_id }}").select2();
+    });
+
+    var viewer = OpenSeadragon({
+        id: "openseadragon1",
+        prefixUrl: "{{ url_for('static', filename='images/') }}",
+        tileSources: "{{ slide_url}}",
+        minZoomImageRatio: 0,
+        maxZoomPixelRatio: 10,
+        autoResize: true,
+        visibilityRatio: 0,
+
+        gestureSettingsMouse: {
+            flickEnabled: false,
+        },
+        springStiffness: 5,// 5
+        animationTime: 0.5, //0.5
+
+        zoomPerSecond: 0.5,//0.5
+        zoomPerScroll: 1.3,
+
+        showNavigator: true,
+        //navigatorOpacity: 0.1,
+        //navigatorAutoFade : false,
+        navigatorPosition: "BOTTOM_RIGHT",
+    });
+
+    var mouse_tracker = new OpenSeadragon.MouseTracker({ //set mouse tracker
+        element: viewer.container,
+        moveHandler: update_mouse_location,
+        scrollHandler: update_mouse_location,
+        exitHandler: function (e) {
+            if (OSD_control.point_record_controller) {
+                OSD_control.point_record_controller = 0;
+                post_record();
+            }
+        },
+    });
+
+    flag_add_points = false;
+    let add_region_label = function () {
+        viewer.clearOverlays();
+        if (!flag_add_points) return;
+        for (let i = 0; i < Object.keys(TBA_list).length; i++) {
+            // console.log(TBA_list["" + i][0], TBA_list["" + i][1]);
+            temp = document.createElement("div");
+            if (i < 5) {
+                temp.style = "width:15px;height:15px;border-radius:50%;background-color:red;text-align:center;";
+            } else {
+                temp.style = "width:15px;height:15px;border-radius:50%;background-color:green;text-align:center;";
+            }
+            temp.innerHTML = "<a href='javascript:;' onclick='javascript:document.getElementById(\"regid_" +
+                Object.keys(TBA_list)[i] + "\").onclick()'>"
+                + Object.keys(TBA_list)[i] + "</a>";
+            //temp.innerHTML = "<a href='javascript:document.getElementById(\"regid_" + i + "\")'>" +  + Object.keys(TBA_list)[i] + "</a>";
+            viewer.addOverlay({
+                element: temp,
+                location: viewer.world.getItemAt(0).imageToViewportCoordinates(
+                    TBA_list[Object.keys(TBA_list)[i]][0], TBA_list[Object.keys(TBA_list)[i]][1]
+                ),
+                placement: OpenSeadragon.Placement.CENTER
+            });
+        }
+    };
+
+    viewer.addHandler('open', OSD_open_function);
+    viewer.addHandler('animation-finish', animation_finsh_function);
+    viewer.addHandler('animation', animation_function);
+    viewer.addHandler('animation-start', animation_start_function);
+    viewer.addHandler('full-page', OSD_fullpage_function);
+
+    viewer.addHandler('canvas-nonprimary-press', function (e) {
+        if (e.button == 2) {
+            if (OSD_control.grading == 7) {
+                if (OSD_control.points_annotation && !confirm("你将更新的标注信息，请确认已保存。"))
+                    return;
+                $.getJSON('/nuclei_annotation_v2/_add_sw' + info_url, {x: mouse_location.X, y: mouse_location.Y,},
+                    function (data) {
+                        if (parseInt(data.num_status) == 1) {
+                            console.log(data.status);
+                            update_tb_list(false);
+                        } else {
+                            console.log("Adding sub-window has failed.")
+                        }
+                    }
+                );
+            } else {
+                if (TBA_control.tba_status == 0)
+                    alert("请先选择DA！");
+                else {
+                    console.log(OSD_control.grading == "-1")
+                    if (OSD_control.grading == "-1") {
+                        var temp_x = mouse_location.X - TBA_list[String(TBA_control.reg_id)][0] + 256;
+                        var temp_y = mouse_location.Y - TBA_list[String(TBA_control.reg_id)][1] + 256;
+                        // console.log(temp_x, temp_y)
+                        for (var i = 0; i < points.grade.length; i++) {
+                            if (points.point_x[i] > temp_x - 10 && points.point_x[i] < temp_x + 10
+                                && points.point_y[i] > temp_y - 10 && points.point_y[i] < temp_y + 10) {
+                                points.grade[i] = 0;
+                                OSD_control.points_annotation = 1;
+                            }
+                        }
+                        add_points();
+                    } else {
+                        // console.log(OSD_control.grading == "-1")
+                        if (TBA_list[String(TBA_control.reg_id)][0] - 256 < mouse_location.X
+                            && TBA_list[String(TBA_control.reg_id)][0] + 255 > mouse_location.X
+                            && TBA_list[String(TBA_control.reg_id)][1] - 256 < mouse_location.Y
+                            && TBA_list[String(TBA_control.reg_id)][1] + 255 > mouse_location.Y) {
+                            points.grade.push(Number.parseInt(OSD_control.grading));
+                            points.point_x.push(Math.round(mouse_location.X) - TBA_list[String(TBA_control.reg_id)][0] + 256);
+                            points.point_y.push(Math.round(mouse_location.Y) - TBA_list[String(TBA_control.reg_id)][1] + 256);
+                            OSD_control.points_annotation = 1;
+                            add_points();
+                        }
+                    }
+                }
+            }
+        }
+        if (e.button == 1) {
+            OSD_control.point_mid_record_controller = 1;
+            mid_recording_point();
+        }
+    });
+
+    update_image_info();
+    update_tb_list();
+    update_slide_id();
+
+    document.onkeydown = function (e) {  //listen to the keboard;
+        var key = String.fromCharCode(window.event ? e.keyCode : e.which);
+        console.log(key);
+        if (document.getElementById("" + key)) {
+            document.getElementById("" + key).checked = true;
+            document.getElementById("" + key).onchange();
+        }
+
+        if (key == 'E') {
+            toggle_boundary();
+        }
+        if (key == 'R') {
+            document.getElementById("0").checked = true;
+            document.getElementById("0").onchange();
+        }
+        if (key == 'G') {
+            flag_add_points = !flag_add_points;
+            add_region_label();
+        }
+        if (key == 'V') {
+            OSD_control.point_controller = !OSD_control.point_controller;
+            add_points();
+        }
+        if (key == "Z") {
+            var new_slide_id = {{ slide_id }};
+            if (available_slide.indexOf(new_slide_id) < 0 ||
+                available_slide.indexOf(new_slide_id) == 0) {
+                alert("非法Slide ID!");
+                return false;
+            } else
+                window.location.href = "/nuclei_annotation_v2?annotation_id=" + annotatorID
+                    + '&slide_id=' + available_slide[available_slide.indexOf(new_slide_id) - 1].toString() + '&project=' + project;
+            return false;
+        }
+        if (key == "X") {
+            var new_slide_id = {{ slide_id }};
+            if (available_slide.indexOf(new_slide_id) < 0 ||
+                available_slide.indexOf(new_slide_id) == available_slide.length) {
+                alert("非法Slide ID!");
+                return false;
+            } else
+                window.location.href = "/nuclei_annotation_v2?annotation_id=" + annotatorID
+                    + '&slide_id=' + available_slide[available_slide.indexOf(new_slide_id) + 1].toString() + '&project=' + project;
+            return false;
+        }
+
+    };
+
+    // Toggle sub-region boundary
+    $('a#tog_boun').bind('click', toggle_boundary);
+    $('a#Viewing_Position_Record').bind('click', viewing_position_record);
+    // $('a#undo').bind('click', undo_function);
+    $('a#slide_id').bind('click', change_slide_id);
+    $('a#mag_l').bind('click', turn_low_mv);
+    $('a#mag_h').bind('click', turn_high_mv);
+    $('a#add_sw').bind('click', add_TBA_list);
+    $('a#rm_sw').bind('click', remove_TBA_list);
+
+
+</script>
+</body>
+</html>

@@ -1,3 +1,12 @@
+import tensorflow as tf
+
+config = tf.ConfigProto()
+# config.gpu_options.per_process_gpu_memory_fraction = 0.4 # 占用GPU90%的显存
+# config.gpu_options.allow_growth = True
+session = tf.Session(config=config)
+import uuid
+import json
+
 from flask import Flask, render_template, request, redirect
 from flask import jsonify
 
@@ -11,6 +20,7 @@ from Server import manifest_server
 from Server import mission_server
 from Server import user_server
 from Server import re_annotation_server
+from Server import nuclei_annotation_v2_server
 
 from Controller import manifest_controller
 from Controller import thread_controller
@@ -22,6 +32,7 @@ import os, csv, openslide, shutil
 
 from Model import nuclei_annotation_sqlite
 from Model import manifest
+
 
 try:
     if os.path.exists('static/data'):
@@ -47,6 +58,7 @@ annotation_project_server.add_annotation_project_sever(app)
 mission_server.add_mission_server(app)
 manifest_server.add_manifest_server(app)
 re_annotation_server.add_re_annotation_sever(app)
+nuclei_annotation_v2_server.add_annotation_sever(app)
 
 app.config['JSON_AS_ASCII'] = False
 
@@ -63,8 +75,20 @@ def table1():
     # print(table)
     if table is None:
         return redirect("table?table=test_predict.csv")
+
+    keys = []
+    with open(table, encoding='utf-8')as f:
+        f_csv = csv.DictReader(f)
+        f_csv = list(f_csv)
+        for key in f_csv[0]:
+            if key[:6] == "result":
+                keys.append({
+                    "field": key, "headerName": key[7:],
+                    "sortable": True, "resizable": True, "filter": 'agTextColumnFilter',
+                })
+
     # table = request.args.get('table', default='test_predict.csv', type=str)
-    return render_template('table.html', table=table)
+    return render_template('table.html', table=table, column_addition=json.dumps(keys))
 
 
 @app.route('/items')
@@ -83,6 +107,21 @@ def items():
                         pass
 
         return jsonify({'data': f_csv, 'totals': len(f_csv)})
+
+
+@app.route('/items_column')
+@login_required
+def items_column():
+    keys = []
+    table = request.args.get('table', type=str)
+    with open(table, encoding='utf-8')as f:
+        f_csv = csv.DictReader(f)
+        f_csv = list(f_csv)
+        for key in f_csv[0]:
+            if key[:6] == "result":
+                keys.append(key)
+        return jsonify(keys)
+
 
 @app.route('/table2')
 @login_required
@@ -185,7 +224,7 @@ def available_slide():
             for wsi in open('export/' + project + '_slide_table.txt').readlines():
 
                 slide_id = int(wsi.split('\t')[0])
-                temp = {"id": slide_id, "text": str(slide_id)}
+                temp = {"id": slide_id, "text": wsi.replace('\t', ' ')}
                 data.append(temp)
 
         def takeSecond(elem):
@@ -249,7 +288,7 @@ def make_region():
         os.remove("static/export/" + manifest_name + "_" + str(region_size) + ".zip")
 
     thread_controller.BackgroundThread(make_region_back, manifest_name, region_size).start()
-    return "static/export/" + manifest_name + "_" + str(region_size) + ".zip"
+    return "static/export/" + manifest_name + "_" + str(region_size) + ".zip" + "?random=" + str(uuid.uuid4())
 
 
 def make_region_back(manifest_name, region_size):
@@ -259,6 +298,7 @@ def make_region_back(manifest_name, region_size):
     if os.path.exists(export_folder):
         shutil.rmtree(export_folder)
     os.mkdir(export_folder)
+    manifest_file = open(export_folder + "manifest.txt", "w")
     slide_ids = os.listdir(nuclei_annotation_data_root + manifest_name + '/')
     for slide_ID in slide_ids:
         print(slide_ID)
@@ -271,11 +311,14 @@ def make_region_back(manifest_name, region_size):
             if not os.path.exists(export_folder + wsi[2]):
                 os.mkdir(export_folder + wsi[2])
             oslide = openslide.OpenSlide(svs_file_path)
+            manifest_file.writelines(wsi[1] + '\t' + wsi[2] + '\t' + 'None' + os.linesep)
             for item in tba_result:
                 patch = oslide.read_region((item[1] - 256, item[2] - 256), 0, (region_size, region_size))
                 patch.save(
                     export_folder + wsi[2] + '/' + str(item[1]) + '_' + str(item[2]) + '_' + str(region_size) + '.png')
             oslide.close()
+
+    manifest_file.close()
     shutil.make_archive("export/" + manifest_name + "_" + str(region_size) + "/", 'zip', export_folder)
 
 
