@@ -183,7 +183,7 @@ var create_grading_controls = function () {
         if (i <= 4) {
             var text = document.createTextNode(' ' + i + '\u00A0\u00A0');
         } else if (i == 5) {
-            var text = document.createTextNode(' ' + 'Endothelial 上皮细胞[5]' + '\u00A0\u00A0')
+            var text = document.createTextNode(' ' + 'Endothelial 内皮细胞[5]' + '\u00A0\u00A0')
         } else if (i == 6) {
             var text = document.createTextNode(' ' + 'Lymphocytes 淋巴细胞[6]' + '\u00A0\u00A0')
         } else if (i == 7) {
