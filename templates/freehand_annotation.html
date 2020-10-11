@@ -361,9 +361,10 @@
     // Toggle sub-region boundary
     $('a#tog_boun').bind('click', toggle_boundary);
     $('a#Clear_boun').bind('click', function () {
-        $.get('/freehand_annotation/_clear_lines' + info_url, function () {
-            update_mask();
-        });
+        if (confirm("Are you sure? You will lose all annotation in this slide!!!!"))
+            $.get('/freehand_annotation/_clear_lines' + info_url, function () {
+                update_mask();
+            });
         return false;
     });
     $('a#undo').bind('click', function () {

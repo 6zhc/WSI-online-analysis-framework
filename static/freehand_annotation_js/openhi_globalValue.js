@@ -3,9 +3,9 @@ window.oncontextmenu = function (e) {
 };
 
 var Const_number = {
-    Max_grading: 3,
+    Max_grading: 4,
     keyboard: ['Z', 'X', 'C', 'V', 'B', 'N', 'M'],
-    Max_Slide_grading: 4,
+    // Max_Slide_grading: 4,
     //MAX_ps_lv   : 2,
 }
 

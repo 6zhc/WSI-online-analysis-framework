@@ -49,12 +49,29 @@ class SqliteConnector:
     #     cursor.close()
     #     self.db.commit()
 
-    def delete_line(self, X: int, Y: int):
+    def delete_points(self, X: int, Y: int):
         db = sqlite3.connect(self.sqlite_path)
         cursor = db.cursor()
         cursor.execute("delete from Line where (X1 >? and X1 <? and Y1 >? and Y1 < ?) or" + \
                        "(X2 >? and X2 <? and Y2 >? and Y2 < ?)",
                        tuple([X - 100, X + 100, Y - 100, Y + 100, X - 100, X + 100, Y - 100, Y + 100]))
+
+        cursor.close()
+        db.commit()
+        db.close()
+
+    def delete_lines(self, X: int, Y: int):
+        db = sqlite3.connect(self.sqlite_path)
+        cursor = db.cursor()
+        cursor.execute("select * from Line where (X1 >? and X1 <? and Y1 >? and Y1 < ?) or" + \
+                       "(X2 >? and X2 <? and Y2 >? and Y2 < ?)",
+                       tuple([X - 100, X + 100, Y - 100, Y + 100, X - 100, X + 100, Y - 100, Y + 100]))
+        result = cursor.fetchall()
+        # print(result)
+        for item in result:
+            # print(item)
+            cursor.execute("delete from Line where branch == ?",
+                           tuple([item[6]]))
 
         cursor.close()
         db.commit()

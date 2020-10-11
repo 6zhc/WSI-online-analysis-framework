@@ -142,7 +142,7 @@ def add_annotation_sever(app):
         mask = numpy.zeros([v6, v5, 4])
 
         db = freehand_annotation_sqlite.SqliteConnector(annotaion_db)
-        color = [[0, 0, 255, 255], [0, 255, 0, 255], [255, 0, 0, 255]]
+        color = [[0, 0, 255, 255], [0, 255, 0, 255], [255, 0, 0, 255], [0, 0, 0, 255]]
         # print(db.get_lines())
 
         for temp in db.get_lines_in_area(int(v1), int(v2), int(v3), int(v4)):
@@ -185,7 +185,7 @@ def add_annotation_sever(app):
         # In one round, the grading and pslv could be updated only once.
         data = []
         for i in range(num_of_points):
-            if int(req_form[str(i) + '[grading]']):
+            if int(req_form[str(i) + '[grading]']) > 0:
                 if i == 0:
                     continue
                 if (int(req_form[str(i - 1) + '[x]']) == int(req_form[str(i) + '[x]'])) \
@@ -194,8 +194,10 @@ def add_annotation_sever(app):
                 data.append(tuple([int(req_form[str(i - 1) + '[x]']), int(req_form[str(i - 1) + '[y]']),
                                    int(req_form[str(i) + '[x]']), int(req_form[str(i) + '[y]']),
                                    int(req_form[str(i) + '[grading]'])]))
-            else:
-                db.delete_line(int(req_form[str(i) + '[x]']), int(req_form[str(i) + '[y]']))
+            elif int(req_form[str(i) + '[grading]']) == 0:
+                db.delete_points(int(req_form[str(i) + '[x]']), int(req_form[str(i) + '[y]']))
+            elif int(req_form[str(i) + '[grading]']) == -1:
+                db.delete_lines(int(req_form[str(i) + '[x]']), int(req_form[str(i) + '[y]']))
 
         if len(data):
             db.incert_lines(data)

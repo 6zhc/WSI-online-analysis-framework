@@ -16,6 +16,35 @@ var recording_point = function () {
         y: mouse_location.Y,
         grading: OSD_control.grading,
     };
+    size = (region_bound.DownRight_X - region_bound.UpLeft_X) / 980 * 2;
+    var Bound_Rec_Pixel = new OpenSeadragon.Rect(x = mouse_location.X - size, y = mouse_location.Y - size, width = size * 2, height = size * 2);
+    var Bound_Rec_Viewport = viewer.world.getItemAt(0).imageToViewportRectangle(Bound_Rec_Pixel);
+    var elt = document.createElement("div");
+    elt.id = "point";
+    console.log(typeof (OSD_control.grading))
+    switch (Number(OSD_control.grading)) {
+
+        case 1:
+            color = "#FF0000";
+            break;
+        case 2:
+            color = "#00FF00";
+            break;
+        case 3:
+            color = "#0000FF";
+            break;
+        case 4:
+            color = "#000000";
+            break;
+        case 0 :
+            color = "#FFFFFF";
+            break;
+    }
+    elt.style = "border-radius:50%;background-color:" + color + ";";
+    viewer.addOverlay({
+        element: elt,
+        location: Bound_Rec_Viewport
+    });
     OSD_control.point_number = OSD_control.point_number + 1;
     //console.log(OSD_control.data_draw)
 };
@@ -88,6 +117,7 @@ var post_record = function () {
         }
         OSD_control.pt_false = OSD_control.pt_false + ')';
         update_mask();
+        viewer.clearOverlays();
     }).fail(function () {
         set_status(OSD_status2num.ready);
         OSD_control.data_draw = {};
@@ -148,7 +178,7 @@ var getRadioValue = function (name) { //get which item is chosen (name is radio 
 
 var create_grading_controls = function () {
     // Generate grading controls
-    for (var i = 0; i <= Const_number.Max_grading; i++) {
+    for (var i = -1; i <= Const_number.Max_grading; i++) {
         var radio = document.createElement("input");
         radio.type = "radio";
         radio.name = "grading";
