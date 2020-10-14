@@ -88,6 +88,8 @@ def gen_mask(dot, image):
                                        nucPoints=nucPoints)
             instanceMap = generateInstanceMap(masks, boundingBoxes, m, n)
 
+            session.close()
+
     return instanceMap
 
 
