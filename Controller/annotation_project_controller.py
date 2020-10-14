@@ -5,10 +5,12 @@ import shutil
 import uuid
 import openslide
 from pathlib import Path
+from PIL import Image
 
 from Model import manifest
 from Controller import manifest_controller
 from Model.freehand_annotation_sqlite import SqliteConnector
+from Model import nuclei_annotation_sqlite
 
 manifest_root = "Data/annotation_project_manifest/"
 nuclei_annotation_root = "Data/nuclei_annotation_data/"
@@ -18,22 +20,24 @@ export_annotation_root = "export/"
 
 
 def get_table():
+    global annotation_project_table
     refresh_nuclei_annotation_export()
     refresh_freehand_annotation_export()
     filename = manifest_root + 'table.npy'
     if not os.path.exists(filename):
         refresh_npy()
-    result = numpy.load(filename)
+    result = annotation_project_table.copy()  # numpy.load(filename)
     result = result.tolist()
     return result
 
 
 def refresh_nuclei_annotation_progress():
+    global annotation_project_table
     filename = manifest_root + 'table.npy'
     if not os.path.exists(filename):
         refresh_npy()
     else:
-        result = numpy.load(filename)
+        result = annotation_project_table.copy()  # numpy.load(filename)
         for i in range(len(result)):
             manifest_txt = open(manifest_root + result[i][0] + '.txt').readlines()
             annotation_project_root = nuclei_annotation_root + result[i][0] + '/'
@@ -45,16 +49,20 @@ def refresh_nuclei_annotation_progress():
                 info = wsi.split('\t')
                 if not os.path.exists(annotation_project_root + info[0] + '/'):
                     continue
-                for annotation_file in os.listdir(annotation_project_root + info[0] + '/'):
-                    # print(annotation_file[0], annotation_file[-4:])
-                    if annotation_file[0] == 'r' and annotation_file[-4:] == '.txt':
-                        region_no = region_no + 1
-                        for annotator_id in range(annotator_no):
-                            if os.path.exists(annotation_project_root + info[0] + '/' +
-                                              'a' + str(annotator_id + 1) + '_' + annotation_file) and \
-                                    sum(numpy.loadtxt(annotation_project_root + info[0] + '/' +
-                                                      'a' + str(annotator_id + 1) + '_' + annotation_file)) > 0:
-                                finish_region_no[annotator_id] += 1
+                tba_list_db = annotation_project_root + info[0] + '/' + 'tba_list.db'
+                if not os.path.exists(tba_list_db):
+                    continue
+                db = nuclei_annotation_sqlite.SqliteConnector(tba_list_db)
+                tba_result = db.get_RegionID_Centre()
+                region_no = region_no + len(tba_result)
+                for item in tba_result:
+                    for annotator_id in range(annotator_no):
+                        if os.path.exists(annotation_project_root + info[0] + '/' +
+                                          'a' + str(annotator_id + 1) + '_r' + str(item[0]) + "_annotation.txt") and \
+                                sum(numpy.loadtxt(annotation_project_root + info[0] + '/' +
+                                                  'a' + str(annotator_id + 1) + '_r' + str(
+                                    item[0]) + "_annotation.txt")) > 0:
+                            finish_region_no[annotator_id] += 1
             result_str = ""  # 'Total: ' + str(region_no) + ', <br/>'
             for annotator_id in range(annotator_no):
                 result_str += str(annotator_id + 1) + ': ' + \
@@ -65,16 +73,19 @@ def refresh_nuclei_annotation_progress():
 
         filename = manifest_root + 'table.npy'
         result = numpy.array(result)
+
+        annotation_project_table = result.copy()
         numpy.save(filename, result)  # 保存为.npy格式
     return
 
 
 def refresh_freehand_annotation_progress():
+    global annotation_project_table
     filename = manifest_root + 'table.npy'
     if not os.path.exists(filename):
         refresh_npy()
     else:
-        result = numpy.load(filename)
+        result = annotation_project_table.copy()  # numpy.load(filename)
         for i in range(len(result)):
             manifest_txt = open(manifest_root + result[i][0] + '.txt').readlines()
             annotation_project_root = freehand_annotation_root + result[i][0] + '/'
@@ -103,16 +114,19 @@ def refresh_freehand_annotation_progress():
 
         filename = manifest_root + 'table.npy'
         result = numpy.array(result)
+
+        annotation_project_table = result.copy()
         numpy.save(filename, result)  # 保存为.npy格式
     return
 
 
 def refresh_nuclei_annotation_export():
+    global annotation_project_table
     filename = manifest_root + 'table.npy'
     if not os.path.exists(filename):
         refresh_npy()
     else:
-        result = numpy.load(filename)
+        result = annotation_project_table.copy()  # numpy.load(filename)
         file_list = sorted(os.listdir("export"))
         file = '<a >Unavailable</ a>'
         for i in range(len(result)):
@@ -127,16 +141,19 @@ def refresh_nuclei_annotation_export():
 
         filename = manifest_root + 'table.npy'
         result = numpy.array(result)
+
+        annotation_project_table = result.copy()
         numpy.save(filename, result)  # 保存为.npy格式
     return
 
 
 def refresh_freehand_annotation_export():
+    global annotation_project_table
     filename = manifest_root + 'table.npy'
     if not os.path.exists(filename):
         refresh_npy()
     else:
-        result = numpy.load(filename)
+        result = annotation_project_table.copy()  # numpy.load(filename)
         file_list = sorted(os.listdir("export"))
         file = '<a >Unavailable</ a>'
         for i in range(len(result)):
@@ -151,6 +168,8 @@ def refresh_freehand_annotation_export():
 
         filename = manifest_root + 'table.npy'
         result = numpy.array(result)
+
+        annotation_project_table = result.copy()
         numpy.save(filename, result)  # 保存为.npy格式
     return
 
@@ -159,8 +178,11 @@ def export_nuclei_annotation_data(manifest_file_url):
     manifest_txt = open(manifest_file_url).readlines()
     annotation_project_root = nuclei_annotation_root + manifest_file_url.rsplit("/", 1)[1][:-4] + '/'
 
-    colour = [tuple([124, 252, 0]), tuple([0, 255, 255]), tuple([137, 43, 224]),
-              tuple([255 * 0.82, 255 * 0.41, 255 * 0.12]), tuple([255, 0, 0]), tuple([0, 128, 255])]
+    colour = [[255, 0, 209], [0, 255, 255], [0, 0, 255], [0, 0, 255],
+              [255, 191, 0], [0, 0, 0], [0, 0, 0]]
+
+    # colour = [tuple([124, 252, 0]), tuple([0, 255, 255]), tuple([137, 43, 224]),
+    #           tuple([255 * 0.82, 255 * 0.41, 255 * 0.12]), tuple([255, 0, 0]), tuple([0, 128, 255])]
     color_scheme = color_scheme = [
         [0.49, 0.99, 0], [0, 1, 1], [0.54, 0.17, 0.88], [0.82, 0.41, 0.12],
         [1, 0, 0], [0, 0.5, 1]
@@ -176,6 +198,8 @@ def export_nuclei_annotation_data(manifest_file_url):
     export_path = export_annotation_root + manifest_file_url.rsplit("/", 1)[1][:-4] + '/nuclei_annotation/'
     if os.path.exists(export_path):
         shutil.rmtree(export_path)
+    elif not os.path.exists(export_annotation_root + manifest_file_url.rsplit("/", 1)[1][:-4]):
+        os.mkdir(export_annotation_root + manifest_file_url.rsplit("/", 1)[1][:-4])
     os.mkdir(export_path)
 
     annotator_no = 6
@@ -186,60 +210,62 @@ def export_nuclei_annotation_data(manifest_file_url):
         info = wsi.split('\t')
         if not os.path.exists(annotation_project_root + info[0] + '/'):
             continue
-        for annotation_file in os.listdir(annotation_project_root + info[0] + '/'):
-            # print(annotation_file[0], annotation_file[-4:])
-            if annotation_file[0] == 'r' and annotation_file[-4:] == '.txt':
-                original_pic_url = annotation_project_root + info[0] + '/' + annotation_file[:-4] + '.png'
-                original_pic = cv2.imread(original_pic_url)
+        tba_list_db = annotation_project_root + info[0] + '/' + 'tba_list.db'
+        if not os.path.exists(tba_list_db):
+            continue
+        db = nuclei_annotation_sqlite.SqliteConnector(tba_list_db)
+        tba_result = db.get_RegionID_Centre()
+        for item in tba_result:
+            original_pic_url = annotation_project_root + info[0] + '/' + 'r' + str(item[0]) + '.png'
+            original_pic = cv2.imread(original_pic_url)
 
-                region_image_url = annotation_project_root + info[0] + '/' + annotation_file[:-4] + '.txt'
-                region_image = numpy.loadtxt(region_image_url, delimiter=",", dtype=int)
+            for annotator_id in range(annotator_no):
+                if os.path.exists(annotation_project_root + info[0] + '/' +
+                                  'a' + str(annotator_id + 1) + '_r' + str(item[0]) + "_annotation.txt") and \
+                        sum(numpy.loadtxt(annotation_project_root + info[0] + '/' +
+                                          'a' + str(annotator_id + 1) + '_r' + str(item[0]) + "_annotation.txt")) > 0:
+                    region_image_url = annotation_project_root + info[0] + '/' + 'a' + str(annotator_id + 1) + \
+                                       '_r' + str(item[0]) + "_boundary.txt"
+                    region_image = numpy.loadtxt(region_image_url, delimiter=",", dtype=int)
+                    write_path = export_path + 'a' + str(annotator_id + 1) + '/' + info[0] + '/'
+                    if not os.path.exists(write_path):
+                        os.mkdir(write_path)
 
-                for annotator_id in range(annotator_no):
-                    if os.path.exists(annotation_project_root + info[0] + '/' +
-                                      'a' + str(annotator_id + 1) + '_' + annotation_file) and \
-                            sum(numpy.loadtxt(annotation_project_root + info[0] + '/' +
-                                              'a' + str(annotator_id + 1) + '_' + annotation_file)) > 0:
+                    annotator_data_url = annotation_project_root + info[0] + '/' + \
+                                         'a' + str(annotator_id + 1) + '_' + 'r' + str(item[0]) + "_annotation.txt"
+                    annotator_data = numpy.loadtxt(annotator_data_url, delimiter=",", dtype=int)
 
-                        write_path = export_path + 'a' + str(annotator_id + 1) + '/' + info[0] + '/'
-                        if not os.path.exists(write_path):
-                            os.mkdir(write_path)
+                    write_url = export_path + 'a' + str(annotator_id + 1) + '/' + info[0] + '/' \
+                                + '_' + 'r' + str(item[0]) + '_original.png'
+                    cv2.imwrite(write_url, original_pic)
 
-                        annotator_data_url = annotation_project_root + info[0] + '/' + \
-                                             'a' + str(annotator_id + 1) + '_' + annotation_file
-                        annotator_data = numpy.loadtxt(annotator_data_url, delimiter=",", dtype=int)
+                    mask = numpy.zeros(original_pic.shape)
+                    mask_original = numpy.zeros(original_pic.shape)
 
-                        write_url = export_path + 'a' + str(annotator_id + 1) + '/' + info[0] + '/' \
-                                    + annotation_file[:-4] + '_original.png'
-                        cv2.imwrite(write_url, original_pic)
+                    for i, val in enumerate(annotator_data):
+                        if i != 1 and val != 0:
+                            mask[region_image == i] = colour[int(val) - 1]
+                            mask_original[region_image == i] = (original_pic[region_image == i] * 2.7
+                                                                + colour[val - 1]) / 3.3
+                        else:
+                            mask_original[region_image == i] = original_pic[region_image == i]
 
-                        mask = numpy.zeros(original_pic.shape)
-                        mask_original = numpy.zeros(original_pic.shape)
+                    write_url = export_path + 'a' + str(annotator_id + 1) + '/' + info[0] + '/' \
+                                + '_' + 'r' + str(item[0]) + '_mask.png'
+                    cv2.imwrite(write_url, mask)
 
-                        for i, val in enumerate(annotator_data):
-                            if i != 1 and val != 0:
-                                mask[region_image == i] = colour[int(val) - 1]
-                                mask_original[region_image == i] = (original_pic[region_image == i] * 2.7
-                                                                    + colour[val - 1]) / 3.3
-                            else:
-                                mask_original[region_image == i] = original_pic[region_image == i]
+                    mask_original[region_image == -1] = tuple([0, 0, 0])
+                    write_url = export_path + 'a' + str(annotator_id + 1) + '/' + info[0] + '/' \
+                                + '_' + 'r' + str(item[0]) + '_mask_original.png'
+                    cv2.imwrite(write_url, mask_original)
 
-                        write_url = export_path + 'a' + str(annotator_id + 1) + '/' + info[0] + '/' \
-                                    + annotation_file[:-4] + '_mask.png'
-                        cv2.imwrite(write_url, mask)
+                    write_url = export_path + 'a' + str(annotator_id + 1) + '/' + info[0] + '/' \
+                                + '_' + 'r' + str(item[0]) + '_annotator_data.txt'
+                    numpy.savetxt(write_url, annotator_data, fmt="%d", delimiter=",")
 
-                        mask_original[region_image == -1] = tuple([0, 0, 0])
-                        write_url = export_path + 'a' + str(annotator_id + 1) + '/' + info[0] + '/' \
-                                    + annotation_file[:-4] + '_mask_original.png'
-                        cv2.imwrite(write_url, mask_original)
-
-                        write_url = export_path + 'a' + str(annotator_id + 1) + '/' + info[0] + '/' \
-                                    + annotation_file[:-4] + '_annotator_data.txt'
-                        numpy.savetxt(write_url, annotator_data, fmt="%d", delimiter=",")
-
-                        write_url = export_path + 'a' + str(annotator_id + 1) + '/' + info[0] + '/' \
-                                    + annotation_file[:-4] + '_boundary.txt'
-                        numpy.savetxt(write_url, region_image, fmt="%d", delimiter=",")
+                    write_url = export_path + 'a' + str(annotator_id + 1) + '/' + info[0] + '/' \
+                                + '_' + 'r' + str(item[0]) + '_boundary.txt'
+                    numpy.savetxt(write_url, region_image, fmt="%d", delimiter=",")
 
     annotator_no = 6
     for annotator_id in range(annotator_no):
@@ -264,14 +290,20 @@ def export_freehand_annotation_data(manifest_file_url):
     export_path = export_annotation_root + manifest_file_url.rsplit("/", 1)[1][:-4] + '/freehand_annotation/'
     if os.path.exists(export_path):
         shutil.rmtree(export_path)
+    elif not os.path.exists(export_annotation_root + manifest_file_url.rsplit("/", 1)[1][:-4]):
+        os.mkdir(export_annotation_root + manifest_file_url.rsplit("/", 1)[1][:-4])
     os.mkdir(export_path)
 
     annotator_no = 6
     for annotator_id in range(annotator_no):
         os.mkdir(export_path + 'a' + str(annotator_id + 1) + '/')
 
-    down = 32
+    down = 4
+    down_save = 32
+    wsi_count = 0
     for wsi in manifest_txt:
+        print("start export freehand annotation:" + str(wsi_count) + '/' + str(len(manifest_txt)))
+        wsi_count += 1
         info = wsi.split('\t')
         if not os.path.exists(annotation_project_root + info[0] + '/'):
             continue
@@ -287,59 +319,129 @@ def export_freehand_annotation_data(manifest_file_url):
                     except Exception as e:
                         print('Error:', e)
                         continue
+
                 img_height = dimensions[1]
                 img_width = dimensions[0]
-                mask = numpy.zeros([int(img_height / down), int(img_width / down), 1], numpy.uint8)
+
+                if not os.path.exists(export_path + 'a' + str(annotator_id + 1) + '/' + 'Background'):
+                    os.mkdir(export_path + 'a' + str(annotator_id + 1) + '/' + 'Background')
+
+                oslide = openslide.OpenSlide(original_data_root + info[0] + '/' + info[1])
+                level = oslide.get_best_level_for_downsample(16)
+                reading_size = [int(img_width / oslide.level_downsamples[level]),
+                                int(img_height / oslide.level_downsamples[level])]
+                mask = oslide.read_region((0, 0), level, reading_size)
+
+                mask = numpy.array(mask)
+                mask = cv2.resize(mask, (int(img_width / 16), int(img_height / 16)))
+                r, g, b, a = cv2.split(mask)
+                mask = cv2.merge([r, g, b])
+
+                mask = cv2.cvtColor(mask, cv2.COLOR_RGB2GRAY)
+                mask = cv2.GaussianBlur(mask, (61, 61), 0)
+                ret, mask = cv2.threshold(mask, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+                write_url = export_path + 'a' + str(annotator_id + 1) + '/' + 'Background' + '/' \
+                            + info[0] + '.png'
+                mask = cv2.resize(mask, (int(img_width / down_save), int(img_height / down_save)))
+                cv2.imwrite(write_url, mask)
+                oslide.close()
+
                 db = SqliteConnector(annotation_project_root + info[0] + '/' + 'a' + str(annotator_id + 1) + '.db')
-                for temp in db.get_lines():
-                    if temp[1] < 10:
-                        temp1 = 10
-                    elif temp[1] >= img_width - 10:
-                        temp1 = img_width - 10
-                    else:
-                        temp1 = temp[1]
+                for grade in range(1, 5):
+                    mask = numpy.zeros([int(img_height / down), int(img_width / down), 1], numpy.uint8)
+                    if not os.path.exists(export_path + 'a' + str(annotator_id + 1) + '/' + 'Grade' + str(grade)):
+                        os.mkdir(export_path + 'a' + str(annotator_id + 1) + '/' + 'Grade' + str(grade))
 
-                    if temp[2] < 10:
-                        temp2 = 10
-                    elif temp[2] >= img_height - 10:
-                        temp2 = img_height - 10
-                    else:
-                        temp2 = temp[2]
+                    for temp in db.get_lines():
+                        if temp[5] != grade:
+                            continue
+                        if temp[1] < down_save:
+                            temp1 = down_save
+                        elif temp[1] >= img_width - down_save:
+                            temp1 = img_width - down_save
+                        else:
+                            temp1 = temp[1]
 
-                    if temp[3] < 10:
-                        temp3 = 10
-                    elif temp[3] >= img_width - 10:
-                        temp3 = img_width - 10
-                    else:
-                        temp3 = temp[3]
+                        if temp[2] < down_save:
+                            temp2 = down_save
+                        elif temp[2] >= img_height - down_save:
+                            temp2 = img_height - down_save
+                        else:
+                            temp2 = temp[2]
 
-                    if temp[4] < 10:
-                        temp4 = 10
-                    elif temp[4] >= img_height - 10:
-                        temp4 = img_height - 10
-                    else:
-                        temp4 = temp[4]
+                        if temp[3] < down_save:
+                            temp3 = down_save
+                        elif temp[3] >= img_width - down_save:
+                            temp3 = img_width - down_save
+                        else:
+                            temp3 = temp[3]
 
-                    cv2.line(mask, (int(temp1 / down), int(temp2 / down)),
-                             (int(temp3 / down), int(temp4 / down)), 255, 4)
-                kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (30, 30))
-                mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+                        if temp[4] < down_save:
+                            temp4 = down_save
+                        elif temp[4] >= img_height - down_save:
+                            temp4 = img_height - down_save
+                        else:
+                            temp4 = temp[4]
 
-                contours, hierarchy = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-                cv2.drawContours(mask, contours, -1, 255, -1)
+                        cv2.line(mask, (int(temp1 / down), int(temp2 / down)),
+                                 (int(temp3 / down), int(temp4 / down)), 255, 4)
+                    # kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+                    # mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
 
-                mask_new = mask.copy()
-                contours_new, hierarchy_new = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-                cv2.drawContours(mask_new, contours_new, -1, 255, -1)
+                    # contours, hierarchy = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+                    # cv2.drawContours(mask, contours, -1, 255, -1)
+                    #
+                    # mask_new = mask.copy()
+                    # contours_new, hierarchy_new = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+                    # cv2.drawContours(mask_new, contours_new, -1, 255, -1)
+                    #
+                    # while not (mask_new == mask).all():
+                    #     mask = mask_new.copy()
+                    #     contours_new, hierarchy_new = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+                    #     cv2.drawContours(mask_new, contours_new, -1, 255, -1)
+                    #
+                    # mask = mask_new.copy()
 
-                while not (mask_new == mask).all():
-                    mask = mask_new.copy()
-                    contours_new, hierarchy_new = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-                    cv2.drawContours(mask_new, contours_new, -1, 255, -1)
+                    contours, hierarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+                    mask = numpy.zeros([int(img_height / down), int(img_width / down), 1], numpy.uint8)
+                    # print(hierarchy)
+                    for index in range(len(contours)):
+                        if hierarchy[0][index][3] != -1:
+                            cv2.drawContours(mask, contours, index, 255, -1)
 
-                mask = mask_new.copy()
+                    # kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+                    # mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
 
-                write_url = export_path + 'a' + str(annotator_id + 1) + '/' + info[0] + '.png'
+                    write_url = export_path + 'a' + str(annotator_id + 1) + '/' + 'Grade' + str(grade) + '/' \
+                                + info[0] + '.png'
+                    mask = cv2.resize(mask, (int(img_width / down_save), int(img_height / down_save)))
+                    cv2.imwrite(write_url, mask)
+
+                contours_list = []
+                for grade in range(1, 5):
+                    temp = cv2.imread(export_path + 'a' + str(annotator_id + 1) + '/' + 'Grade' + str(grade) + '/' \
+                                      + info[0] + '.png', 0)
+                    contours, hierarchy = cv2.findContours(temp, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+                    contours_list.append(contours)
+
+                mask = numpy.zeros([int(img_height / down_save), int(img_width / down_save), 3], numpy.uint8)
+
+                color = [(0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 0, 0)]
+                for loop_times in range(5):
+                    for grade in range(4):
+                        contours_temp = contours_list[grade].copy()
+                        for index in range(len(contours_temp)):
+                            mask_new = mask.copy()
+                            cv2.drawContours(mask_new, contours_temp, index, color[grade], 1)
+                            if not (mask_new == mask).all():
+                                cv2.drawContours(mask_new, contours_temp, index, color[grade], -1)
+                                mask = mask_new.copy()
+                            else:
+                                contours_list[grade].remove(contours_temp[index])
+                if not os.path.exists(export_path + 'a' + str(annotator_id + 1) + '/' + 'summary'):
+                    os.mkdir(export_path + 'a' + str(annotator_id + 1) + '/' + 'summary')
+                write_url = export_path + 'a' + str(annotator_id + 1) + '/' + 'summary' + '/' \
+                            + info[0] + '.png'
                 cv2.imwrite(write_url, mask)
 
     annotator_no = 6
@@ -352,6 +454,7 @@ def export_freehand_annotation_data(manifest_file_url):
 
 
 def refresh_npy():
+    global annotation_project_table
     result = []
     available_slide_id = []
     for item in manifest_controller.get_available_slide_id():
@@ -426,8 +529,12 @@ def refresh_npy():
 
         temp.append("Unavailable")
 
-        temp.append('<a href="/nuclei_annotation?' + 'project=' + str(project_name)  # '&slide_id=' + str(slide_id[0])
-                    + '" target="_Blank">nuclei annotate </a>')
+        temp.append(
+            '<a href="/nuclei_annotation_v2?' + 'project=' + str(project_name)  # '&slide_id=' + str(slide_id[0])
+            + '" target="_Blank">nuclei annotate </a>' + '(' +
+            '<a href="/nuclei_annotation?' + 'project=' + str(project_name)  # '&slide_id=' + str(slide_id[0])
+            + '" target="_Blank">v1 </a>' + ')'
+            )
         temp.append('<a href="/freehand_annotation?' + 'project=' + str(project_name)  # '&slide_id=' + str(slide_id[0])
                     + '" target="_Blank">freehand annotate </a>')
 
@@ -441,9 +548,17 @@ def refresh_npy():
 
     filename = manifest_root + 'table.npy'
     result = numpy.array(result)
+    annotation_project_table = result.copy()
     numpy.save(filename, result)  # 保存为.npy格式
 
     refresh_freehand_annotation_progress()
     refresh_nuclei_annotation_progress()
 
     return
+
+
+annotation_project_table = None
+filename = manifest_root + 'table.npy'
+if not os.path.exists(filename):
+    refresh_npy()
+annotation_project_table = numpy.load(filename)
