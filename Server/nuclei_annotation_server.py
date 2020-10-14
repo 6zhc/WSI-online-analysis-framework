@@ -13,8 +13,8 @@ from Model import manifest
 from Model import nuclei_annotation_sqlite
 from Controller.segmentation_algorithm.segmentation_algorithm import SegmentationModel
 
-model = SegmentationModel()
-graph = tf.get_default_graph()
+# model = SegmentationModel()
+# graph = tf.get_default_graph()
 
 original_data_root = 'static/data/Original_data/'
 nuclei_annotation_data_root = "static/data/nuclei_annotation_data/"
@@ -118,10 +118,11 @@ def add_annotation_sever(app):
 
             region_image_url = annotation_root_folder + 'r' + str(v7) + '.txt'
             if not os.path.exists(region_image_url):
-                with graph.as_default():
-                    mask = model.predict(original_pic_url)
-                print(mask)
-                region_image = model.water_image(mask)
+                # with graph.as_default():
+                #     mask = model.predict(original_pic_url)
+                # print(mask)
+                # region_image = model.water_image(mask)
+                region_image = np.zeros([512, 512], dtype=np.uint8)
                 np.savetxt(region_image_url, region_image, fmt="%d", delimiter=",")
             else:
                 region_image = np.loadtxt(region_image_url, delimiter=",", dtype=int)
@@ -238,7 +239,7 @@ def add_annotation_sever(app):
         annotation_project = request.args.get('project', default="None", type=str)
         slide_uuid = request.args.get('slide_uuid', default="", type=str)
 
-        allowed_annotator = range(5)
+        allowed_annotator = range(7)
         if annotator_id in allowed_annotator:
             x = request.args.get('x', 0, type=int)
             y = request.args.get('y', 0, type=int)
@@ -265,7 +266,7 @@ def add_annotation_sever(app):
         annotation_project = request.args.get('project', default="None", type=str)
         slide_uuid = request.args.get('slide_uuid', default="", type=str)
 
-        allowed_annotator = range(5)
+        allowed_annotator = range(7)
 
         if annotator_id in allowed_annotator:
             sw_id = request.args.get('sw_id', 0, type=int)
@@ -282,10 +283,14 @@ def add_annotation_sever(app):
             region_image_url = annotation_root_folder + 'r' + str(sw_id) + '.txt'
             if os.path.exists(region_image_url):
                 os.remove(region_image_url)
-            for annotator_id in range(6):
+            for annotator_id in range(7):
+
                 annotator_data_url = annotation_root_folder + 'a' + str(annotator_id) + '_r' + str(sw_id) + '.txt'
                 if os.path.exists(annotator_data_url):
                     os.remove(annotator_data_url)
+                result_pic_url = annotation_root_folder + 'a' + str(annotator_id) + '_r' + str(sw_id) + '.png'
+                if os.path.exists(result_pic_url):
+                    os.remove(result_pic_url)
 
             message = 'Successfully removed diagnostic region'
         else:
