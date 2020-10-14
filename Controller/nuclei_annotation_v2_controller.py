@@ -143,7 +143,13 @@ def update_grade(region_inform, data):
 
     if not os.path.exists(boundary_file_name):
         point_2_boundary(region_inform)
+
     boundary_file = numpy.loadtxt(boundary_file_name, dtype=numpy.int16, delimiter=',')
+    boundary_file += len(data['grade'])
+    boundary_file[boundary_file == len(data['grade']) - 1] -= len(data['grade'])
+    boundary_file[boundary_file == len(data['grade']) + 1] -= len(data['grade'])
+
+
     points_file = open(points_file_name, 'w')
     grades_file = open(grades_file_name, 'w')
 
@@ -159,15 +165,22 @@ def update_grade(region_inform, data):
                     nuclei_id = int(boundary_file[int(data['points_y'][i]), int(data['points_x'][i]) + 1])
                 except:
                     pass
-        if nuclei_id != i + 2 and nuclei_id != 1:
-            if nuclei_id != -1:
-                try:
-                    data['grade'][nuclei_id - 2] = data['grade'][i]
-                    if int(data['grade'][i]) == 0:
-                        boundary_file[boundary_file == nuclei_id] = 0
-                except:
-                    print("------------- error: " + nuclei_id + "++++++++++++")
-            data['grade'][i] = 0
+
+        if nuclei_id != 1 and nuclei_id != -1:
+            boundary_file[boundary_file == nuclei_id] = i + 2
+            if nuclei_id < len(data['grade']):
+                data['grade'][nuclei_id - 2] = 0
+        if data['grade'][i] == 0:
+            boundary_file[boundary_file == i + 2] = 0
+        # if nuclei_id != i + 2 and nuclei_id != 1:
+        #     if nuclei_id != -1:
+        #         try:
+        #             data['grade'][nuclei_id - 2] = data['grade'][i]
+        #             if int(data['grade'][i]) == 0:
+        #                 boundary_file[boundary_file == nuclei_id] = 0
+        #         except:
+        #             print("------------- error: " + nuclei_id + "++++++++++++")
+        #     data['grade'][i] = 0
 
     current_nuclei_id = 0
     for i in range(len(data['grade'])):
