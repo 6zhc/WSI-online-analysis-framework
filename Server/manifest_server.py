@@ -75,6 +75,8 @@ def add_manifest_server(app):
                 print(e)
                 return render_template('warning.html', info='file uploaded fail')
             try:
+                if not os.path.exists(icon_root + slide_uuid + '/'):
+                    os.mkdir(icon_root + slide_uuid + '/')
                 icon_file_path = icon_root + slide_uuid + '/' + 'icon.png'
                 image_processing.generate_icon_image_from_svs_file(
                     'Data/Original_data/' + slide_uuid + '/' + file.filename,
