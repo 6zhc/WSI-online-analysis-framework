@@ -11,6 +11,7 @@ from Controller import annotation_project_controller
 import os
 import uuid
 
+icon_root = 'static/data/slide_icon/'
 
 def add_manifest_server(app):
     @app.route('/slide_table')
@@ -65,17 +66,19 @@ def add_manifest_server(app):
         else:
             if slide_uuid == "":
                 slide_uuid = str(uuid.uuid4())
-            if not os.path.exists('Data/' + slide_uuid):
-                os.mkdir('Data/' + slide_uuid)
+            if not os.path.exists('Data/Original_data/' + slide_uuid):
+                os.mkdir('Data/Original_data/' + slide_uuid)
             try:
-                file.save('Data/' + slide_uuid + '/' + file.filename)
+                file.save('Data/Original_data/' + slide_uuid + '/' + file.filename)
                 manifest_controller.add_wsi(slide_uuid, file.filename)
             except Exception as e:
                 print(e)
                 return render_template('warning.html', info='file uploaded fail')
             try:
-                image_processing.generate_icon_image_from_svs_file('Data/' + slide_uuid + '/' + file.filename,
-                                                                   'Data/' + slide_uuid + '/icon.png')
+                icon_file_path = icon_root + slide_uuid + '/' + 'icon.png'
+                image_processing.generate_icon_image_from_svs_file(
+                    'Data/Original_data/' + slide_uuid + '/' + file.filename,
+                    icon_file_path)
             except Exception as e:
                 print(e)
             return render_template('warning.html', info='file uploaded successfully')
