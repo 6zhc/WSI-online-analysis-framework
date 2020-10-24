@@ -20,9 +20,9 @@
     <script src="static/select2.min.js"></script>
 
     {#    <script src="https://unpkg.com/ag-grid-community/dist/ag-grid-community.min.noStyle.js"></script>#}
-    <script src="https://unpkg.com/@ag-grid-enterprise/all-modules@23.2.1/dist/ag-grid-enterprise.min.js"></script>
+    {#    <script src="https://unpkg.com/@ag-grid-enterprise/all-modules@24.1.0/dist/ag-grid-enterprise.min.js"></script>#}
 
-
+    <script src="https://unpkg.com/ag-grid-enterprise/dist/ag-grid-enterprise.min.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/ag-grid-community/dist/styles/ag-grid.css">
     <link rel="stylesheet" href="https://unpkg.com/ag-grid-community/dist/styles/ag-theme-alpine.css">
 
@@ -106,19 +106,21 @@
                 console.log(entityToString("{{column_addition}}"));
                 columnDefs = [
                     {
-                        field: '', headerName: '', checkboxSelection: true, width: '2',
+                        field: '', headerName: '', checkboxSelection: true, width: 2,
                         sortable: false, resizable: true, filter: 'agTextColumnFilter',pinned :'left',
                     },{
                         field: 'bcr_patient_barcode', headerName: '名称',
                         sortable: true, resizable: true, filter: 'agTextColumnFilter',pinned :'left',
                         onCellClicked: test_function
-                    },  {
-                        field: 'bcr_patient_uuid', headerName: '病人UUID',
-                        sortable: true, resizable: true, filter: 'agTextColumnFilter'
-                    }, {
+                    }]
+                    .concat(JSON.parse(entityToString("{{column_addition}}"))).concat([
+                        {
                         field: 'predict_result', headerName: '预测结果',
                         sortable: true, resizable: true, filter: 'agNumberColumnFilter'
-                    }, {
+                        }, {
+                            field: 'bcr_patient_uuid', headerName: '病人UUID',
+                            sortable: true, resizable: true, filter: 'agTextColumnFilter'
+                        }, {
                         field: 'person_neoplasm_cancer_status', headerName: '肿瘤癌状况',
                         sortable: true, resizable: true, filter: 'agTextColumnFilter'
                     }, {
@@ -155,7 +157,7 @@
                         field: 'vital_status', headerName: '生存状态',
                         sortable: true, resizable: true, filter: 'agTextColumnFilter'
                     },
-                ].concat(JSON.parse(entityToString("{{column_addition}}")));
+                    ]);
 
                 var gridOptions = {
                     columnDefs: columnDefs,
@@ -187,7 +189,7 @@
                     enableRangeHandle: true,
                     groupSelectsFiltered: true,
                     groupSelectsChildren: true,
-                    checkbox: true,
+                    // checkbox: true,
                     suppressRowClickSelection: true
                 };
 

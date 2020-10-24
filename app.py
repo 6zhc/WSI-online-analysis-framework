@@ -62,6 +62,7 @@ nuclei_annotation_v2_server.add_annotation_sever(app)
 
 app.config['JSON_AS_ASCII'] = False
 
+
 @app.route('/')
 @login_required
 def index():
@@ -109,28 +110,24 @@ def items():
         return jsonify({'data': f_csv, 'totals': len(f_csv)})
 
 
-@app.route('/items_column')
-@login_required
-def items_column():
-    keys = []
-    table = request.args.get('table', type=str)
-    with open(table, encoding='utf-8')as f:
-        f_csv = csv.DictReader(f)
-        f_csv = list(f_csv)
-        for key in f_csv[0]:
-            if key[:6] == "result":
-                keys.append(key)
-        return jsonify(keys)
-
-
 @app.route('/table2')
 @login_required
 def table2():
     table = request.args.get('table', type=str)
     if table is None:
         return redirect("table2?table=test2.csv")
-    # table = request.args.get('table', default='test2.csv', type=str)
-    return render_template('table2.html', table=table)
+
+    keys = []
+    with open(table, encoding='utf-8')as f:
+        f_csv = csv.DictReader(f)
+        f_csv = list(f_csv)
+        for key in f_csv[0]:
+            if key[:6] == "result":
+                keys.append({
+                    "field": key, "headerName": key[7:],
+                    "sortable": True, "resizable": True, "filter": 'agTextColumnFilter',
+                })
+    return render_template('table2.html', table=table, column_addition=json.dumps(keys))
 
 
 def is_number(s):
@@ -149,18 +146,33 @@ def is_number(s):
 
     return False
 
-@app.route('/item2')
-@login_required
-def items2():
-    with open('test2.csv', encoding='utf-8')as f:
-        f_csv = csv.DictReader(f)
-        f_csv = list(f_csv)
-        for i in range(len(f_csv)):
-            for key in f_csv[i]:
-                if is_number(f_csv[i][key]):
-                    f_csv[i][key] = int(f_csv[i][key])
 
-        return jsonify({'data': f_csv, 'totals': len(f_csv)})
+# @app.route('/items_column')
+# @login_required
+# def items_column():
+#     keys = []
+#     table = request.args.get('table', type=str)
+#     with open(table, encoding='utf-8')as f:
+#         f_csv = csv.DictReader(f)
+#         f_csv = list(f_csv)
+#         for key in f_csv[0]:
+#             if key[:6] == "result":
+#                 keys.append(key)
+#         return jsonify(keys)
+
+
+# @app.route('/item2')
+# @login_required
+# def items2():
+#     with open('test2.csv', encoding='utf-8')as f:
+#         f_csv = csv.DictReader(f)
+#         f_csv = list(f_csv)
+#         for i in range(len(f_csv)):
+#             for key in f_csv[i]:
+#                 if is_number(f_csv[i][key]):
+#                     f_csv[i][key] = int(f_csv[i][key])
+#
+#         return jsonify({'data': f_csv, 'totals': len(f_csv)})
 
 
 @app.route('/find_slide')

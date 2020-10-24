@@ -20,9 +20,9 @@
     <script src="static/select2.min.js"></script>
 
     {#    <script src="https://unpkg.com/ag-grid-community/dist/ag-grid-community.min.noStyle.js"></script>#}
-    <script src="https://unpkg.com/@ag-grid-enterprise/all-modules@23.2.0/dist/ag-grid-enterprise.min.js"></script>
+    {#    <script src="https://unpkg.com/@ag-grid-enterprise/all-modules@23.2.0/dist/ag-grid-enterprise.min.js"></script>#}
 
-
+    <script src="https://unpkg.com/ag-grid-enterprise/dist/ag-grid-enterprise.min.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/ag-grid-community/dist/styles/ag-grid.css">
     <link rel="stylesheet" href="https://unpkg.com/ag-grid-community/dist/styles/ag-theme-alpine.css">
 
@@ -94,11 +94,20 @@
                     console.log(test.value);
                     window.open("/find_slide?svs_file=" + test.value + "&project=table2","_blank","")
                 };
+
+                function entityToString(entity) {
+                    var div = document.createElement('div');
+                    div.innerHTML = entity;
+                    var res = div.innerText || div.textContent;
+                    console.log(entity, '->', res);
+                    return res;
+                }
                 columnDefs = [
                     {
                         field: '', headerName: '', checkboxSelection: true, width: '2',
                         sortable: false, resizable: true, filter: 'agTextColumnFilter',pinned :'left',
-                    },{
+                    }
+                ].concat(JSON.parse(entityToString("{{column_addition}}"))).concat([{
                         field: '病理号', headerName: '病理号',
                         sortable: true, resizable: true, filter: 'agTextColumnFilter',pinned :'left',
                         onCellClicked: test_function
@@ -124,7 +133,7 @@
                         field: '肿瘤类型', headerName: '肿瘤类型',
                         sortable: true, resizable: true, filter: 'agNumberColumnFilter'
                     },
-                ];
+                ]);
 
                 function MedalCellRenderer() {
                 }
