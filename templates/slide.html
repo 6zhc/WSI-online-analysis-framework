@@ -34,6 +34,14 @@
         navigatorPosition: "BOTTOM_RIGHT",
     });
 
+    var mouse_tracker = new OpenSeadragon.MouseTracker({ //set mouse tracker
+        element: viewer.container,
+        moveHandler: (event) => {
+            console.log(viewer.world.getItemAt(0).viewerElementToImageCoordinates(event.position))
+        },
+    });
+    mouse_tracker.setTracking(true);
+
     let add_mask = function (mask_name) {
         let mask_root = "{{ mask_root}}";
         let Bound_Viewport = viewer.world.getItemAt(0).getBounds();
