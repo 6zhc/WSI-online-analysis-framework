@@ -313,7 +313,8 @@ def make_region_back(manifest_name, region_size):
             oslide = openslide.OpenSlide(svs_file_path)
             manifest_file.writelines(wsi[1] + '\t' + wsi[2] + '\t' + 'None' + os.linesep)
             for item in tba_result:
-                patch = oslide.read_region((item[1] - 256, item[2] - 256), 0, (region_size, region_size))
+                patch = oslide.read_region((item[1] - 256 - int(region_size / 2), item[2] - 256 - int(region_size / 2)),
+                                           0, (region_size, region_size))
                 patch.save(
                     export_folder + wsi[2] + '/' + str(item[1]) + '_' + str(item[2]) + '_' + str(region_size) + '.png')
             oslide.close()

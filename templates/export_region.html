@@ -10,12 +10,14 @@ Manifest Name: <input type="text" id="name" value="table">
 Region Size: <input type="number" id="size" value="2000">
 <br/>
 <button onclick="javascript:make_region();">Make Region</button>
+<button onclick="javascript:check_file();">Check File</button>
 <br/>
 <a href=""></a>
 Download URL:
 <div id="url"></div>
 
 <script>
+    let file_url = ""
     make_region = function () {
         manifest_name = document.getElementById("name").value;
         region_size = document.getElementById("size").value;
@@ -23,25 +25,25 @@ Download URL:
         httpRequest.open('GET', '/make_region?manifest_name=' + manifest_name + '&region_size=' + region_size, true);
         httpRequest.send();
         httpRequest.onreadystatechange = function () {
-            if (httpRequest.readyState === 4)
+            if (httpRequest.readyState === 3)
                 if (httpRequest.status === 200) {
-                    let file_url = httpRequest.responseText;//获取到json字符串，还需解析
+                    file_url = httpRequest.responseText;//获取到json字符串，还需解析
                     console.log(file_url);
                     document.getElementById("url").innerHTML = '<a>' + file_url + '</a>';
-                    setTimeout("check_file('" + file_url + "')", 5000);
+                    setTimeout("check_file('" + file_url + "')", 60000);
                 } else alert("Error!!")
         };
     };
-    check_file = function (file_url) {
+    check_file = function () {
         console.log(file_url)
         var httpRequest = new XMLHttpRequest();
         httpRequest.open('GET', file_url, true);
         httpRequest.send();
         httpRequest.onreadystatechange = function () {
-            if (httpRequest.readyState === 4)
+            if (httpRequest.readyState === 3)
                 if (httpRequest.status === 200) {
                     document.getElementById("url").innerHTML = '<a href="' + file_url + '">' + file_url + '</a>'
-                } else setTimeout("check_file('" + file_url + "')", 5000);
+                } // else setTimeout("check_file('" + file_url + "')", 5000);
         }
     }
 </script>
