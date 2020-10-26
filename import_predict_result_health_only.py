@@ -3,12 +3,14 @@ import openslide, numpy
 import cv2
 from Controller import manifest_controller
 
-tcga_data = pandas.read_csv("test_predict.csv")
+Patient_data = pandas.read_csv("test_predict.csv")
 
-original_data_root = "Data/Original_data/"
-analysis_data_root = "Data/analysis_data/"
+Original_data_root = "Data/Original_data/"
+Analysis_data_root = "Data/analysis_data/"
 
-predict_file = [
+Patient_ID_column = "bcr_patient_barcode"
+
+Predict_file = [
     "/home1/gzy/Subtype/SSLDataIndex/0.5/f2_testwsi_crd_details.csv",
     "/home1/gzy/Subtype/SSLDataIndex/0.5/fully_testwsi_crd_details.csv",
     "/home1/gzy/Subtype/SSLDataIndex/0.5/meta_testwsi_crd_details.csv"
@@ -22,7 +24,7 @@ def sigmoid(x):
 def save_data(old_files_name, old_mask_region, predict_file_name):
     if old_files_name != "":
         slide_inform = manifest_controller.get_project_by_similar_svs_file(old_files_name)[0]
-        analysis_data_folder = analysis_data_root + slide_inform[1] + '/'
+        analysis_data_folder = Analysis_data_root + slide_inform[1] + '/'
         if not os.path.exists(analysis_data_folder):
             os.mkdir(analysis_data_folder)
 
@@ -44,16 +46,16 @@ def save_data(old_files_name, old_mask_region, predict_file_name):
         cv2.imwrite(analysis_data_folder + predict_file_name + '_' + summary_region + "mask_region.png",
                     old_mask_region)
 
-        for index_temp in range(len(tcga_data["bcr_patient_barcode"])):
-            if old_files_name.find(tcga_data["bcr_patient_barcode"][index_temp]) != -1:
-                tcga_data["result_" + predict_file_name][index_temp] += summary_region + "; "
-        tcga_data.to_csv("test_predict_region_only.csv")
+        for index_temp in range(len(Patient_data[Patient_ID_column])):
+            if old_files_name.find(Patient_data[Patient_ID_column][index_temp]) != -1:
+                Patient_data["result_" + predict_file_name][index_temp] += summary_region + "; "
+        Patient_data.to_csv("test_predict_region_only.csv")
         print(old_files_name)
 
 
-for predict_file_url in predict_file:
+for predict_file_url in Predict_file:
     predict_file_name = predict_file_url.split("/")[-1][:-4]
-    tcga_data["result_" + predict_file_name] = ""
+    Patient_data["result_" + predict_file_name] = ""
     csv_data = pandas.read_csv(predict_file_url)
     files = []
     x = []
@@ -76,7 +78,7 @@ for predict_file_url in predict_file:
             old_files_name = files[index]
             slide_inform = manifest_controller.get_project_by_similar_svs_file(files[index])[0]
 
-            original_data_folder = original_data_root + slide_inform[1] + '/'
+            original_data_folder = Original_data_root + slide_inform[1] + '/'
 
             svs_file = original_data_folder + slide_inform[2]
             oslide = openslide.OpenSlide(svs_file)
