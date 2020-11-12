@@ -35,6 +35,13 @@ def add_manifest_server(app):
         return jsonify(
             manifest_controller.get_table(page_no * item_per_page - item_per_page, page_no * item_per_page, 0))
 
+    @app.route('/dzi_list_data')
+    def dzi_list_data():
+        page_no = request.args.get('page_no', default=1, type=int)
+        item_per_page = request.args.get('item_per_page', default=15, type=int)
+        return jsonify(
+            manifest_controller.get_dzi_path(page_no * item_per_page - item_per_page, page_no * item_per_page))
+
     @app.route('/refresh_manifest_table_data')
     def refresh_manifest_table_data():
         thread_controller.BackgroundThread(manifest_controller.get_table).start()

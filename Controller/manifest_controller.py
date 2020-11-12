@@ -71,6 +71,25 @@ def get_table(start_no=0, end_no=0, make_icon_mask=1):
     return data
 
 
+def get_dzi_path(start_no=0, end_no=0):
+    mani = manifest.Manifest()
+    data = []
+    wsis = mani.get_projects()
+    if end_no <= 0:
+        end_no = end_no + len(wsis)
+    for wsi in wsis[start_no: end_no]:
+        temp = []
+        temp.append(wsi[0])  # ID
+        temp.append(wsi[1])  # UUID
+        temp.append(wsi[2])  # svs_file
+
+        svs_file_path = original_data_root + wsi[1] + '/' + wsi[2]
+        temp.append("https://pk.zhanghaichuan.com/dzi_online/" + svs_file_path + ".dzi")
+
+        data.append(temp)
+    return data
+
+
 def add_wsi(uuid, svs_file_name):
     mani = manifest.Manifest()
     mani.insert(slide_uuid=uuid, svs_file=svs_file_name)
