@@ -9,7 +9,7 @@ from PIL import Image
 
 from Model import manifest
 from Controller import manifest_controller
-from Model.freehand_annotation_sqlite import SqliteConnector
+from Model import freehand_annotation_sqlite
 from Model import nuclei_annotation_sqlite
 
 manifest_root = "Data/annotation_project_manifest/"
@@ -101,7 +101,7 @@ def refresh_freehand_annotation_progress():
                 for annotator_id in range(annotator_no):
                     if os.path.exists(annotation_project_root + info[0] + '/' +
                                       'a' + str(annotator_id + 1) + '.db') and \
-                            len(SqliteConnector(annotation_project_root + info[0] + '/' +
+                            len(freehand_annotation_sqlite.SqliteConnector(annotation_project_root + info[0] + '/' +
                                                 'a' + str(annotator_id + 1) + '.db').get_lines()) > 0:
                         finish_region_no[annotator_id] += 1
             result_str = ""  # 'Total: ' + str(region_no) + ', <br/>'
@@ -311,7 +311,7 @@ def export_freehand_annotation_data(manifest_file_url):
         for annotator_id in range(annotator_no):
             if os.path.exists(annotation_project_root + info[0] + '/' +
                               'a' + str(annotator_id + 1) + '.db') and \
-                    len(SqliteConnector(annotation_project_root + info[0] + '/' +
+                    len(freehand_annotation_sqlite.SqliteConnector(annotation_project_root + info[0] + '/' +
                                         'a' + str(annotator_id + 1) + '.db').get_lines()) > 0:
                 if not dimensions:
                     try:
@@ -346,7 +346,8 @@ def export_freehand_annotation_data(manifest_file_url):
                 cv2.imwrite(write_url, mask)
                 oslide.close()
 
-                db = SqliteConnector(annotation_project_root + info[0] + '/' + 'a' + str(annotator_id + 1) + '.db')
+                db = freehand_annotation_sqlite.SqliteConnector(
+                    annotation_project_root + info[0] + '/' + 'a' + str(annotator_id + 1) + '.db')
                 for grade in range(1, 5):
                     mask = numpy.zeros([int(img_height / down), int(img_width / down), 1], numpy.uint8)
                     if not os.path.exists(export_path + 'a' + str(annotator_id + 1) + '/' + 'Grade' + str(grade)):
