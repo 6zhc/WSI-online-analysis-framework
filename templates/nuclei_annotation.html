@@ -15,10 +15,11 @@
             src="{{ url_for('static', filename='nuclei_annotation_js/openhi_status.js') }}"></script>
     <script type="text/javascript"
             src="{{ url_for('static', filename='nuclei_annotation_js/openhi_slideInfo.js') }}"></script>
+    <script src="static/select2.min.js"></script>
+
+    <link rel="stylesheet" href="static/select2.min.css">
 
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/nuclei_annotation.css') }}">
-    <link rel="stylesheet" href="static/select2.min.css">
-    <script src="static/select2.min.js"></script>
     <style>
 
     </style>
@@ -73,7 +74,7 @@
             <!-- Slide control -->
             <div class="container" style="margin: 0 0 10px 0; width: calc(100% - 10px); float: left;">
                 <span class="control_header" style="height: 100%; margin:0 10px 0 0; float: left;">Slide ID: </span>
-                <select class="form-control" id="slide_id_select" style="width:200px">
+                <select class="form-control" id="slide_id_select" style="width:400px">
                     <option value=""></option>
                 </select>
                 <form>
@@ -173,13 +174,14 @@
     $('#slide_id_select').select2({
         placeholder: 'Please select slideID'
     });
-    $.get("available_slide" + info_url, function (data) {
+    $.get("available_slide" + info_url + "&annotation_type=nuclei", function (data) {
         console.log(data);
         $('#slide_id_select').select2({
             placeholder: 'Please select slideID',
             data: data,
         });
         $('#slide_id_select').val("{{ slide_id }}").select2();
+        $("#slide_id_select").select2().maximizeSelect2Height();
     });
 
     var viewer = OpenSeadragon({
