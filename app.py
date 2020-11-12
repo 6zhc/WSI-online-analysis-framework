@@ -1,11 +1,11 @@
 import tensorflow as tf
 
-config = tf.ConfigProto()
-# config.gpu_options.per_process_gpu_memory_fraction = 0.4 # 占用GPU90%的显存
-# config.gpu_options.allow_growth = True
-session = tf.Session(config=config)
+
 import uuid
 import json
+import numpy
+import urllib
+
 
 from flask import Flask, render_template, request, redirect
 from flask import jsonify
@@ -31,8 +31,13 @@ from Controller import annotation_project_controller
 import os, csv, openslide, shutil
 
 from Model import nuclei_annotation_sqlite
+from Model import freehand_annotation_sqlite
 from Model import manifest
 
+config = tf.ConfigProto()
+# config.gpu_options.per_process_gpu_memory_fraction = 0.4 # 占用GPU90%的显存
+# config.gpu_options.allow_growth = True
+session = tf.Session(config=config)
 
 try:
     if os.path.exists('static/data'):
@@ -69,6 +74,7 @@ def cors(environ):
     environ.headers['Access-Control-Allow-Method'] = '*'
     environ.headers['Access-Control-Allow-Headers'] = 'x-requested-with,content-type'
     return environ
+
 
 @app.route('/')
 @login_required
@@ -227,12 +233,14 @@ def slide():
     mask_root = "static/data/analysis_data/" + str(info[1]) + '/'
 
     return render_template('slide.html', slide_url=slide_url, slide_id=slide_id,
-                           mask_url=mask_url, mask_root=mask_root)
+                           mask_url=urllib.parse.quote(mask_url), mask_root=mask_root)
 
 
 @app.route('/available_slide')
 @login_required
 def available_slide():
+    annotator_id = current_user.get_id()
+    annotation_type = request.args.get('annotation_type', default="", type=str)
     project = request.args.get('project', default="", type=str)
     if project == "":
         return jsonify(manifest_controller.get_available_slide_id())
@@ -248,6 +256,40 @@ def available_slide():
 
         def takeSecond(elem):
             return elem["id"]
+
+        if annotation_type == "nuclei":
+            for index in range(len(data)):
+                nuclei_annotation_root = "Data/nuclei_annotation_data/"
+                annotation_project_root = nuclei_annotation_root + project + '/'
+                if not os.path.exists(annotation_project_root + data[index]["text"].split(" ")[1] + '/'):
+                    continue
+                tba_list_db = annotation_project_root + data[index]["text"].split(" ")[1] + '/' + 'tba_list.db'
+                if not os.path.exists(tba_list_db):
+                    continue
+                db = nuclei_annotation_sqlite.SqliteConnector(tba_list_db)
+                tba_result = db.get_RegionID_Centre()
+                annotated = 0
+                for item in tba_result:
+                    if os.path.exists(annotation_project_root + data[index]["text"].split(" ")[1] + '/' +
+                                      'a' + annotator_id + '_r' + str(item[0]) + "_annotation.txt") and \
+                            sum(numpy.loadtxt(annotation_project_root + data[index]["text"].split(" ")[1] + '/' +
+                                              'a' + annotator_id + '_r' + str(
+                                item[0]) + "_annotation.txt")) > 0:
+                        annotated += 1
+                if len(tba_result) > 0:
+                    data[index]["text"] = "(" + str(annotated) + '/' + str(len(tba_result)) + ") " + data[index]["text"]
+        elif annotation_type == "freehand":
+            for index in range(len(data)):
+                nuclei_annotation_root = "Data/freehand_annotation_data/"
+                annotation_project_root = nuclei_annotation_root + project + '/'
+                if not os.path.exists(annotation_project_root + data[index]["text"].split(" ")[1] + '/'):
+                    continue
+                if os.path.exists(annotation_project_root + data[index]["text"].split(" ")[1] + '/' +
+                                  'a' + annotator_id + '.db') and \
+                        len(freehand_annotation_sqlite.SqliteConnector(annotation_project_root +
+                                                                       data[index]["text"].split(" ")[1] + '/' +
+                                                                       'a' + annotator_id + '.db').get_lines()) > 0:
+                    data[index]["text"] = "*" + data[index]["text"]
 
         data.sort(key=takeSecond)
         for index in range(len(data)):
