@@ -301,3 +301,44 @@ def add_annotation_sever(app):
                         + str(region_id) + '_mask' + '.txt' + '?a=' + str(uuid.uuid4()),
         }
         return jsonify(result)
+
+    @app.route('/nuclei_annotation_v2/_auto_predict')
+    def nuclei_annotation_v2_auto_predict():
+        slide_id = request.args.get('slide_id', default=1, type=int)
+        annotator_id = request.args.get('annotator_id', default=1, type=int)
+        annotation_project = request.args.get('project', default="None", type=str)
+        slide_uuid = request.args.get('slide_uuid', default="", type=str)
+
+        v7 = request.args.get('var7', 0, type=int)  # Region ID
+
+        region_id = v7
+
+        region_inform = {}
+        region_inform["annotator_id"] = annotator_id
+        region_inform["annotation_project"] = annotation_project
+        region_inform["slide_uuid"] = slide_uuid
+        region_inform["region_id"] = region_id
+
+        mani = manifest.Manifest()
+        wsi = mani.get_project_by_id(slide_id)
+        annotation_root_folder = nuclei_annotation_data_root + annotation_project + '/' + wsi[1] + '/'
+
+        if not os.path.exists(annotation_root_folder):
+            os.mkdir(annotation_root_folder)
+
+        original_pic_url = annotation_root_folder + 'r' + str(v7) + '.png'
+        print(original_pic_url)
+
+        boundary_file_name = annotation_root_folder + 'a' + str(annotator_id) + '_r' + \
+                             str(region_id) + '_boundary' + '.txt'
+        annotation_file_name = annotation_root_folder + 'a' + str(annotator_id) + '_r' + \
+                               str(region_id) + '_annotation' + '.txt'
+        command = "/home1/zhc/.conda/envs/hovernet/bin/python3.6 " \
+                  "/home1/zhc/singleInfer/demo.py " \
+                  + original_pic_url + ' ' + boundary_file_name + ' ' + annotation_file_name
+        print(command)
+        os.system(command)
+        nuclei_annotation_v2_controller.boundary_2_point(region_inform)
+        nuclei_annotation_v2_controller.boundary_2_mask(region_inform)
+
+        return jsonify({})

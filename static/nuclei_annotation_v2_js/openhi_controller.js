@@ -296,7 +296,29 @@ var update_tb_list = function (add_last_mask = false) {
     });
 };
 
-function change_region(region_str) {
+
+var auto_annotation = function () {
+    console.log("auto_annotation.");
+    if (TBA_control.tba_status) {
+        OSD_control.mask_id = OSD_control.mask_id + 1;
+        var data_askFor = { //asking image is larger than we see
+            var7: TBA_control.reg_id,
+        };
+        console.log(data_askFor);
+        set_status(OSD_status2num.image_processing);
+        viewer.clearOverlays();
+        remove_mask();
+        $.getJSON('/nuclei_annotation_v2/_auto_predict' + info_url, data_askFor, function () {
+            update_points_grades();
+            set_status(OSD_status2num.ready);
+            update_mask(TBA_control.reg_id);
+        });
+    } else {
+        document.getElementById("tb_warn").innerHTML = "Cannot auto annotation: Select the 'Region X' first.";
+    }
+};
+
+function change_region(region_str, high = false) {
     if (region_str != 'reg_selected') {
         if (TBA_control.tba_status && document.getElementById("reg_selected")) {
             if (OSD_control.points_annotation && !confirm("你将更新的标注信息，请确认已保存。"))
@@ -313,6 +335,14 @@ function change_region(region_str) {
             width: TBA_control.low_mag_dim / image_info.um_per_px,
             height: TBA_control.low_mag_dim / image_info.um_per_px,
         });
+        if (high) {
+            set_region_bound_centre({
+                x: TBA_list[String(TBA_control.reg_id)][0],
+                y: TBA_list[String(TBA_control.reg_id)][1],
+                width: TBA_control.high_mag_dim / image_info.um_per_px,
+                height: TBA_control.high_mag_dim / image_info.um_per_px,
+            });
+        }
         if (OSD_control.mask_controller) {
             add_mask(TBA_control.reg_id);
         }
@@ -327,6 +357,14 @@ function change_region(region_str) {
             width: TBA_control.low_mag_dim / image_info.um_per_px,
             height: TBA_control.low_mag_dim / image_info.um_per_px,
         });
+        if (high) {
+            set_region_bound_centre({
+                x: TBA_list[String(TBA_control.reg_id)][0],
+                y: TBA_list[String(TBA_control.reg_id)][1],
+                width: TBA_control.high_mag_dim / image_info.um_per_px,
+                height: TBA_control.high_mag_dim / image_info.um_per_px,
+            });
+        }
         add_mask(TBA_control.reg_id);
     }
 }

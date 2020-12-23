@@ -120,7 +120,7 @@ def boundary_2_mask(region_inform):
     mask[:3, :] = [255, 0, 0, 255]
     mask[:, :3] = [255, 0, 0, 255]
 
-    mask_file_name = annotation_root_folder + '/' + 'a' + str(annotator_id) + '_r' + \
+    mask_file_name = annotation_root_folder + 'a' + str(annotator_id) + '_r' + \
                      str(region_id) + '_mask' + '.png'
     cv2.imwrite(mask_file_name, mask)
     return mask_file_name
@@ -148,7 +148,6 @@ def update_grade(region_inform, data):
     boundary_file += len(data['grade'])
     boundary_file[boundary_file == len(data['grade']) - 1] -= len(data['grade'])
     boundary_file[boundary_file == len(data['grade']) + 1] -= len(data['grade'])
-
 
     points_file = open(points_file_name, 'w')
     grades_file = open(grades_file_name, 'w')
@@ -197,5 +196,53 @@ def update_grade(region_inform, data):
             pass
 
     numpy.savetxt(boundary_file_name, boundary_file, fmt='%d', delimiter=",")
+    grades_file.close()
+    points_file.close()
+
+
+def boundary_2_point(region_inform):
+    annotator_id = region_inform["annotator_id"]
+    annotation_project = region_inform["annotation_project"]
+    slide_uuid = region_inform["slide_uuid"]
+    region_id = region_inform["region_id"]
+    annotation_root_folder = nuclei_annotation_data_root + annotation_project + '/' + slide_uuid + '/'
+    points_file_name = annotation_root_folder + 'a' + str(annotator_id) + '_r' + \
+                       str(region_id) + '_points' + '.txt'
+    grades_file_name = annotation_root_folder + 'a' + str(annotator_id) + '_r' + \
+                       str(region_id) + '_grades' + '.txt'
+
+    boundary_file_name = annotation_root_folder + 'a' + str(annotator_id) + '_r' + \
+                         str(region_id) + '_boundary' + '.txt'
+    annotation_file_name = annotation_root_folder + 'a' + str(annotator_id) + '_r' + \
+                           str(region_id) + '_annotation' + '.txt'
+
+    boundary_file = numpy.loadtxt(boundary_file_name, dtype=numpy.int16, delimiter=',')
+    annotation_file = numpy.loadtxt(annotation_file_name, dtype=numpy.int16, delimiter=',')
+
+    points_file = open(points_file_name, 'w')
+    grades_file = open(grades_file_name, 'w')
+
+    for i in range(numpy.max(boundary_file)):
+        if i == 0 or i == 1 or annotation_file[i] == 0 or annotation_file[i] > 6:
+            continue
+        temp = numpy.argwhere(boundary_file == i)
+
+        if temp.size == 0:
+            continue
+
+        x = temp[:, 1]
+        y = temp[:, 0]
+        cx = int(numpy.mean(x))
+        cy = int(numpy.mean(y))
+
+        if boundary_file[cy, cx] == i:
+            points_file.write(str(cx) + ' ' + str(cy) + '\n')
+            grades_file.write(str(annotation_file[i]) + '\n')
+        else:
+            cy = y[len(y) // 2]
+            cx = x[len(x) // 2]
+            points_file.write(str(cx) + ' ' + str(cy) + '\n')
+            grades_file.write(str(annotation_file[i]) + '\n')
+
     grades_file.close()
     points_file.close()
