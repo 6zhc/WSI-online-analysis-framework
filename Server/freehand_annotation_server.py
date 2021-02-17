@@ -137,7 +137,7 @@ def add_annotation_sever(app):
         loc_viewer_size = (v5, v6)
 
         # Update URL configuration
-        slide_url = 'static/cache/' + str(uuid.uuid1()) + '.png'
+        slide_url = 'static/cache/' + str(uuid.uuid1())[:13] + '.png'
 
         mask = numpy.zeros([v6, v5, 4])
 

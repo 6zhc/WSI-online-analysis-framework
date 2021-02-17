@@ -362,23 +362,31 @@ def make_region_back(manifest_name, region_size):
     manifest_file = open(export_folder + "manifest.txt", "w")
     slide_ids = os.listdir(nuclei_annotation_data_root + manifest_name + '/')
     for slide_ID in slide_ids:
-        print(slide_ID)
-        wsi = manifest_controller.get_info_by_uuid(slide_ID)
-        svs_file_path = original_data_root + wsi[1] + '/' + wsi[2]
-        tba_list_db = nuclei_annotation_data_root + manifest_name + '/' + wsi[1] + '/' + 'tba_list.db'
-        db = nuclei_annotation_sqlite.SqliteConnector(tba_list_db)
-        tba_result = db.get_RegionID_Centre()
-        if len(tba_result) > 0:
-            if not os.path.exists(export_folder + wsi[2]):
-                os.mkdir(export_folder + wsi[2])
-            oslide = openslide.OpenSlide(svs_file_path)
-            manifest_file.writelines(wsi[1] + '\t' + wsi[2] + '\t' + 'None' + os.linesep)
-            for item in tba_result:
-                patch = oslide.read_region((item[1] - 256 - int(region_size / 2), item[2] - 256 - int(region_size / 2)),
-                                           0, (region_size, region_size))
-                patch.save(
-                    export_folder + wsi[2] + '/' + str(item[1]) + '_' + str(item[2]) + '_' + str(region_size) + '.png')
-            oslide.close()
+        try:
+            print(slide_ID)
+            wsi = manifest_controller.get_info_by_uuid(slide_ID)
+            svs_file_path = original_data_root + wsi[1] + '/' + wsi[2]
+            tba_list_db = nuclei_annotation_data_root + manifest_name + '/' + wsi[1] + '/' + 'tba_list.db'
+            if not os.path.exists(tba_list_db):
+                continue
+            db = nuclei_annotation_sqlite.SqliteConnector(tba_list_db)
+            tba_result = db.get_RegionID_Centre()
+            if len(tba_result) > 0:
+                if not os.path.exists(export_folder + wsi[2]):
+                    os.mkdir(export_folder + wsi[2])
+                oslide = openslide.OpenSlide(svs_file_path)
+                manifest_file.writelines(wsi[1] + '\t' + wsi[2] + '\t' + 'None' + os.linesep)
+                for item in tba_result:
+                    patch = oslide.read_region(
+                        (item[1] - 256 - int(region_size / 2), item[2] - 256 - int(region_size / 2)),
+                        0, (region_size, region_size))
+                    patch.save(
+                        export_folder + wsi[2] + '/' + str(item[1]) + '_' + str(item[2]) + '_' + str(
+                            region_size) + '.png')
+                oslide.close()
+        except Exception as e:
+            print("ERROR: " + slide_ID)
+            print(e)
 
     manifest_file.close()
     shutil.make_archive("export/" + manifest_name + "_" + str(region_size) + "/", 'zip', export_folder)
