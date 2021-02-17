@@ -1,3 +1,4 @@
+import time
 import os
 import numpy
 import cv2
@@ -282,6 +283,7 @@ def export_freehand_annotation_data(manifest_file_url):
 
     if not (not (manifest_file_url.rsplit("/", 1)[1][:-4] == "") and not (
             manifest_file_url.rsplit("/", 1)[1][:-4] is None)):
+        print(manifest_file_url.rsplit("/", 1)[1][:-4])
         return
     export_file = export_annotation_root + manifest_file_url.rsplit("/", 1)[1][:-4] + '_freehand_annotation.zip'
     if os.path.exists(export_file):
@@ -301,8 +303,10 @@ def export_freehand_annotation_data(manifest_file_url):
     down = 4
     down_save = 32
     wsi_count = 0
+    # print(manifest_txt)
     for wsi in manifest_txt:
-        print("start export freehand annotation:" + str(wsi_count) + '/' + str(len(manifest_txt)))
+        print(time.asctime(time.localtime(time.time())),
+              "start export freehand annotation:" + str(wsi_count) + '/' + str(len(manifest_txt)))
         wsi_count += 1
         info = wsi.split('\t')
         if not os.path.exists(annotation_project_root + info[0] + '/'):
@@ -330,7 +334,11 @@ def export_freehand_annotation_data(manifest_file_url):
                 level = oslide.get_best_level_for_downsample(16)
                 reading_size = [int(img_width / oslide.level_downsamples[level]),
                                 int(img_height / oslide.level_downsamples[level])]
-                mask = oslide.read_region((0, 0), level, reading_size)
+                try:
+                    mask = oslide.read_region((0, 0), level, reading_size)
+                except Exception as e:
+                    print('Error:', e)
+                    continue
 
                 mask = numpy.array(mask)
                 mask = cv2.resize(mask, (int(img_width / 16), int(img_height / 16)))
@@ -438,7 +446,15 @@ def export_freehand_annotation_data(manifest_file_url):
                                 cv2.drawContours(mask_new, contours_temp, index, color[grade], -1)
                                 mask = mask_new.copy()
                             else:
-                                contours_list[grade].remove(contours_temp[index])
+                                for i in range(len(contours_list[grade])):
+                                    try:
+                                        if ((contours_list[grade][i]) == (contours_temp[index])).all():
+                                            contours_list[grade].pop(i)
+                                            break
+                                    except:
+                                        if (contours_list[grade][i]) == (contours_temp[index]):
+                                            contours_list[grade].pop(i)
+                                            break
                 if not os.path.exists(export_path + 'a' + str(annotator_id + 1) + '/' + 'summary'):
                     os.mkdir(export_path + 'a' + str(annotator_id + 1) + '/' + 'summary')
                 write_url = export_path + 'a' + str(annotator_id + 1) + '/' + 'summary' + '/' \
