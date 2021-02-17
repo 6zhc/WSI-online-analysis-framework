@@ -40,20 +40,24 @@
             console.log(viewer.world.getItemAt(0).viewerElementToImageCoordinates(event.position))
         },
     });
-    mouse_tracker.setTracking(true);
+    mouse_tracker.setTracking(false);
 
     let add_mask = function (mask_name) {
         let mask_root = "{{ mask_root}}";
+        // console.log(mask_root + mask_name);
         let Bound_Viewport = viewer.world.getItemAt(0).getBounds();
+        let is_dzi = '.dzi' === mask_name.slice(-4)
         viewer.addTiledImage({
-            tileSource: {
-                type: 'image',
-                url: mask_root + mask_name,
-            },
+            tileSource: is_dzi ?
+                mask_root + mask_name :
+                {
+                    type: 'image',
+                    url: mask_root + mask_name,
+                },
             x: Bound_Viewport.x,
             y: Bound_Viewport.y,
             width: Bound_Viewport.width,
-            opacity: 0.5,
+            opacity: is_dzi ? 1 : 0.3,
             success: function () {
                 if (!mask) {
                     remove_mask();
@@ -70,6 +74,11 @@
             viewer.world.removeItem(viewer.world.getItemAt(1));
     };
 
+    viewer.addHandler('animation-finish', function () {
+        console.log(viewer.viewport.getBounds())
+
+    });
+
     viewer.addHandler('open', function () {
         if (mask_url !== '')
             add_mask(mask_url);
@@ -77,6 +86,7 @@
     });
     mask_url = "{{mask_url}}";
     let mask = 0;
+
 
     document.onkeydown = function (e) {  //listen to the keboard;
         let key = String.fromCharCode(window.event ? e.keyCode : e.which);
