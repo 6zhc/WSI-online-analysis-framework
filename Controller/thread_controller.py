@@ -2,18 +2,19 @@ import threading
 
 
 class BackgroundThread(threading.Thread):
-    def __init__(self, function, slide_id=-1, job_type=-1):
+    def __init__(self, function, var1=-1, var2=-1, var3=-1):
         threading.Thread.__init__(self)
         self.function = function
-        self.slide_id = slide_id
-        self.job_type = job_type
+        self.var1 = var1
+        self.var2 = var2
+        self.var3 = var3
 
     def run(self):
-        if self.slide_id == -1 and self.job_type == -1:
+        if self.var1 == -1:
             self.function()
-        elif self.slide_id == -1:
-            self.function(self.job_type)
-        elif self.job_type == -1:
-            self.function(self.slide_id)
+        elif self.var2 == -1:
+            self.function(self.var1)
+        elif self.var3 == -1:
+            self.function(self.var1, self.var2)
         else:
-            self.function(self.slide_id, self.job_type)
+            self.function(self.var1, self.var2, self.var3)

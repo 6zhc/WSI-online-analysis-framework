@@ -8,6 +8,7 @@ import openslide
 from pathlib import Path
 from PIL import Image
 
+from Controller.make_archive_threadsafe import make_archive_threadsafe
 from Model import manifest
 from Controller import manifest_controller
 from Model import freehand_annotation_sqlite
@@ -17,7 +18,7 @@ manifest_root = "Data/annotation_project_manifest/"
 nuclei_annotation_root = "Data/nuclei_annotation_data/"
 freehand_annotation_root = "Data/freehand_annotation_data/"
 original_data_root = "Data/Original_data/"
-export_annotation_root = "export/"
+export_annotation_root = "static/export/"
 
 
 def get_table():
@@ -121,6 +122,47 @@ def refresh_freehand_annotation_progress():
     return
 
 
+def export_freehand_annotation_list(manifest_name):
+    manifest_txt = open(export_annotation_root + manifest_name + '_slide_table.txt').readlines()
+    annotation_project_root = freehand_annotation_root + manifest_name + '/'
+    annotator_no = 6
+    result = []
+    for wsi in manifest_txt:
+        info = wsi.split('\t')
+        if not os.path.exists(annotation_project_root + info[1] + '/'):
+            continue
+        flag = 0
+        for annotator_id in range(annotator_no):
+            if os.path.exists(annotation_project_root + info[1] + '/' +
+                              'a' + str(annotator_id + 1) + '.db') and \
+                    len(freehand_annotation_sqlite.SqliteConnector(annotation_project_root + info[1] + '/' +
+                                                                   'a' + str(
+                        annotator_id + 1) + '.db').get_lines()) > 0:
+                flag = 1
+                wsi += '\t' + time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(
+                    os.stat(annotation_project_root + info[1] + '/' + 'a' + str(annotator_id + 1) + '.db').st_mtime))
+            else:
+                wsi += '\t' + "No Annotation"
+        if flag == 1:
+            temp = {
+                "Slide ID": wsi.split("\t")[0],
+                "UUID": wsi.split("\t")[1],
+                "svs file": wsi.split("\t")[2],
+                "a1": wsi.split("\t")[3],
+                "a2": wsi.split("\t")[4],
+                "a3": wsi.split("\t")[5],
+                "a4": wsi.split("\t")[6],
+                "a5": wsi.split("\t")[7],
+                "a6": wsi.split("\t")[8],
+                "Download Link": "<a target='_blank' href='/export_freehand_annotation_single?" \
+                                 "manifest_file=Data/annotation_project_manifest/" + manifest_name + \
+                                 ".txt&slide_id=" + wsi.split("\t")[1] + "'> Export </a>",
+
+            }
+            result.append(temp)
+    return result
+
+
 def refresh_nuclei_annotation_export():
     global annotation_project_table
     filename = manifest_root + 'table.npy'
@@ -175,33 +217,46 @@ def refresh_freehand_annotation_export():
     return
 
 
-def export_nuclei_annotation_data(manifest_file_url):
-    manifest_txt = open(manifest_file_url).readlines()
+def export_nuclei_annotation_data(manifest_file_url, manifest_txt=None, expot_file=None):
     annotation_project_root = nuclei_annotation_root + manifest_file_url.rsplit("/", 1)[1][:-4] + '/'
+    if manifest_txt != None:
+        export_annotation_root_temp = "static/cache/" + str(uuid.uuid4()) + "/"
+        if expot_file == None:
+            export_file = export_annotation_root_temp.replace("/cache", "")[:-1] + '.zip'
+        print(export_file)
+        if os.path.exists(export_file):
+            os.remove(export_file)
+
+        export_path = export_annotation_root_temp
+        if os.path.exists(export_path):
+            shutil.rmtree(export_path)
+        os.mkdir(export_path)
+
+    else:
+        manifest_txt = open(manifest_file_url).readlines()
+        if not (not (manifest_file_url.rsplit("/", 1)[1][:-4] == "") and not (
+                manifest_file_url.rsplit("/", 1)[1][:-4] is None)):
+            return
+        export_file = export_annotation_root + manifest_file_url.rsplit("/", 1)[1][:-4] + '_nuclei_annotation.zip'
+        if os.path.exists(export_file):
+            os.remove(export_file)
+
+        export_path = export_annotation_root + manifest_file_url.rsplit("/", 1)[1][:-4] + '/nuclei_annotation/'
+        if os.path.exists(export_path):
+            shutil.rmtree(export_path)
+        elif not os.path.exists(export_annotation_root + manifest_file_url.rsplit("/", 1)[1][:-4]):
+            os.mkdir(export_annotation_root + manifest_file_url.rsplit("/", 1)[1][:-4])
+        os.mkdir(export_path)
 
     colour = [[255, 0, 209], [0, 255, 255], [0, 0, 255], [0, 0, 255],
               [255, 191, 0], [0, 0, 0], [0, 0, 0]]
 
     # colour = [tuple([124, 252, 0]), tuple([0, 255, 255]), tuple([137, 43, 224]),
     #           tuple([255 * 0.82, 255 * 0.41, 255 * 0.12]), tuple([255, 0, 0]), tuple([0, 128, 255])]
-    color_scheme = color_scheme = [
-        [0.49, 0.99, 0], [0, 1, 1], [0.54, 0.17, 0.88], [0.82, 0.41, 0.12],
-        [1, 0, 0], [0, 0.5, 1]
-    ]
-
-    if not (not (manifest_file_url.rsplit("/", 1)[1][:-4] == "") and not (
-            manifest_file_url.rsplit("/", 1)[1][:-4] is None)):
-        return
-    export_file = export_annotation_root + manifest_file_url.rsplit("/", 1)[1][:-4] + '_nuclei_annotation.zip'
-    if os.path.exists(export_file):
-        os.remove(export_file)
-
-    export_path = export_annotation_root + manifest_file_url.rsplit("/", 1)[1][:-4] + '/nuclei_annotation/'
-    if os.path.exists(export_path):
-        shutil.rmtree(export_path)
-    elif not os.path.exists(export_annotation_root + manifest_file_url.rsplit("/", 1)[1][:-4]):
-        os.mkdir(export_annotation_root + manifest_file_url.rsplit("/", 1)[1][:-4])
-    os.mkdir(export_path)
+    # color_scheme = [
+    #     [0.49, 0.99, 0], [0, 1, 1], [0.54, 0.17, 0.88], [0.82, 0.41, 0.12],
+    #     [1, 0, 0], [0, 0.5, 1]
+    # ]
 
     annotator_no = 6
     for annotator_id in range(annotator_no):
@@ -273,28 +328,41 @@ def export_nuclei_annotation_data(manifest_file_url):
         if not os.listdir(export_path + 'a' + str(annotator_id + 1)):
             shutil.rmtree(export_path + 'a' + str(annotator_id + 1))
     if os.listdir(export_path):
-        shutil.make_archive(export_file[:-4], 'zip', export_path)
-    return 'static/' + export_file
+        make_archive_threadsafe(export_file, export_path)
+    return export_file
 
 
-def export_freehand_annotation_data(manifest_file_url):
-    manifest_txt = open(manifest_file_url).readlines()
+def export_freehand_annotation_data(manifest_file_url, manifest_txt=None, export_file=None):
     annotation_project_root = freehand_annotation_root + manifest_file_url.rsplit("/", 1)[1][:-4] + '/'
+    if manifest_txt != None:
+        export_annotation_root_temp = "static/cache/" + str(uuid.uuid4()) + "/"
+        if export_file == None:
+            export_file = export_annotation_root_temp.replace("/cache", "")[:-1] + '.zip'
+        print(export_file)
+        if os.path.exists(export_file):
+            os.remove(export_file)
 
-    if not (not (manifest_file_url.rsplit("/", 1)[1][:-4] == "") and not (
-            manifest_file_url.rsplit("/", 1)[1][:-4] is None)):
-        print(manifest_file_url.rsplit("/", 1)[1][:-4])
-        return
-    export_file = export_annotation_root + manifest_file_url.rsplit("/", 1)[1][:-4] + '_freehand_annotation.zip'
-    if os.path.exists(export_file):
-        os.remove(export_file)
+        export_path = export_annotation_root_temp
+        if os.path.exists(export_path):
+            shutil.rmtree(export_path)
+        os.mkdir(export_path)
+    else:
+        manifest_txt = open(manifest_file_url).readlines()
 
-    export_path = export_annotation_root + manifest_file_url.rsplit("/", 1)[1][:-4] + '/freehand_annotation/'
-    if os.path.exists(export_path):
-        shutil.rmtree(export_path)
-    elif not os.path.exists(export_annotation_root + manifest_file_url.rsplit("/", 1)[1][:-4]):
-        os.mkdir(export_annotation_root + manifest_file_url.rsplit("/", 1)[1][:-4])
-    os.mkdir(export_path)
+        if not (not (manifest_file_url.rsplit("/", 1)[1][:-4] == "") and not (
+                manifest_file_url.rsplit("/", 1)[1][:-4] is None)):
+            print(manifest_file_url.rsplit("/", 1)[1][:-4])
+            return
+        export_file = export_annotation_root + manifest_file_url.rsplit("/", 1)[1][:-4] + '_freehand_annotation.zip'
+        if os.path.exists(export_file):
+            os.remove(export_file)
+
+        export_path = export_annotation_root + manifest_file_url.rsplit("/", 1)[1][:-4] + '/freehand_annotation/'
+        if os.path.exists(export_path):
+            shutil.rmtree(export_path)
+        elif not os.path.exists(export_annotation_root + manifest_file_url.rsplit("/", 1)[1][:-4]):
+            os.mkdir(export_annotation_root + manifest_file_url.rsplit("/", 1)[1][:-4])
+        os.mkdir(export_path)
 
     annotator_no = 6
     for annotator_id in range(annotator_no):
@@ -302,9 +370,10 @@ def export_freehand_annotation_data(manifest_file_url):
 
     down = 4
     down_save = 32
-    wsi_count = 0
+    wsi_count = 1
     # print(manifest_txt)
     for wsi in manifest_txt:
+        print(wsi)
         print(time.asctime(time.localtime(time.time())),
               "start export freehand annotation:" + str(wsi_count) + '/' + str(len(manifest_txt)))
         wsi_count += 1
@@ -466,8 +535,8 @@ def export_freehand_annotation_data(manifest_file_url):
         if not os.listdir(export_path + 'a' + str(annotator_id + 1)):
             shutil.rmtree(export_path + 'a' + str(annotator_id + 1))
     if os.listdir(export_path):
-        shutil.make_archive(export_file[:-4], 'zip', export_path)
-    return 'static/' + export_file
+        make_archive_threadsafe(export_file, export_path)
+    return export_file
 
 
 def refresh_npy():
@@ -480,6 +549,7 @@ def refresh_npy():
     file_list.sort()
     mani = manifest.Manifest()
     for file in file_list:
+        print("start import manifest:", file)
         temp = []
         if file[-4:] != ".txt":
             continue
@@ -559,7 +629,10 @@ def refresh_npy():
         temp.append("Unavailable")
 
         temp.append('<a href="' + '/static/export/' + file[:-4] + '_slide_table.txt" ' + \
-                    'download="' + file[:-4] + '_slide_table.txt' + '">Download </a>')
+                    'download="' + file[:-4] + '_slide_table.txt' + '">Available Slides </a>' +
+                    '<a href="' + '/available_slide_file/' + file[:-4] + '" ' + \
+                    'download="' + file[:-4] + '.txt' + '">Slide List </a>'
+                    )
 
         result.append(temp)
 

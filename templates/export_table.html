@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="static/bootstrap.min.css">
+    <link rel="stylesheet" href="static/css/AdminPanel.css">
+    <link rel="stylesheet" href="static/select2.min.css">
+    <!-- 引入在线资源 -->
+    <script src="static/g2.min.js"></script>
+    <script src="static/jquery-3.3.1.slim.min.js"></script>
+    <script src="static/popper.min.js"></script>
+    <script src="static/bootstrap.min.js"></script>
+    <script src="static/jquery.min.js"></script>
+    <script src="static/buttomOnclick.js"></script>
+    <script src="static/select2.min.js"></script>
+
+    {#    <script src="https://unpkg.com/ag-grid-community/dist/ag-grid-community.min.noStyle.js"></script>#}
+    {#    <script src="https://unpkg.com/@ag-grid-enterprise/all-modules@24.1.0/dist/ag-grid-enterprise.min.js"></script>#}
+
+    <script src="https://unpkg.com/ag-grid-enterprise/dist/ag-grid-enterprise.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/ag-grid-community/dist/styles/ag-grid.css">
+    <link rel="stylesheet" href="https://unpkg.com/ag-grid-community/dist/styles/ag-theme-alpine.css">
+
+</head>
+
+
+<title>WSI Processing Platform</title>
+</head>
+
+<body data-gr-c-s-loaded="true">
+<nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
+    <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">WSI Processing Platform</a>
+    <input class="form-control form-control-dark w-100" type="text" placeholder="Search" aria-label="Search">
+    <ul class="navbar-nav px-3">
+        <li class="nav-item text-nowrap">
+            <a class="nav-link" href="/logout">Sign out</a>
+        </li>
+    </ul>
+</nav>
+
+<div class="container-fluid">
+    <div class="row">
+        <nav class="col-2 d-none d-md-block bg-light sidebar">
+            <div class="sidebar-sticky">
+                <ul class="nav flex-column mt-2 ml-2">
+                    <li class="nav-item">
+                        <a class="nav-link" href="slide_table?item_per_page=15">
+                            Slide Table
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="mission_table">
+                            Analysis Task Table
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="annotation_project_table">
+                            Annotation Project Table
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="table">
+                            Slide Info(TCGA)
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="table2">
+                            Slide Info(YiFuYuan)
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="re_annotation">
+                            Re-annotation
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+            <h2>{{ manifest_name }} Annotation Info</h2>
+            <button onclick="javascript:download_muti();">Download Select</button>
+
+            <div id="myGrid" style="height: 830px" class="ag-theme-alpine"></div>
+
+            <script>
+                test_function = function (test) {
+                    console.log(test.value);
+                    window.open("/freehand_annotation?slide_id=" + test.value + "&project={{ manifest_name }}", "_blank", "")
+                };
+
+                download_muti = function () {
+                    data = {
+                        "manifest_file": "Data/annotation_project_manifest/{{ manifest_name }}.txt",
+                        "slide_id": []
+                    };
+                    result = gridOptions.api.getSelectedRows();
+                    for (var i = 0; i < result.length; i++) {
+                        data.slide_id.push(result[i].UUID)
+                    }
+                    $.post("/export_freehand_annotation_single", data, function (data) {
+                        console.log(data);
+                        alert(data);
+                    });
+                }
+
+                function entityToString(entity) {
+                    var div = document.createElement('div');
+                    div.innerHTML = entity;
+                    var res = div.innerText || div.textContent;
+                    console.log(entity, '->', res);
+                    return res;
+                }
+
+                //test
+                console.log(entityToString("{{column_addition}}"));
+                columnDefs = [
+                    {
+                        field: '', headerName: '', checkboxSelection: true, width: 2,
+                        sortable: false, resizable: true, filter: 'agTextColumnFilter', pinned: 'left',
+                    }, {
+                        field: 'Download Link', headerName: 'Download',
+                        sortable: true, resizable: true, filter: 'agTextColumnFilter', pinned: 'left',
+                    },
+                    {
+                        field: 'Slide ID', headerName: 'Slide ID',
+                        sortable: true, resizable: true, filter: 'agTextColumnFilter',
+                        onCellClicked: test_function
+                    },]
+                    .concat(JSON.parse(entityToString("{{column_addition}}"))).concat([
+
+                        {
+                            field: 'UUID', headerName: 'UUID',
+                            sortable: true, resizable: true, filter: 'agTextColumnFilter',
+                        },
+                        {
+                            field: 'svs file', headerName: 'svs file',
+                            sortable: true, resizable: true, filter: 'agTextColumnFilter',
+                        },
+                        {
+                            field: 'a1', headerName: 'a1',
+                            sortable: true, resizable: true, filter: 'agTextColumnFilter'
+                        },
+                        {
+                            field: 'a2', headerName: 'a2',
+                            sortable: true, resizable: true, filter: 'agTextColumnFilter'
+                        },
+                        {
+                            field: 'a3', headerName: 'a3',
+                            sortable: true, resizable: true, filter: 'agTextColumnFilter'
+                        },
+                        {
+                            field: 'a4', headerName: 'a4',
+                            sortable: true, resizable: true, filter: 'agTextColumnFilter'
+                        },
+                        {
+                            field: 'a5', headerName: 'a5',
+                            sortable: true, resizable: true, filter: 'agTextColumnFilter'
+                        },
+                        {
+                            field: 'a5', headerName: 'a5',
+                            sortable: true, resizable: true, filter: 'agTextColumnFilter'
+                        },
+                    ]);
+
+                var gridOptions = {
+                    columnDefs: columnDefs,
+                    rowData: []
+                };
+                gridOptions = {
+                    columnDefs: columnDefs,
+                    defaultColDef: {
+                        flex: 1,
+                        minWidth: 100,
+                        // allow every column to be aggregated
+                        enableValue: true,
+                        // allow every column to be grouped
+                        enableRowGroup: true,
+                        // allow every column to be pivoted
+                        enablePivot: true,
+                        sortable: true,
+                        filter: true,
+                        cellRenderer: 'medalCellRenderer',
+                    },
+                    components: {
+                        'medalCellRenderer': MedalCellRenderer
+                    },
+                    sideBar: true,
+                    rowGroupPanelShow: 'always',
+                    rowSelection: 'multiple',
+                    rowMultiSelectWithClick: true,
+                    enableRangeSelection: true,
+                    enableRangeHandle: true,
+                    groupSelectsFiltered: true,
+                    groupSelectsChildren: true,
+                    // checkbox: true,
+                    suppressRowClickSelection: true
+                };
+
+                function MedalCellRenderer() {
+                }
+
+                // init method gets the details of the cell to be renderer
+                MedalCellRenderer.prototype.init = function (params) {
+                    this.eGui = document.createElement('span');
+                    if (typeof (params.value) != "undefined")
+                        this.eGui.innerHTML = params.value;
+                };
+
+                MedalCellRenderer.prototype.getGui = function () {
+                    return this.eGui;
+                };
+
+                document.addEventListener('DOMContentLoaded', function () {
+                    var gridDiv = document.querySelector('#myGrid');
+                    new agGrid.Grid(gridDiv, gridOptions);
+
+                    agGrid
+                        .simpleHttpRequest({
+                            url:
+                                '/export_nuclei_annotation_data?manifest_file=' + '{{ manifest_name }}',
+                        })
+                        .then(function (data) {
+                            console.log(data)
+                            gridOptions.api.setRowData(data.data);
+                            var allColumnIds = [];
+                            gridOptions.columnApi.getAllColumns().forEach(function (column) {
+                                allColumnIds.push(column.colId);
+                            });
+                            // allColumnIds.shift();
+                            gridOptions.columnApi.autoSizeColumns(allColumnIds);
+                            gridOptions.api.closeToolPanel()
+                        });
+                });
+
+
+            </script>
+
+        </main>
+    </div>
+</div>
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+</body>
+
+</html>
