@@ -24,6 +24,7 @@ var update_image_info = function () {
         // Print received data from the back-end
         console.log(data);
         image_info = data;
+        document.querySelector("#svs_pro").textContent = JSON.stringify(data.properties, null, ' ');
         update_toggle_boundary_info();
         update_region_bound();
     });

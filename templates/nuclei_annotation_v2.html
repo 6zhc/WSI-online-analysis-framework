@@ -78,7 +78,7 @@
             </div>
 
             <!-- Slide control -->
-            <div class="container" style="margin: 0 0 10px 0; width: calc(100% - 10px); float: left;">
+            <div style="padding: 10px 0 0 0; overflow : hidden">
                 <span class="control_header" style="height: 100%; margin:0 10px 0 0; float: left;">Slide ID: </span>
                 <select class="form-control" id="slide_id_select" style="width:400px">
                     <option value=""></option>
@@ -96,7 +96,7 @@
             </div>
 
             <!-- High-low magnification control  -->
-            <div class="container" style="margin: 0 0 10px 0; width: calc(100% - 10px); float: left; clear: both;">
+            <div style="padding: 10px 0 0 0; overflow : hidden">
                 <span class="control_header" style="float: left; height: 100%; margin:0 10px 0 0; font-size: 80%;">
                     Magnification Control:
                 </span>
@@ -107,10 +107,11 @@
                 <a href=# id="mag_h">
                     <button class='btn btn-default' id="hl_btn">High</button>
                 </a>
+
             </div>
 
             <!-- TBA list -->
-            <div class="container" style="margin: 0 0 10px 0; width: calc(100% - 10px); float: left; clear: both;">
+            <div style="padding: 10px 0 0 0; overflow : hidden">
                 <span class="control_header" style="float: left; height: 100%; margin:0 10px 0 0; font-size: 80%;">
                     To be annotated list:
                 </span>
@@ -122,6 +123,11 @@
                 </a>
                 <div id="tb_list"></div>
                 <div id="tb_warn"></div>
+            </div>
+        </div>
+        <div>
+            <div style="padding: 10px 0 0 0;">
+                <pre><code id="svs_pro"></code></pre>
             </div>
         </div>
 
@@ -225,7 +231,7 @@
         },
     });
 
-    flag_add_points = false;
+    flag_add_points = true;
     let add_region_label = function () {
         viewer.clearOverlays();
         if (!flag_add_points) return;
@@ -312,7 +318,6 @@
     });
 
     update_image_info();
-    update_tb_list();
     update_slide_id();
 
     document.onkeydown = function (e) {  //listen to the keboard;
@@ -350,6 +355,28 @@
             return false;
         }
         if (key == "X") {
+            var new_slide_id = {{ slide_id }};
+            if (available_slide.indexOf(new_slide_id) < 0 ||
+                available_slide.indexOf(new_slide_id) == available_slide.length) {
+                alert("非法Slide ID!");
+                return false;
+            } else
+                window.location.href = "/nuclei_annotation_v2?annotation_id=" + annotatorID
+                    + '&slide_id=' + available_slide[available_slide.indexOf(new_slide_id) + 1].toString() + '&project=' + project;
+            return false;
+        }
+        if (key == "O") {
+            var new_slide_id = {{ slide_id }};
+            if (available_slide.indexOf(new_slide_id) < 0 ||
+                available_slide.indexOf(new_slide_id) == 0) {
+                alert("非法Slide ID!");
+                return false;
+            } else
+                window.location.href = "/nuclei_annotation_v2?annotation_id=" + annotatorID
+                    + '&slide_id=' + available_slide[available_slide.indexOf(new_slide_id) - 1].toString() + '&project=' + project;
+            return false;
+        }
+        if (key == "P") {
             var new_slide_id = {{ slide_id }};
             if (available_slide.indexOf(new_slide_id) < 0 ||
                 available_slide.indexOf(new_slide_id) == available_slide.length) {

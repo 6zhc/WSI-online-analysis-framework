@@ -14,7 +14,9 @@ def get_table(start_no=0, end_no=0, make_icon_mask=1):
     wsis = mani.get_projects()
     if end_no <= 0:
         end_no = end_no + len(wsis)
+    print(start_no, end_no)
     for wsi in wsis[start_no: end_no]:
+        print(wsi)
         temp = []
         temp.append(wsi[0])  # ID
         temp.append('<button type="button" onclick="btn_click(\'remove_wsi\',' +
@@ -27,9 +29,10 @@ def get_table(start_no=0, end_no=0, make_icon_mask=1):
             if os.path.exists(icon_file_path):
                 dimensions = [-1, -1]
             else:
-                raise Exception("error")
-            # dimensions = openslide.OpenSlide(svs_file_path).dimensions
-        except:
+                # raise Exception("error")
+                dimensions = openslide.OpenSlide(svs_file_path).dimensions
+        except Exception as e:
+            print(e)
             if os.path.exists(svs_file_path):
                 temp.append('<a "target="_blank">' + wsi[2] + '</a>')
                 temp.append('Not SVS file')
@@ -49,7 +52,8 @@ def get_table(start_no=0, end_no=0, make_icon_mask=1):
                 if not os.path.exists(icon_root + wsi[1] + '/'):
                     os.mkdir(icon_root + wsi[1] + '/')
                 image_processing.generate_icon_image_from_svs_file(svs_file_path, icon_file_path)
-            except:
+            except Exception as e:
+                print(e)
                 pass
         temp.append('<img src="' + icon_file_path + '"/>')
 

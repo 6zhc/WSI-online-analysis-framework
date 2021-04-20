@@ -1,5 +1,6 @@
 import sqlite3
 import os
+import atexit
 
 
 class SqliteConnector:
@@ -10,6 +11,7 @@ class SqliteConnector:
 
     def create(self):
         db = sqlite3.connect(self.sqlite_path)
+        atexit.register(db.close)
         cursor = db.cursor()
         cursor.execute(
             "create table Line (id integer primary key, X1 integer, Y1 integer, X2 integer, Y2 integer, " + \
@@ -19,6 +21,7 @@ class SqliteConnector:
 
     def incert_line(self, X1: int, Y1: int, X2: int, Y2: int, Grade: int):
         db = sqlite3.connect(self.sqlite_path)
+        atexit.register(db.close)
         if X1 == X2 and Y1 == Y2:
             db.close()
             return
@@ -32,6 +35,7 @@ class SqliteConnector:
 
     def incert_lines(self, data):
         db = sqlite3.connect(self.sqlite_path)
+        atexit.register(db.close)
         print(self.sqlite_path)
         cursor = db.cursor()
         cursor.executemany(
@@ -51,6 +55,7 @@ class SqliteConnector:
 
     def delete_points(self, X: int, Y: int):
         db = sqlite3.connect(self.sqlite_path)
+        atexit.register(db.close)
         cursor = db.cursor()
         cursor.execute("delete from Line where (X1 >? and X1 <? and Y1 >? and Y1 < ?) or" + \
                        "(X2 >? and X2 <? and Y2 >? and Y2 < ?)",
@@ -62,6 +67,7 @@ class SqliteConnector:
 
     def delete_lines(self, X: int, Y: int):
         db = sqlite3.connect(self.sqlite_path)
+        atexit.register(db.close)
         cursor = db.cursor()
         cursor.execute("select * from Line where (X1 >? and X1 <? and Y1 >? and Y1 < ?) or" + \
                        "(X2 >? and X2 <? and Y2 >? and Y2 < ?)",
@@ -79,6 +85,7 @@ class SqliteConnector:
 
     def delete_all_lines(self):
         db = sqlite3.connect(self.sqlite_path)
+        atexit.register(db.close)
         cursor = db.cursor()
         cursor.execute("delete from  Line")
 
@@ -88,6 +95,7 @@ class SqliteConnector:
 
     def get_lines(self):
         db = sqlite3.connect(self.sqlite_path)
+        atexit.register(db.close)
         cursor = db.cursor()
         cursor.execute("select * from Line")
         result = cursor.fetchall()
@@ -97,6 +105,7 @@ class SqliteConnector:
 
     def get_lines_in_area(self, X_MIN: int, Y_MIN: int, X_MAX: int, Y_MAX: int):
         db = sqlite3.connect(self.sqlite_path)
+        atexit.register(db.close)
         cursor = db.cursor()
         cursor.execute("select *  from Line where (X1 >= ? and Y1 >= ? and X1 <= ? and Y1 <= ?) " +
                        "or (X2 >= ? and Y2 >= ? and X2 <= ? and Y2 <= ?)",
@@ -108,6 +117,7 @@ class SqliteConnector:
 
     def get_max_branch(self):
         db = sqlite3.connect(self.sqlite_path)
+        atexit.register(db.close)
         cursor = db.cursor()
         cursor.execute("select MAX(branch)  from Line")
         result = cursor.fetchall()[0][0]
@@ -119,6 +129,7 @@ class SqliteConnector:
 
     def del_max_branch(self):
         db = sqlite3.connect(self.sqlite_path)
+        atexit.register(db.close)
         cursor = db.cursor()
         cursor.execute("delete from Line where branch == ?",
                        tuple([self.get_max_branch()]))

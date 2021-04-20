@@ -108,6 +108,11 @@
                 </a>
             </div>
         </div>
+        <div>
+            <div style="padding: 10px 0 0 0;">
+                <pre><code id="svs_pro"></code></pre>
+            </div>
+        </div>
 
     </div>
 
@@ -235,18 +240,24 @@
         for (var i = 0; i < data.length; i++) {
             available_slide.push(data[i].id)
         }
-    });
-    $('#slide_id_select').select2({
-        placeholder: 'Please select slideID'
-    });
-    $.get("available_slide" + info_url + "&annotation_type=freehand", function (data) {
-        console.log(data);
         $('#slide_id_select').select2({
             placeholder: 'Please select slideID',
             data: data,
         });
         $('#slide_id_select').val("{{ slide_id }}").select2();
+        $.get("available_slide" + info_url + "&annotation_type=freehand", function (data) {
+            console.log(data);
+            $('#slide_id_select').empty().select2({
+                placeholder: 'Please select slideID',
+                data: data,
+            });
+            $('#slide_id_select').val("{{ slide_id }}").select2();
+        });
     });
+    $('#slide_id_select').select2({
+        placeholder: 'Please select slideID'
+    });
+
 
     var viewer = OpenSeadragon({
         id: "openseadragon1",

@@ -17,7 +17,7 @@ def generate_icon_image_from_svs_file(svs_file_path, output_file_path):
     w, h = oslide.level_dimensions[level]
     if level < 1:
         print(svs_file_path)
-        oslide.close()
+        # oslide.close()
         patch = oslide.read_region((0, 0), 0, (w, h))
     else:
         patch = oslide.read_region((0, 0), level, (w, h))

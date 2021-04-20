@@ -26,6 +26,8 @@ var update_image_info = function () {
         image_info = data;
         // create_PSLV_controls();
         create_grading_controls();
+        document.querySelector("#svs_pro").textContent = JSON.stringify(data.properties, null, ' ');
+        // document.getElementById("7").onchange();
         // create_slide_grading_controls();
         update_toggle_boundary_info();
         update_region_bound();
@@ -96,6 +98,7 @@ var add_mask = function (region_id) {
                         success: function () {
                             set_status(OSD_status2num.ready);
                             if (!OSD_control.mask_controller) remove_mask();
+                            add_region_label();
                         },
                         false: function () {
                         }
@@ -124,6 +127,7 @@ var OSD_open_function = function () {
     setTimeout(function () {
         update_region_bound();
         update_scale_bar();
+        update_tb_list();
     }, 300)
 };
 

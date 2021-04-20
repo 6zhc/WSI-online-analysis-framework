@@ -25,9 +25,11 @@ class Manifest:
         cursor = db.cursor()
         if slide_uuid is None:
             slide_uuid = str(uuid.uuid4())
-        sql = "INSERT INTO MANIFEST( UUID, SVS_file, Smaller_image, Background_mask) VALUES (%s, %s, %s, %s)"
-        val = (slide_uuid, svs_file, smaller_image, background_mask)
-        cursor.execute(sql, val)
+        cursor.execute("SELECT * FROM MANIFEST WHERE (SVS_file = %s)", (svs_file,))
+        if len(cursor.fetchall()) == 0:
+            sql = "INSERT INTO MANIFEST( UUID, SVS_file, Smaller_image, Background_mask) VALUES (%s, %s, %s, %s)"
+            val = (slide_uuid, svs_file, smaller_image, background_mask)
+            cursor.execute(sql, val)
         cursor.close()
         db.commit()
         db.close()

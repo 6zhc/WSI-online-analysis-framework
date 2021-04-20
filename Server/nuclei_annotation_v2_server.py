@@ -60,15 +60,20 @@ def add_annotation_sever(app):
         wsi = mani.get_project_by_id(slide_id)
         svs_file_path = original_data_root + wsi[1] + '/' + wsi[2]
         dimensions = openslide.OpenSlide(svs_file_path).dimensions
+        AppMag = openslide.OpenSlide(svs_file_path).properties.get("aperio.AppMag")
+        MPP = openslide.OpenSlide(svs_file_path).properties.get("aperio.MPP")
+        properties = dict(openslide.OpenSlide(svs_file_path).properties)
+
 
         w = dimensions[0]
         h = dimensions[1]
         return jsonify(
             img_width=w,
             img_height=h,
-            um_per_px=0.25,
+            um_per_px=MPP if MPP else 0.25,
             max_image_zoom=0,  # max_image_zoom,
-            toggle_status=0  # toggle_status
+            toggle_status=0,  # toggle_status
+            properties=properties
         )
 
     @app.route('/nuclei_annotation_v2/_update_image')
