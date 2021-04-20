@@ -65,7 +65,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="table">
+                        <a class="nav-link" href="table">
                             Slide Info(TCGA)
                         </a>
                     </li>
@@ -79,32 +79,76 @@
                             Re-annotation
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link active">
+                            Annotation Export Table
+                        </a>
+                    </li>
                 </ul>
             </div>
         </nav>
 
         <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
-            <h2>{{ manifest_name }} Annotation Info</h2>
+            <h2>{{ manifest_name }} {{ annotation_style }} Annotation Info</h2>
             <button onclick="javascript:download_muti();">Download Select</button>
 
-            <div id="myGrid" style="height: 830px" class="ag-theme-alpine"></div>
+            <div id="myGrid" style="height: 750px" class="ag-theme-alpine"></div>
 
             <script>
                 test_function = function (test) {
                     console.log(test.value);
-                    window.open("/freehand_annotation?slide_id=" + test.value + "&project={{ manifest_name }}", "_blank", "")
+                    if ("{{ annotation_style }}" == "region") {
+                        window.open("/nuclei_annotation_v2?slide_id=" + test.value + "&project={{ manifest_name }}", "_blank", "")
+                    }
+                    if ("{{ annotation_style }}" == "nuclei") {
+                        window.open("/nuclei_annotation_v2?slide_id=" + test.value + "&project={{ manifest_name }}", "_blank", "")
+                    }
+                    if ("{{ annotation_style }}" == "freehand") {
+                        window.open("/freehand_annotation?slide_id=" + test.value + "&project={{ manifest_name }}", "_blank", "")
+                    }
                 };
+
+                download_single = function (test) {
+                    region_size = 250;
+                    if ("{{ annotation_style }}" == "region") {
+                        region_size = prompt("剪裁区域大小");
+                        if (!region_size) {
+                            return
+                        }
+                        region_size = Number(region_size);
+                        if (isNaN(region_size) == true) {
+                            alert("输入错误！");
+                            return;
+                        }
+                    }
+                    window.open("/export_{{ annotation_style }}_annotation_single?manifest_file=" +
+                        "Data/annotation_project_manifest/{{ manifest_name }}.txt" + "&slide_id=" + test.value
+                        + "&region_size=" + region_size, "_blank", "");
+                }
 
                 download_muti = function () {
                     data = {
                         "manifest_file": "Data/annotation_project_manifest/{{ manifest_name }}.txt",
                         "slide_id": []
                     };
+                    if ("{{ annotation_style }}" == "region") {
+                        region_size = prompt("剪裁区域大小");
+                        if (!region_size) {
+                            return
+                        }
+                        region_size = Number(region_size);
+                        if (isNaN(region_size) == true) {
+                            alert("输入错误！");
+                            return;
+                        }
+                        data["region_size"] = region_size
+                    }
+
                     result = gridOptions.api.getSelectedRows();
                     for (var i = 0; i < result.length; i++) {
                         data.slide_id.push(result[i].UUID)
                     }
-                    $.post("/export_freehand_annotation_single", data, function (data) {
+                    $.post("/export_{{ annotation_style }}_annotation_single", data, function (data) {
                         console.log(data);
                         alert(data);
                     });
@@ -124,21 +168,18 @@
                     {
                         field: '', headerName: '', checkboxSelection: true, width: 2,
                         sortable: false, resizable: true, filter: 'agTextColumnFilter', pinned: 'left',
-                    }, {
-                        field: 'Download Link', headerName: 'Download',
-                        sortable: true, resizable: true, filter: 'agTextColumnFilter', pinned: 'left',
                     },
                     {
-                        field: 'Slide ID', headerName: 'Slide ID',
-                        sortable: true, resizable: true, filter: 'agTextColumnFilter',
+                        field: 'Slide ID', headerName: 'Slide ID (预览)',
+                        sortable: true, resizable: true, filter: 'agTextColumnFilter', pinned: 'left',
                         onCellClicked: test_function
+                    },
+                    {
+                        field: 'UUID', headerName: 'UUID (下载)',
+                        sortable: true, resizable: true, filter: 'agTextColumnFilter', pinned: 'left',
+                        onCellClicked: download_single,
                     },]
                     .concat(JSON.parse(entityToString("{{column_addition}}"))).concat([
-
-                        {
-                            field: 'UUID', headerName: 'UUID',
-                            sortable: true, resizable: true, filter: 'agTextColumnFilter',
-                        },
                         {
                             field: 'svs file', headerName: 'svs file',
                             sortable: true, resizable: true, filter: 'agTextColumnFilter',
@@ -224,7 +265,7 @@
                     agGrid
                         .simpleHttpRequest({
                             url:
-                                '/export_nuclei_annotation_data?manifest_file=' + '{{ manifest_name }}',
+                                '/export_{{ annotation_style }}_annotation_data?manifest_file=' + '{{ manifest_name }}',
                         })
                         .then(function (data) {
                             console.log(data)

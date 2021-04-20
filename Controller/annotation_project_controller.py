@@ -103,8 +103,8 @@ def refresh_freehand_annotation_progress():
                 for annotator_id in range(annotator_no):
                     if os.path.exists(annotation_project_root + info[0] + '/' +
                                       'a' + str(annotator_id + 1) + '.db') and \
-                            len(freehand_annotation_sqlite.SqliteConnector(annotation_project_root + info[0] + '/' +
-                                                'a' + str(annotator_id + 1) + '.db').get_lines()) > 0:
+                            check_freehand_annotation(annotation_project_root + info[0] + '/' +
+                                                      'a' + str(annotator_id + 1) + '.db') > 0:
                         finish_region_no[annotator_id] += 1
             result_str = ""  # 'Total: ' + str(region_no) + ', <br/>'
             for annotator_id in range(annotator_no):
@@ -135,9 +135,9 @@ def export_freehand_annotation_list(manifest_name):
         for annotator_id in range(annotator_no):
             if os.path.exists(annotation_project_root + info[1] + '/' +
                               'a' + str(annotator_id + 1) + '.db') and \
-                    len(freehand_annotation_sqlite.SqliteConnector(annotation_project_root + info[1] + '/' +
+                    check_freehand_annotation(annotation_project_root + info[1] + '/' +
                                                                    'a' + str(
-                        annotator_id + 1) + '.db').get_lines()) > 0:
+                        annotator_id + 1) + '.db') > 0:
                 flag = 1
                 wsi += '\t' + time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(
                     os.stat(annotation_project_root + info[1] + '/' + 'a' + str(annotator_id + 1) + '.db').st_mtime))
@@ -163,6 +163,98 @@ def export_freehand_annotation_list(manifest_name):
     return result
 
 
+def export_nuclei_annotation_list(manifest_name):
+    manifest_txt = open(export_annotation_root + manifest_name + '_slide_table.txt').readlines()
+    annotation_project_root = freehand_annotation_root + manifest_name + '/'
+    annotator_no = 6
+    result = []
+    for wsi in manifest_txt:
+        info = wsi.split('\t')
+        flag = 0
+
+        nuclei_annotation_root = "Data/nuclei_annotation_data/"
+        annotation_project_root = nuclei_annotation_root + manifest_name + '/'
+        if not os.path.exists(annotation_project_root + info[1] + '/'):
+            continue
+        tba_list_db = annotation_project_root + info[1] + '/' + 'tba_list.db'
+        if not os.path.exists(tba_list_db):
+            continue
+        db = nuclei_annotation_sqlite.SqliteConnector(tba_list_db)
+        tba_result = db.get_RegionID_Centre()
+        if len(tba_result) == 0:
+            continue
+        for annotator_id in range(annotator_no):
+            annotated = 0
+            st_time_list = []
+            for item in tba_result:
+                if os.path.exists(annotation_project_root + info[1] + '/' +
+                                  'a' + str(annotator_id) + '_r' + str(item[0]) + "_annotation.txt") and \
+                        sum(numpy.loadtxt(annotation_project_root + info[1] + '/' + 'a' + str(annotator_id) +
+                                          '_r' + str(item[0]) + "_annotation.txt")) > 0:
+                    annotated += 1
+                    st_time_list.append(os.stat(annotation_project_root + info[1] + '/' + 'a' + str(annotator_id) +
+                                                '_r' + str(item[0]) + "_annotation.txt").st_mtime)
+            if len(st_time_list) > 0:
+                wsi += time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(max(st_time_list))) \
+                       + ' (' + str(annotated) + '/' + str(len(tba_result)) + ') ' + '\t'
+                flag = 1
+            else:
+                wsi += "No Annotation" + '\t'
+        if flag:
+            temp = {
+                "Slide ID": wsi.split("\t")[0],
+                "UUID": wsi.split("\t")[1],
+                "svs file": wsi.split("\t")[2],
+                "a1": wsi.split("\t")[3],
+                "a2": wsi.split("\t")[4],
+                "a3": wsi.split("\t")[5],
+                "a4": wsi.split("\t")[6],
+                "a5": wsi.split("\t")[7],
+                "a6": wsi.split("\t")[8],
+                "Download Link": "<a target='_blank' href='/export_nuclei_annotation_single?" \
+                                 "manifest_file=Data/annotation_project_manifest/" + manifest_name + \
+                                 ".txt&slide_id=" + wsi.split("\t")[1] + "'> Export </a>",
+
+            }
+            result.append(temp)
+    return result
+
+
+def export_region_annotation_list(manifest_name):
+    manifest_txt = open(export_annotation_root + manifest_name + '_slide_table.txt').readlines()
+    result = []
+    for wsi in manifest_txt:
+        info = wsi.split('\t')
+
+        nuclei_annotation_root = "Data/nuclei_annotation_data/"
+        annotation_project_root = nuclei_annotation_root + manifest_name + '/'
+        if not os.path.exists(annotation_project_root + info[1] + '/'):
+            continue
+        tba_list_db = annotation_project_root + info[1] + '/' + 'tba_list.db'
+        if not os.path.exists(tba_list_db):
+            continue
+        db = nuclei_annotation_sqlite.SqliteConnector(tba_list_db)
+        tba_result = db.get_RegionID_Centre()
+        if len(tba_result) == 0:
+            continue
+
+        wsi += "\t" + str(len(tba_result)) + "\t" + time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(
+            os.stat(tba_list_db).st_mtime)) + "\t\t\t\t\t"
+        temp = {
+            "Slide ID": wsi.split("\t")[0],
+            "UUID": wsi.split("\t")[1],
+            "svs file": wsi.split("\t")[2],
+            "a1": wsi.split("\t")[3],
+            "a2": wsi.split("\t")[4],
+            "a3": wsi.split("\t")[5],
+            "a4": wsi.split("\t")[6],
+            "a5": wsi.split("\t")[7],
+            "a6": wsi.split("\t")[8],
+        }
+        result.append(temp)
+    return result
+
+
 def refresh_nuclei_annotation_export():
     global annotation_project_table
     filename = manifest_root + 'table.npy'
@@ -180,6 +272,10 @@ def refresh_nuclei_annotation_export():
                 file_url = '<a href="/static/export/' + file + '">Download</ a>'
             result_str = file_url + ' <br/>' + '<a href= "/export_nuclei_annotation?manifest_file=' + \
                          manifest_root + result[i][0] + '.txt">(re)Export</ a>'
+            result_str += '</br> <a href= "/export_nuclei_annotation_page?manifest_file=' + \
+                          result[i][0] + '">Anno Table</ a>'
+            result_str += '</br> <a href= "/export_region_annotation_page?manifest_file=' + \
+                          result[i][0] + '">Region Table</ a>'
             result[i][8] = result_str
 
         filename = manifest_root + 'table.npy'
@@ -207,6 +303,8 @@ def refresh_freehand_annotation_export():
                 file_url = '<a href="/static/export/' + file + '">Download</ a>'
             result_str = file_url + ' <br/>' + '<a href= "/export_freehand_annotation?manifest_file=' + \
                          manifest_root + result[i][0] + '.txt">(re)Export</ a>'
+            result_str += '</br> <a href= "/export_freehand_annotation_page?manifest_file=' + \
+                          result[i][0] + '">Anno Table</ a>'
             result[i][9] = result_str
 
         filename = manifest_root + 'table.npy'
@@ -217,11 +315,11 @@ def refresh_freehand_annotation_export():
     return
 
 
-def export_nuclei_annotation_data(manifest_file_url, manifest_txt=None, expot_file=None):
+def export_nuclei_annotation_data(manifest_file_url, manifest_txt=None, export_file=None):
     annotation_project_root = nuclei_annotation_root + manifest_file_url.rsplit("/", 1)[1][:-4] + '/'
     if manifest_txt != None:
         export_annotation_root_temp = "static/cache/" + str(uuid.uuid4()) + "/"
-        if expot_file == None:
+        if export_file == None:
             export_file = export_annotation_root_temp.replace("/cache", "")[:-1] + '.zip'
         print(export_file)
         if os.path.exists(export_file):
@@ -261,8 +359,12 @@ def export_nuclei_annotation_data(manifest_file_url, manifest_txt=None, expot_fi
     annotator_no = 6
     for annotator_id in range(annotator_no):
         os.mkdir(export_path + 'a' + str(annotator_id + 1) + '/')
-
+    wsi_count = 0
     for wsi in manifest_txt:
+        print(wsi)
+        wsi_count += 1
+        print(time.asctime(time.localtime(time.time())),
+              "start export nuclei annotation:" + str(wsi_count) + '/' + str(len(manifest_txt)))
         info = wsi.split('\t')
         if not os.path.exists(annotation_project_root + info[0] + '/'):
             continue
@@ -539,6 +641,74 @@ def export_freehand_annotation_data(manifest_file_url, manifest_txt=None, export
     return export_file
 
 
+def export_region_annotation_data(manifest_file_url, region_size, manifest_txt=None, export_file=None):
+    annotation_project_root = nuclei_annotation_root + manifest_file_url.rsplit("/", 1)[1][:-4] + '/'
+    if manifest_txt != None:
+        export_annotation_root_temp = "static/cache/" + str(uuid.uuid4()) + "/"
+        if export_file == None:
+            export_file = export_annotation_root_temp.replace("/cache", "")[:-1] + '.zip'
+        print(export_file)
+        if os.path.exists(export_file):
+            os.remove(export_file)
+
+        export_path = export_annotation_root_temp
+        if os.path.exists(export_path):
+            shutil.rmtree(export_path)
+        os.mkdir(export_path)
+
+    else:
+        manifest_txt = open(manifest_file_url).readlines()
+        if not (not (manifest_file_url.rsplit("/", 1)[1][:-4] == "") and not (
+                manifest_file_url.rsplit("/", 1)[1][:-4] is None)):
+            return
+        export_file = export_annotation_root + manifest_file_url.rsplit("/", 1)[1][:-4] + '_region_annotation.zip'
+        if os.path.exists(export_file):
+            os.remove(export_file)
+
+        export_path = export_annotation_root + manifest_file_url.rsplit("/", 1)[1][:-4] + '/region_annotation/'
+        if os.path.exists(export_path):
+            shutil.rmtree(export_path)
+        elif not os.path.exists(export_annotation_root + manifest_file_url.rsplit("/", 1)[1][:-4]):
+            os.mkdir(export_annotation_root + manifest_file_url.rsplit("/", 1)[1][:-4])
+        os.mkdir(export_path)
+
+    wsi_count = 0
+    for wsi in manifest_txt:
+        print(wsi)
+        wsi_count += 1
+        print(time.asctime(time.localtime(time.time())),
+              "start export nuclei annotation:" + str(wsi_count) + '/' + str(len(manifest_txt)))
+        info = wsi.split('\t')
+        try:
+            svs_file_path = original_data_root + info[0] + '/' + info[1]
+            tba_list_db = annotation_project_root + '/' + info[0] + '/' + 'tba_list.db'
+            print(svs_file_path)
+            if not os.path.exists(tba_list_db):
+                continue
+            db = nuclei_annotation_sqlite.SqliteConnector(tba_list_db)
+            tba_result = db.get_RegionID_Centre()
+            if len(tba_result) > 0:
+                if not os.path.exists(export_path + info[0]):
+                    os.mkdir(export_path + info[0])
+                oslide = openslide.OpenSlide(svs_file_path)
+                for item in tba_result:
+                    patch = oslide.read_region(
+                        (item[1] - 256 - int(int(region_size) / 2), item[2] - 256 - int(int(region_size) / 2)),
+                        0, (int(region_size), int(region_size)))
+                    patch.save(
+                        export_path + info[0] + '/' + str(item[0]) + '_' + str(item[1]) + '_' + str(
+                            item[2]) + '_' + str(
+                            int(region_size)) + '.png')
+                oslide.close()
+        except Exception as e:
+            print("ERROR: ", wsi)
+            print(e)
+
+    if os.listdir(export_path):
+        make_archive_threadsafe(export_file, export_path)
+    return export_file
+
+
 def refresh_npy():
     global annotation_project_table
     result = []
@@ -571,6 +741,8 @@ def refresh_npy():
                 if int(wsi[0]) not in available_slide_id:
                     info[0] = '[' + str(wsi[0]) + '] ' + wsi[1]
                     raise Exception
+                if int(wsi[0]) in slide_id:
+                    continue
                 slide_table_file.write(str(wsi[0]) + '\t' + str(wsi[1]) + '\t' + str(wsi[2]) + '\n')
                 slide_id.append(int(wsi[0]))
             except:
@@ -647,8 +819,20 @@ def refresh_npy():
     return
 
 
+def check_freehand_annotation(annotation_file):
+    global freehand_annotation_flag
+    if not annotation_file in freehand_annotation_flag.keys() or \
+            freehand_annotation_flag[annotation_file][1] != os.stat(annotation_file).st_mtime:
+        freehand_annotation_flag[annotation_file] = [
+            len(freehand_annotation_sqlite.SqliteConnector(annotation_file).get_lines()),
+            os.stat(annotation_file).st_mtime]
+    return freehand_annotation_flag[annotation_file][0]
+
+
+
 annotation_project_table = None
 filename = manifest_root + 'table.npy'
 if not os.path.exists(filename):
     refresh_npy()
 annotation_project_table = numpy.load(filename)
+freehand_annotation_flag = {}

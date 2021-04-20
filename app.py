@@ -6,12 +6,13 @@ import json
 import numpy
 import urllib
 
-
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, Response, abort
 from flask import jsonify
 
 from flask_login import login_required, current_user
 
+from Controller.annotation_project_controller import check_freehand_annotation
+from Controller.make_archive_threadsafe import make_archive_threadsafe
 from Server import dzi_online_server
 from Server import freehand_annotation_server
 from Server import nuclei_annotation_server
@@ -236,6 +237,74 @@ def slide():
                            mask_url=urllib.parse.quote(mask_url), mask_root=mask_root)
 
 
+@app.route('/available_slide_file/<project>/')
+def print_logs(project=""):
+    # project = request.args.get('project', default="", type=str)
+    if project == "":
+        abort(404)
+    else:
+        data = []
+        count = 0
+        if os.path.exists('export/' + project + '_slide_table.txt'):
+            for wsi in open('export/' + project + '_slide_table.txt').readlines():
+                slide_id = int(wsi.split('\t')[0])
+                temp = {"id": slide_id, "text": wsi.replace('\t', ' ').replace('\n', '')}
+                data.append(temp)
+
+    def takeSecond(elem):
+        return elem["id"]
+
+    for index in range(len(data)):
+        nuclei_annotation_root = "Data/nuclei_annotation_data/"
+        annotation_project_root = nuclei_annotation_root + project + '/'
+        # if not os.path.exists(annotation_project_root + data[index]["text"].split(" ")[1] + '/'):
+        #     continue
+        tba_list_db = annotation_project_root + data[index]["text"].split(" ")[1] + '/' + 'tba_list.db'
+        if not os.path.exists(tba_list_db):
+            data[index]["text"] += " 0 0 0 0 0 0 0"
+            continue
+        db = nuclei_annotation_sqlite.SqliteConnector(tba_list_db)
+        tba_result = db.get_RegionID_Centre()
+        data[index]["text"] += " " + str(len(tba_result))
+        for annotator_id in range(1, 7):
+            annotated = 0
+            for item in tba_result:
+                if os.path.exists(annotation_project_root + data[index]["text"].split(" ")[1] + '/' +
+                                  'a' + str(annotator_id) + '_r' + str(item[0]) + "_annotation.txt") and \
+                        sum(numpy.loadtxt(annotation_project_root + data[index]["text"].split(" ")[1] + '/' +
+                                          'a' + str(annotator_id) + '_r' + str(item[0]) + "_annotation.txt")) > 0:
+                    annotated += 1
+            data[index]["text"] += " " + str(annotated)
+
+    for index in range(len(data)):
+        for annotator_id in range(1, 7):
+            nuclei_annotation_root = "Data/freehand_annotation_data/"
+            annotation_project_root = nuclei_annotation_root + project + '/'
+            if not os.path.exists(annotation_project_root + data[index]["text"].split(" ")[1] + '/'):
+                data[index]["text"] += " 0"
+                continue
+            if os.path.exists(annotation_project_root + data[index]["text"].split(" ")[1] + '/' +
+                              'a' + str(annotator_id) + '.db') and \
+                    len(freehand_annotation_sqlite.SqliteConnector(annotation_project_root +
+                                                                   data[index]["text"].split(" ")[1] + '/' +
+                                                                   'a' + str(annotator_id) + '.db').get_lines()) > 0:
+                data[index]["text"] += " 1"
+            else:
+                data[index]["text"] += " 0"
+
+    data.sort(key=takeSecond)
+    for index in range(len(data)):
+        count += 1
+        data[index]["text"] = str(count) + " " + data[index]["text"]
+    output = "ID SlideID UUID SVS_File " \
+             "NucleiTotal Nuclei1 Nuclei2 Nuclei3 Nuclei4 Nuclei5 Nuclei6 " \
+             "Freehand1 Freehand2 Freehand3 Freehand4 Freehand5 Freehand6\n"
+    for index in range(len(data)):
+        output += data[index]["text"] + '\n'
+    return Response(output, mimetype='text/plain')
+
+
+
 @app.route('/available_slide')
 @login_required
 def available_slide():
@@ -286,9 +355,9 @@ def available_slide():
                     continue
                 if os.path.exists(annotation_project_root + data[index]["text"].split(" ")[1] + '/' +
                                   'a' + annotator_id + '.db') and \
-                        len(freehand_annotation_sqlite.SqliteConnector(annotation_project_root +
-                                                                       data[index]["text"].split(" ")[1] + '/' +
-                                                                       'a' + annotator_id + '.db').get_lines()) > 0:
+                        check_freehand_annotation(annotation_project_root +
+                                                  data[index]["text"].split(" ")[1] + '/' +
+                                                  'a' + annotator_id + '.db') > 0:
                     data[index]["text"] = "*" + data[index]["text"]
 
         data.sort(key=takeSecond)
@@ -352,7 +421,7 @@ def make_region():
     return "static/export/" + manifest_name + "_" + str(region_size) + ".zip" + "?random=" + str(uuid.uuid4())
 
 
-def make_region_back(manifest_name, region_size):
+def make_region_back(manifest_name, region_size, slide_ids=None):
     original_data_root = 'static/data/Original_data/'
     nuclei_annotation_data_root = "static/data/nuclei_annotation_data/"
     export_folder = "region/" + manifest_name + "_" + str(region_size) + "/"
@@ -360,7 +429,8 @@ def make_region_back(manifest_name, region_size):
         shutil.rmtree(export_folder)
     os.mkdir(export_folder)
     manifest_file = open(export_folder + "manifest.txt", "w")
-    slide_ids = os.listdir(nuclei_annotation_data_root + manifest_name + '/')
+    if slide_ids == None:
+        slide_ids = os.listdir(nuclei_annotation_data_root + manifest_name + '/')
     for slide_ID in slide_ids:
         try:
             print(slide_ID)
@@ -381,7 +451,8 @@ def make_region_back(manifest_name, region_size):
                         (item[1] - 256 - int(region_size / 2), item[2] - 256 - int(region_size / 2)),
                         0, (region_size, region_size))
                     patch.save(
-                        export_folder + wsi[2] + '/' + str(item[1]) + '_' + str(item[2]) + '_' + str(
+                        export_folder + wsi[2] + '/' + str(item[0]) + '_' + str(item[1]) + '_' + str(
+                            item[2]) + '_' + str(
                             region_size) + '.png')
                 oslide.close()
         except Exception as e:
@@ -389,7 +460,7 @@ def make_region_back(manifest_name, region_size):
             print(e)
 
     manifest_file.close()
-    shutil.make_archive("export/" + manifest_name + "_" + str(region_size) + "/", 'zip', export_folder)
+    make_archive_threadsafe("export/" + manifest_name + "_" + str(region_size) + 'zip', export_folder)
 
 
 # @app.route('/graph')
@@ -411,4 +482,4 @@ def make_region_back(manifest_name, region_size):
 #     t['y'][5] = 20
 #     return jsonify(t)
 
-# app.run(debug=True)
+app.run(host="0.0.0.0", debug=False)
