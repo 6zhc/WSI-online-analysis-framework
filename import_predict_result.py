@@ -52,9 +52,15 @@ def save_data(old_files_name, old_mask_region, old_mask_type, predict_file_name)
         old_mask_region[:, :, 1:] = 0
         old_mask_region = cv2.blur(old_mask_region, (20, 20))
         old_mask_region = cv2.applyColorMap(old_mask_region[:, :, 0], cv2.COLORMAP_JET)
-        # b_channel, g_channel, r_channel = cv2.split(old_mask_region)
-        # old_mask_region = cv2.merge((b_channel, g_channel, r_channel, alpha))
-        cv2.imwrite(analysis_data_folder + predict_file_name + '_' + "mask_region.png", old_mask_region)
+
+        alpha = numpy.zeros((old_mask_region.shape[0], old_mask_region.shape[1]), dtype=numpy.uint8) + 255
+        alpha[old_mask_region[:, :, 0] != 0] = 0
+        old_mask_region[:, :, 0] = 0
+        b_channel, g_channel, r_channel = cv2.split(old_mask_region)
+        print(b_channel.shape, g_channel.shape, alpha.shape)
+        old_mask_region = cv2.merge((b_channel, g_channel, r_channel, alpha))
+        cv2.imwrite(analysis_data_folder + predict_file_name + '_' + summary_region + '_' + "mask_region.png",
+                    old_mask_region)
 
         sub = ["ccRCC", "pRCC", "chRCC"]
         result_sub = [0, 0, 0]
