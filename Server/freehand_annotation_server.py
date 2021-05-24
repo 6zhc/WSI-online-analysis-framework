@@ -187,6 +187,8 @@ def add_annotation_sever(app):
 
         # In one round, the grading and pslv could be updated only once.
         data = []
+        branch_id = -1
+        branch_id_find = []
         for i in range(num_of_points):
             if int(req_form[str(i) + '[grading]']) > 0:
                 if i == 0:
@@ -201,12 +203,15 @@ def add_annotation_sever(app):
                 db.delete_points(int(req_form[str(i) + '[x]']), int(req_form[str(i) + '[y]']))
             elif int(req_form[str(i) + '[grading]']) == -1:
                 db.delete_lines(int(req_form[str(i) + '[x]']), int(req_form[str(i) + '[y]']))
-
+            elif int(req_form[str(i) + '[grading]']) == -2:
+                branch_id_find = db.find_lines(int(req_form[str(i) + '[x]']), int(req_form[str(i) + '[y]']))
         if len(data):
-            db.incert_lines(data)
+            branch_id = db.incert_lines(data)
 
         return jsonify(
             pt_false_x=[],
             pt_false_y=[],
-            region_id=0
+            region_id=0,
+            branch_id=branch_id,
+            branch_id_find=branch_id_find
         )

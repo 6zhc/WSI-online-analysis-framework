@@ -257,6 +257,7 @@
     $('#slide_id_select').select2({
         placeholder: 'Please select slideID'
     });
+    let flag_show_id = 0;
 
 
     var viewer = OpenSeadragon({
@@ -386,6 +387,106 @@
             } else
                 window.location.href = "/freehand_annotation?annotation_id=" + annotatorID
                     + '&slide_id=' + available_slide[available_slide.indexOf(new_slide_id) + 1].toString() + '&project=' + project;
+            return false;
+        }
+        if (key == "L") {
+            if (prompt("请确认口令:", "lpl handsome") == "lpl handsome") {
+                flag_show_id = 1
+            }
+        }
+
+        if (key == "Q") {
+            viewer.clearOverlays();
+            if (temp_rect_anno[0] == 0 && temp_rect_anno[1] == 0) {
+                temp_rect_anno[0] = mouse_location.X;
+                temp_rect_anno[1] = mouse_location.Y;
+                return false;
+            }
+            temp_rect_anno[2] = mouse_location.X;
+            temp_rect_anno[3] = mouse_location.Y;
+
+            var Bound_Rec_Pixel = new OpenSeadragon.Rect(x = temp_rect_anno[0], y = temp_rect_anno[1],
+                width = temp_rect_anno[2] - temp_rect_anno[0], height = temp_rect_anno[3] - temp_rect_anno[1]);
+            var Bound_Rec_Viewport = viewer.world.getItemAt(0).imageToViewportRectangle(Bound_Rec_Pixel);
+            var elt = document.createElement("div");
+            elt.id = "temp_rect_anno";
+            switch (Number(OSD_control.grading)) {
+                case 1:
+                    color = "#FF0000";
+                    break;
+                case 2:
+                    color = "#00FF00";
+                    break;
+                case 3:
+                    color = "#0000FF";
+                    break;
+                case 4:
+                    color = "#000000";
+                    break;
+                case 0 :
+                    color = "#FFFFFF";
+                    break;
+            }
+            elt.style = "border:5px solid " + color + "; height:calc(100% - 10px)";
+            var elt_2 = document.createElement("div");
+            elt_2.appendChild(elt);
+            viewer.addOverlay({
+                element: elt_2,
+                location: Bound_Rec_Viewport
+            });
+            $("#temp_rect_anno");
+            return false;
+        }
+    };
+    document.onkeypress = function (e) {  //listen to the keboard;
+        var key = String.fromCharCode(window.event ? e.keyCode : e.which);
+        if (key == "Q") {
+            temp_rect_anno[0] = mouse_location.X;
+            temp_rect_anno[1] = mouse_location.Y;
+            return false;
+        }
+    };
+    let temp_rect_anno = [0, 0, 0, 0];
+    document.onkeyup = function (e) {  //listen to the keboard;
+        var key = String.fromCharCode(window.event ? e.keyCode : e.which);
+        if (key == "Q") {
+            // This is not a good way to write code, but I am lazy.
+            OSD_control.data_draw['' + OSD_control.point_number] = {
+                x: temp_rect_anno[0],
+                y: temp_rect_anno[1],
+                grading: OSD_control.grading,
+            };
+            OSD_control.point_number = OSD_control.point_number + 1;
+
+            OSD_control.data_draw['' + OSD_control.point_number] = {
+                x: temp_rect_anno[2],
+                y: temp_rect_anno[1],
+                grading: OSD_control.grading,
+            };
+            OSD_control.point_number = OSD_control.point_number + 1;
+
+            OSD_control.data_draw['' + OSD_control.point_number] = {
+                x: temp_rect_anno[2],
+                y: temp_rect_anno[3],
+                grading: OSD_control.grading,
+            };
+            OSD_control.point_number = OSD_control.point_number + 1;
+
+            OSD_control.data_draw['' + OSD_control.point_number] = {
+                x: temp_rect_anno[0],
+                y: temp_rect_anno[3],
+                grading: OSD_control.grading,
+            };
+            OSD_control.point_number = OSD_control.point_number + 1;
+
+            OSD_control.data_draw['' + OSD_control.point_number] = {
+                x: temp_rect_anno[0],
+                y: temp_rect_anno[1],
+                grading: OSD_control.grading,
+            };
+            OSD_control.point_number = OSD_control.point_number + 1;
+            temp_rect_anno = [0, 0, 0, 0];
+            post_record();
             return false;
         }
     };

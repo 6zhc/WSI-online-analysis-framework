@@ -36,7 +36,7 @@ var recording_point = function () {
         case 4:
             color = "#000000";
             break;
-        case 0 :
+        default:
             color = "#FFFFFF";
             break;
     }
@@ -107,6 +107,7 @@ var post_record = function () {
     set_status(OSD_status2num.data_processing);
     $.post("/freehand_annotation/_record" + info_url, OSD_control.data_draw).done(function (data) {
         console.log(data);
+
         OSD_control.data_draw = {};
         OSD_control.point_number = 0;
         OSD_control.pt_false = '(';
@@ -118,12 +119,44 @@ var post_record = function () {
         OSD_control.pt_false = OSD_control.pt_false + ')';
         update_mask();
         viewer.clearOverlays();
+        if (data.branch_id >= 0 && flag_show_id) {
+            showTips("您刚刚标注的是： " + data.branch_id, 50, 5);
+            // setTimeout("alert(\"您刚刚标注的是： \" + data.branch_id );", 3000)
+        }
+        if (data.branch_id_find.length >= 0) {
+            showTips("您刚刚查找的标注是： " + data.branch_id_find, 50, 5);
+            // setTimeout("alert(\"您刚刚标注的是： \" + data.branch_id );", 3000)
+        }
     }).fail(function () {
         set_status(OSD_status2num.ready);
         OSD_control.data_draw = {};
         OSD_control.point_number = 0;
     });
 };
+
+function showTips(content, height, time) {
+    //窗口的宽度
+    var windowWidth = $(window).width();
+    random = Math.random().toString()
+    var tipsDiv = '<div class="tipsClass" id="tipsClass' + random + '">' + content + '</div>';
+
+    $('body').append(tipsDiv);
+    $('div.tipsClass').css({
+        'top': height + 'px',
+        'left': (windowWidth / 2) - 350 / 2 + 'px',
+        'position': 'absolute',
+        'padding': '3px 5px',
+        'background': '#FF0000',
+        'font-size': 12 + 'px',
+        'margin': '0 auto',
+        'text-align': 'center',
+        'width': '100px',
+        'height': 'auto',
+        'color': '#fff',
+        'opacity': '0.8'
+    }).show();
+    setTimeout("document.getElementById(\"tipsClass\"+" + random + ").remove();", (time * 1000));
+}
 
 var change_slide_id = function () {
     // console.log("Sending slide id and wait for return value");
@@ -178,7 +211,7 @@ var getRadioValue = function (name) { //get which item is chosen (name is radio 
 
 var create_grading_controls = function () {
     // Generate grading controls
-    for (var i = -1; i <= Const_number.Max_grading; i++) {
+    for (var i = -2; i <= Const_number.Max_grading; i++) {
         var radio = document.createElement("input");
         radio.type = "radio";
         radio.name = "grading";
@@ -189,6 +222,10 @@ var create_grading_controls = function () {
         };
 
         var text = document.createTextNode(' ' + i + '\u00A0\u00A0');
+        if (i == -1)
+            text = document.createTextNode(' ' + "删除线" + '\u00A0\u00A0');
+        else if (i == -2)
+            text = document.createTextNode(' ' + "显示线id" + '\u00A0\u00A0');
 
         document.getElementById("grading").appendChild(radio);
         document.getElementById("grading").appendChild(text);
@@ -197,7 +234,8 @@ var create_grading_controls = function () {
 
     //document.getElementsByName("PS_lv").style.marginRight = "10px";
     // document.getElementById("Z").checked=true;
-    document.getElementById("0").checked = true;
+    document.getElementById("-2").checked = true;
+    document.getElementById("-2").onchange();
 };
 
 

@@ -34,17 +34,19 @@ class SqliteConnector:
         db.close()
 
     def incert_lines(self, data):
+        branch_id = self.get_max_branch() + 1
         db = sqlite3.connect(self.sqlite_path)
         atexit.register(db.close)
         print(self.sqlite_path)
         cursor = db.cursor()
         cursor.executemany(
-            "insert into Line(X1, Y1, X2, Y2, Grade, Branch) values (?,?,?,?,?," + str(self.get_max_branch() + 1) + ")",
+            "insert into Line(X1, Y1, X2, Y2, Grade, Branch) values (?,?,?,?,?," + str(branch_id) + ")",
             data)
 
         cursor.close()
         db.commit()
         db.close()
+        return branch_id
 
     # def delete_line(self, X :int, Y :int):
     #     cursor = self.db.cursor()
@@ -82,6 +84,25 @@ class SqliteConnector:
         cursor.close()
         db.commit()
         db.close()
+
+    def find_lines(self, X: int, Y: int):
+        db = sqlite3.connect(self.sqlite_path)
+        atexit.register(db.close)
+        cursor = db.cursor()
+        cursor.execute("select * from Line where (X1 >? and X1 <? and Y1 >? and Y1 < ?) or" + \
+                       "(X2 >? and X2 <? and Y2 >? and Y2 < ?)",
+                       tuple([X - 20, X + 20, Y - 20, Y + 20, X - 20, X + 20, Y - 20, Y + 20]))
+        result = cursor.fetchall()
+        # print(result)
+        branch_id = []
+        for item in result:
+            # print(item)
+            if item[6] not in branch_id:
+                branch_id.append(item[6])
+
+        cursor.close()
+        db.close()
+        return branch_id
 
     def delete_all_lines(self):
         db = sqlite3.connect(self.sqlite_path)
