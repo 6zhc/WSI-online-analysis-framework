@@ -123,7 +123,7 @@ var post_record = function () {
             showTips("您刚刚标注的是： " + data.branch_id, 50, 5);
             // setTimeout("alert(\"您刚刚标注的是： \" + data.branch_id );", 3000)
         }
-        if (data.branch_id_find.length >= 0) {
+        if (data.branch_id_find.length > 0) {
             showTips("您刚刚查找的标注是： " + data.branch_id_find, 50, 5);
             // setTimeout("alert(\"您刚刚标注的是： \" + data.branch_id );", 3000)
         }
