@@ -61,7 +61,7 @@ class SqliteConnector:
         cursor = db.cursor()
         cursor.execute("delete from Line where (X1 >? and X1 <? and Y1 >? and Y1 < ?) or" + \
                        "(X2 >? and X2 <? and Y2 >? and Y2 < ?)",
-                       tuple([X - 100, X + 100, Y - 100, Y + 100, X - 100, X + 100, Y - 100, Y + 100]))
+                       tuple([X - 15, X + 15, Y - 15, Y + 15, X - 15, X + 15, Y - 15, Y + 15]))
 
         cursor.close()
         db.commit()
@@ -73,7 +73,7 @@ class SqliteConnector:
         cursor = db.cursor()
         cursor.execute("select * from Line where (X1 >? and X1 <? and Y1 >? and Y1 < ?) or" + \
                        "(X2 >? and X2 <? and Y2 >? and Y2 < ?)",
-                       tuple([X - 100, X + 100, Y - 100, Y + 100, X - 100, X + 100, Y - 100, Y + 100]))
+                       tuple([X - 15, X + 15, Y - 15, Y + 15, X - 15, X + 15, Y - 15, Y + 15]))
         result = cursor.fetchall()
         # print(result)
         for item in result:
@@ -91,7 +91,7 @@ class SqliteConnector:
         cursor = db.cursor()
         cursor.execute("select * from Line where (X1 >? and X1 <? and Y1 >? and Y1 < ?) or" + \
                        "(X2 >? and X2 <? and Y2 >? and Y2 < ?)",
-                       tuple([X - 20, X + 20, Y - 20, Y + 20, X - 20, X + 20, Y - 20, Y + 20]))
+                       tuple([X - 15, X + 15, Y - 15, Y + 15, X - 15, X + 15, Y - 15, Y + 15]))
         result = cursor.fetchall()
         # print(result)
         branch_id = []

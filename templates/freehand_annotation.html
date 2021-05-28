@@ -423,7 +423,7 @@
                 case 4:
                     color = "#000000";
                     break;
-                case 0 :
+                default:
                     color = "#FFFFFF";
                     break;
             }
@@ -485,8 +485,17 @@
                 grading: OSD_control.grading,
             };
             OSD_control.point_number = OSD_control.point_number + 1;
-            temp_rect_anno = [0, 0, 0, 0];
-            post_record();
+
+            if (confirm("Your Box is loceated in " + temp_rect_anno)) {
+                temp_rect_anno = [0, 0, 0, 0];
+                post_record();
+            } else {
+                temp_rect_anno = [0, 0, 0, 0];
+                OSD_control.data_draw = {};
+                OSD_control.point_number = 0;
+                viewer.clearOverlays();
+            }
+
             return false;
         }
     };
