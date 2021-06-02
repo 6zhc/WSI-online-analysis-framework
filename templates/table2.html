@@ -193,22 +193,23 @@
                                 '/items?table=' + '{{ table }}',
                         })
                         .then(function (data) {
-                            /* data2 = data;
-                            jsonstr = JSON.stringify(data);
-                            jsonstr = decodeURI(jsonstr);
-                            data = JSON.parse(jsonstr);
-                            data2 = data;*/
                             console.log(data);
+                            gridOptions.api.closeToolPanel();
                             gridOptions.api.setRowData(data.data);
-                            var allColumnIds = [];
-                            gridOptions.columnApi.getAllColumns().forEach(function (column) {
-                                allColumnIds.push(column.colId);
-                            });
-                            // allColumnIds.shift();
-                            gridOptions.columnApi.autoSizeColumns(allColumnIds);
-                            gridOptions.api.closeToolPanel()
+                            // I don't know why once is not enough! and intern between two step should more than 5s/
+                            gridOptions.columnApi.autoSizeAllColumns();
+                            setTimeout("gridOptions.columnApi.autoSizeAllColumns()", 5001);
                         });
                 });
+
+                autoSizeColumns = function () {
+                    var allColumnIds = [];
+                    gridOptions.columnApi.getAllColumns().forEach(function (column) {
+                        allColumnIds.push(column.colId);
+                    });
+                    // allColumnIds.shift();
+                    gridOptions.columnApi.autoSizeColumns(allColumnIds);
+                }
 
             </script>
 

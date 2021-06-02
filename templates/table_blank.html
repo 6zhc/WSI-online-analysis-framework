@@ -20,7 +20,7 @@
     <script src="static/select2.min.js"></script>
 
     {#    <script src="https://unpkg.com/ag-grid-community/dist/ag-grid-community.min.noStyle.js"></script>#}
-    {#    <script src="https://unpkg.com/@ag-grid-enterprise/all-modules@24.1.0/dist/ag-grid-enterprise.min.js"></script>#}
+    {#    <script src="https://unpkg.com/@ag-grid-enterprise/all-modules@23.2.0/dist/ag-grid-enterprise.min.js"></script>#}
 
     <script src="https://unpkg.com/ag-grid-enterprise/dist/ag-grid-enterprise.min.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/ag-grid-community/dist/styles/ag-grid.css">
@@ -65,12 +65,12 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="table">
+                        <a class="nav-link" href="table">
                             Slide Info(TCGA)
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="table2">
+                        <a class="nav-link active" href="table2">
                             Slide Info(YiFuYuan)
                         </a>
                     </li>
@@ -79,6 +79,7 @@
                             Re-annotation
                         </a>
                     </li>
+
                 </ul>
             </div>
         </nav>
@@ -88,10 +89,10 @@
 
             <div id="myGrid" style="height: 830px" class="ag-theme-alpine"></div>
 
-            <script>
-                test_function = function(test){
+            <script charset="utf-8">
+                test_function = function (test) {
                     console.log(test.value);
-                    window.open("/find_slide?svs_file=" + test.value + "&project=table","_blank","")
+                    window.open("/find_slide?svs_file=" + test.value + "&project=table2", "_blank", "")
                 };
 
                 function entityToString(entity) {
@@ -102,96 +103,16 @@
                     return res;
                 }
 
-                //test
-                console.log(entityToString("{{column_addition}}"));
                 columnDefs = [
                     {
-                        field: '', headerName: '', checkboxSelection: true, width: 2,
-                        sortable: false, resizable: true, filter: 'agTextColumnFilter',pinned :'left',
-                    },{
+                        field: '', headerName: '', checkboxSelection: true, width: '2',
+                        sortable: false, resizable: true, filter: 'agTextColumnFilter', pinned: 'left',
+                    }, {
                         field: 'bcr_patient_barcode', headerName: '名称',
-                        sortable: true, resizable: true, filter: 'agTextColumnFilter',pinned :'left',
+                        sortable: true, resizable: true, filter: 'agTextColumnFilter', pinned: 'left',
                         onCellClicked: test_function
-                    }]
-                    .concat(JSON.parse(entityToString("{{column_addition}}"))).concat([
-                        {
-                        field: 'predict_result', headerName: '预测结果',
-                        sortable: true, resizable: true, filter: 'agNumberColumnFilter'
-                        }, {
-                            field: 'bcr_patient_uuid', headerName: '病人UUID',
-                            sortable: true, resizable: true, filter: 'agTextColumnFilter'
-                        }, {
-                        field: 'person_neoplasm_cancer_status', headerName: '肿瘤癌状况',
-                        sortable: true, resizable: true, filter: 'agTextColumnFilter'
-                    }, {
-                        field: 'tissue_source_site', headerName: '组织来源部位',
-                        sortable: true, resizable: true, filter: 'agTextColumnFilter'
-                    }, {
-                        field: 'age_at_initial_pathologic_diagnosis', headerName: '病发年龄',
-                        sortable: true, resizable: true, filter: 'agNumberColumnFilter'
-                    }, {
-                        field: 'days_to_initial_pathologic_diagnosis', headerName: '距离病发日期',
-                        sortable: true, resizable: true, filter: 'agNumberColumnFilter'
-                    }, {
-                        field: 'days_to_last_followup', headerName: '距离最后诊断日期',
-                        sortable: true, resizable: true, filter: 'agNumberColumnFilter'
-                    }, {
-                        field: 'days_to_death', headerName: '距离死亡日期',
-                        sortable: true, resizable: true, filter: 'agNumberColumnFilter'
-                    }, {
-                        field: 'gender', headerName: '性别',
-                        sortable: true, resizable: true, filter: 'agTextColumnFilter'
-                    }, {
-                        field: 'histological_type', headerName: '病理类型',
-                        sortable: true, resizable: true, filter: 'agTextColumnFilter'
-                    }, {
-                        field: 'lymph_node_examined_count', headerName: '淋巴结检测数量',
-                        sortable: true, resizable: true, filter: 'agNumberColumnFilter'
-                    }, {
-                        field: 'neoplasm_histologic_grade', headerName: '病理等级',
-                        sortable: true, resizable: true, filter: 'agTextColumnFilter'
-                    }, {
-                        field: 'tumor_type', headerName: '肿瘤类型',
-                        sortable: true, resizable: true, filter: 'agTextColumnFilter'
-                    }, {
-                        field: 'vital_status', headerName: '生存状态',
-                        sortable: true, resizable: true, filter: 'agTextColumnFilter'
-                    },
-                    ]);
-
-                var gridOptions = {
-                    columnDefs: columnDefs,
-                    rowData: []
-                };
-                gridOptions = {
-                    columnDefs: columnDefs,
-                    defaultColDef: {
-                        flex: 1,
-                        minWidth: 100,
-                        // allow every column to be aggregated
-                        enableValue: true,
-                        // allow every column to be grouped
-                        enableRowGroup: true,
-                        // allow every column to be pivoted
-                        enablePivot: true,
-                        sortable: true,
-                        filter: true,
-                        cellRenderer: 'medalCellRenderer',
-                    },
-                    components: {
-                        'medalCellRenderer': MedalCellRenderer
-                    },
-                    sideBar: true,
-                    rowGroupPanelShow: 'always',
-                    rowSelection: 'multiple',
-                    rowMultiSelectWithClick: true,
-                    enableRangeSelection: true,
-                    enableRangeHandle: true,
-                    groupSelectsFiltered: true,
-                    groupSelectsChildren: true,
-                    // checkbox: true,
-                    suppressRowClickSelection: true
-                };
+                    }
+                ].concat(JSON.parse(entityToString("{{column_addition}}")));
 
                 function MedalCellRenderer() {
                 }
@@ -205,6 +126,40 @@
 
                 MedalCellRenderer.prototype.getGui = function () {
                     return this.eGui;
+                };
+
+                var gridOptions = {
+                    columnDefs: columnDefs,
+                    rowData: []
+                };
+                gridOptions = {
+                    columnDefs: columnDefs,
+                    components: {
+                        'medalCellRenderer': MedalCellRenderer
+                    },
+                    defaultColDef: {
+                        flex: 1,
+                        minWidth: 100,
+                        // allow every column to be aggregated
+                        enableValue: true,
+                        // allow every column to be grouped
+                        enableRowGroup: true,
+                        // allow every column to be pivoted
+                        enablePivot: true,
+                        sortable: true,
+                        filter: true,
+                        cellRenderer: 'medalCellRenderer',
+                    },
+                    sideBar: true,
+                    rowGroupPanelShow: 'always',
+                    rowSelection: 'multiple',
+                    rowMultiSelectWithClick: true,
+                    enableRangeSelection: true,
+                    enableRangeHandle: true,
+                    groupSelectsFiltered: true,
+                    groupSelectsChildren: true,
+                    checkbox: true,
+                    suppressRowClickSelection: true
                 };
 
                 document.addEventListener('DOMContentLoaded', function () {

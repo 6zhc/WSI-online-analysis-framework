@@ -139,9 +139,31 @@ def table2():
             if key[:6] == "result":
                 keys.append({
                     "field": key, "headerName": key[7:],
-                    "sortable": True, "resizable": True, "filter": 'agTextColumnFilter',
+                    "sortable": True, "resizable": True,
+                    "filter": 'agTextColumnFilter',
                 })
     return render_template('table2.html', table=table, column_addition=json.dumps(keys))
+
+
+@app.route('/table_blank')
+@login_required
+def table_blank():
+    table = request.args.get('table', type=str)
+    if table is None:
+        return redirect("table_blank?table=test_predict.csv")
+
+    keys = []
+    with open(table, encoding='utf-8')as f:
+        f_csv = csv.DictReader(f)
+        f_csv = list(f_csv)
+        for key in f_csv[0]:
+            if key != "bcr_patient_barcode":
+                keys.append({
+                    "field": key, "headerName": key,
+                    "sortable": True, "resizable": True,
+                    "filter": 'agTextColumnFilter' if is_number(f_csv[0][key]) else "agNumberColumnFilter",
+                })
+    return render_template('table_blank.html', table=table, column_addition=json.dumps(keys))
 
 
 def is_number(s):
