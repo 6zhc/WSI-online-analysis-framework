@@ -22,7 +22,6 @@ from Server import mission_server
 from Server import user_server
 from Server import re_annotation_server
 from Server import nuclei_annotation_v2_server
-from Server import freehand_stomache_annotation_server
 
 from Controller import manifest_controller
 from Controller import thread_controller
@@ -60,7 +59,6 @@ app = Flask(__name__)
 user_server.add_user_server(app)
 dzi_online_server.add_dzi_sever(app)
 freehand_annotation_server.add_annotation_sever(app)
-freehand_stomache_annotation_server.add_annotation_sever(app)
 nuclei_annotation_server.add_annotation_sever(app)
 annotation_project_server.add_annotation_project_sever(app)
 mission_server.add_mission_server(app)
