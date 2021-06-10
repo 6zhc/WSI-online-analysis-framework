@@ -2,6 +2,7 @@ from flask_login import UserMixin
 
 
 class User(UserMixin):
+
     slideID = {}
     pass
 
@@ -16,7 +17,10 @@ users = [
 ]
 
 
-def query_user(user_name):
+def query_user(user_name=None, user_id=None):
     for user in users:
-        if user_name == user['username']:
+        if user_name and user_name == user['username']:
             return user
+        if user_id and user_id == user['id']:
+            return user
+    return None

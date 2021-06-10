@@ -78,7 +78,6 @@ def cors(environ):
     environ.headers['Access-Control-Allow-Headers'] = 'x-requested-with,content-type'
     return environ
 
-
 @app.route('/')
 @login_required
 def index():
@@ -262,6 +261,7 @@ def slide():
 
 
 @app.route('/available_slide_file/<project>/')
+@login_required
 def print_logs(project=""):
     # project = request.args.get('project', default="", type=str)
     if project == "":

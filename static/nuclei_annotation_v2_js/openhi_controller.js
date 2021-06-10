@@ -126,7 +126,7 @@ var create_grading_controls = function () {
 
     //document.getElementsByName("PS_lv").style.marginRight = "10px";
     // document.getElementById("Z").checked=true;
-    document.getElementById("0").checked = true;
+    document.getElementById("7").click();
 };
 
 var create_slide_grading_controls = function () {

@@ -14,7 +14,7 @@ def add_user_server(app):
 
     @login_manager.user_loader
     def load_user(user_id):
-        if query_user(user_id) is not None:
+        if query_user(user_id=user_id) is not None:
             curr_user = User()
             curr_user.id = user_id
 
@@ -25,7 +25,7 @@ def add_user_server(app):
         if request.method == 'POST':
             user_name = request.form.get('user_name')
             remember_me = (request.form.get('remember_me', default="") != "")
-            user = query_user(user_name)
+            user = query_user(user_name=user_name)
             if user is not None and request.form['password'] == user['password']:
 
                 curr_user = User()
