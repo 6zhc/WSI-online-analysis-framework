@@ -23,6 +23,7 @@ def add_mission_server(app):
                                item_per_page=item_per_page, slide_uuid=slide_uuid)
 
     @app.route('/mission_table_data')
+    @login_required
     def mission_table_data():
         page_no = request.args.get('page_no', default=1, type=int)
         item_per_page = request.args.get('item_per_page', default=15, type=int)
@@ -31,6 +32,7 @@ def add_mission_server(app):
             mission_controller.get_table(slide_uuid)[page_no * item_per_page - item_per_page:page_no * item_per_page])
 
     @app.route('/remove_mission')
+    @login_required
     def remove_mission():
         job_id = request.args.get('slide_id', type=int)
         mission_controller.remove_mission_by_id(job_id)

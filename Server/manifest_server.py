@@ -29,6 +29,7 @@ def add_manifest_server(app):
         return render_template('slide_table.html', page_no=page_no, total_page=total_page, item_per_page=item_per_page)
 
     @app.route('/manifest_table_data')
+    @login_required
     def table_data():
         page_no = request.args.get('page_no', default=1, type=int)
         item_per_page = request.args.get('item_per_page', default=15, type=int)
@@ -36,6 +37,7 @@ def add_manifest_server(app):
             manifest_controller.get_table(page_no * item_per_page - item_per_page, page_no * item_per_page, 0))
 
     @app.route('/dzi_list_data')
+    @login_required
     def dzi_list_data():
         page_no = request.args.get('page_no', default=1, type=int)
         item_per_page = request.args.get('item_per_page', default=15, type=int)
@@ -43,23 +45,27 @@ def add_manifest_server(app):
             manifest_controller.get_dzi_path(page_no * item_per_page - item_per_page, page_no * item_per_page))
 
     @app.route('/refresh_manifest_table_data')
+    @login_required
     def refresh_manifest_table_data():
         thread_controller.BackgroundThread(manifest_controller.get_table).start()
         return redirect('/manifest_table')
 
     @app.route('/continue_slide_id')
+    @login_required
     def continue_slide_id():
         manifest_controller.continue_slide_id()
         thread_controller.BackgroundThread(annotation_project_controller.refresh_npy).start()
         return jsonify({"mas": 'None'})
 
     @app.route('/remove_wsi')
+    @login_required
     def remove_wsi():
         slide_id = request.args.get('slide_id', type=int)
         manifest_controller.remove_wsi_by_id(slide_id)
         return jsonify({"info": "Removed Successfully !", "time": "1"})
 
     @app.route('/uploader', methods=['GET', 'POST'])
+    @login_required
     def uploader_file():
         slide_uuid = request.form['uuid']
         file = request.files['file']

@@ -49,6 +49,7 @@ def add_annotation_sever(app):
                                annotator_id=annotator_id, slide_uuid=info[1], project=annotation_project)
 
     @app.route('/freehand_annotation/_get_info')
+    @login_required
     def freehand_annotation_get_info():
 
         slide_id = request.args.get('slide_id', default=1, type=int)
@@ -75,6 +76,7 @@ def add_annotation_sever(app):
         )
 
     @app.route('/freehand_annotation/_clear_lines')
+    @login_required
     def freehand_annotation_clear_lines():
         slide_id = request.args.get('slide_id', default=1, type=int)
         annotator_id = request.args.get('annotator_id', default=1, type=int)
@@ -94,6 +96,7 @@ def add_annotation_sever(app):
         )
 
     @app.route('/freehand_annotation/_undo_lines')
+    @login_required
     def freehand_annotation_undo_lines():
         slide_id = request.args.get('slide_id', default=1, type=int)
         annotator_id = request.args.get('annotator_id', default=1, type=int)
@@ -113,6 +116,7 @@ def add_annotation_sever(app):
         )
 
     @app.route('/freehand_annotation/_update_image')
+    @login_required
     def freehand_annotation_update_image():
         slide_id = request.args.get('slide_id', default=1, type=int)
         annotator_id = request.args.get('annotator_id', default=1, type=int)
@@ -166,6 +170,7 @@ def add_annotation_sever(app):
         )
 
     @app.route('/freehand_annotation/_record', methods=['GET', 'POST'])
+    @login_required
     def freehand_annotation_record():
         slide_id = request.args.get('slide_id', default=1, type=int)
         annotator_id = request.args.get('annotator_id', default=1, type=int)

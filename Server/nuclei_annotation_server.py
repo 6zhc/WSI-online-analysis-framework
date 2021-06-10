@@ -54,6 +54,7 @@ def add_annotation_sever(app):
                                annotator_id=annotator_id, slide_uuid=info[1], project=annotation_project)
 
     @app.route('/nuclei_annotation/_get_info')
+    @login_required
     def nuclei_annotation_get_info():
 
         slide_id = request.args.get('slide_id', default=1, type=int)
@@ -77,6 +78,7 @@ def add_annotation_sever(app):
         )
 
     @app.route('/nuclei_annotation/_update_image')
+    @login_required
     def nuclei_annotation_update_image():
         slide_id = request.args.get('slide_id', default=1, type=int)
         annotator_id = request.args.get('annotator_id', default=1, type=int)
@@ -178,6 +180,7 @@ def add_annotation_sever(app):
         )
 
     @app.route('/nuclei_annotation/_record', methods=['GET', 'POST'])
+    @login_required
     def nuclei_annotation_record():
         slide_id = request.args.get('slide_id', default=1, type=int)
         annotator_id = request.args.get('annotator_id', default=1, type=int)
@@ -217,6 +220,7 @@ def add_annotation_sever(app):
         )
 
     @app.route('/nuclei_annotation/_update_tb_list')
+    @login_required
     def nuclei_annotation_update_tb_list():
         slide_id = request.args.get('slide_id', default=1, type=int)
         annotator_id = request.args.get('annotator_id', default=1, type=int)
@@ -233,6 +237,7 @@ def add_annotation_sever(app):
         return jsonify(max_region=len(tba_result), reg_list=tba_result)
 
     @app.route('/nuclei_annotation/_add_sw')
+    @login_required
     def nuclei_annotation_add_sw():
         slide_id = request.args.get('slide_id', default=1, type=int)
         annotator_id = request.args.get('annotator_id', default=1, type=int)
@@ -260,6 +265,7 @@ def add_annotation_sever(app):
         return jsonify(status=message, num_status=1)
 
     @app.route('/nuclei_annotation/_rm_sw')  # Add sub-window
+    @login_required
     def nuclei_annotation_rm_sw():
         slide_id = request.args.get('slide_id', default=1, type=int)
         annotator_id = request.args.get('annotator_id', default=1, type=int)
