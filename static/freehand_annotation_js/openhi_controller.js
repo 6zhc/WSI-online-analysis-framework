@@ -108,8 +108,6 @@ var post_record = function () {
     $.post("/freehand_annotation/_record" + info_url, OSD_control.data_draw).done(function (data) {
         console.log(data);
 
-        OSD_control.data_draw = {};
-        OSD_control.point_number = 0;
         OSD_control.pt_false = '(';
         if (data.pt_false_x.length !== 0) {
             for (var i = 0; i < data.pt_false_x.length; i++) {
@@ -129,9 +127,11 @@ var post_record = function () {
         }
     }).fail(function () {
         set_status(OSD_status2num.ready);
-        OSD_control.data_draw = {};
-        OSD_control.point_number = 0;
+        // OSD_control.data_draw = {};
+        // OSD_control.point_number = 0;
     });
+    OSD_control.data_draw = {};
+    OSD_control.point_number = 0;
 };
 
 function showTips(content, height, time) {

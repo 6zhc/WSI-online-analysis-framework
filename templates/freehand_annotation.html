@@ -290,9 +290,16 @@
         scrollHandler: update_mouse_location,
         exitHandler: function (e) {
             if (OSD_control.point_record_controller) {
-                OSD_control.point_record_controller = 0;
-                viewer.setMouseNavEnabled(true);
-                post_record();
+                pen_state += 1;
+                (function (pen_state_old) {
+                    setTimeout(function () {
+                        if (pen_state == pen_state_old) {
+                            viewer.setMouseNavEnabled(true);
+                            OSD_control.point_record_controller = 0;
+                            post_record();
+                        }
+                    }, 100);
+                })(pen_state);
             }
         },
     });
@@ -328,8 +335,10 @@
     });
 
 
+    let pen_state = 0;
     viewer.addHandler('canvas-enter', function (e) {
         if (e.pointerType == "pen") {
+            pen_state += 1;
             viewer.setMouseNavEnabled(false);
             OSD_control.point_record_controller = 1;
             update_mouse_location(e);
@@ -338,9 +347,17 @@
 
     viewer.addHandler('canvas-exit', function (e) {
         if (e.pointerType == "pen") {
-            viewer.setMouseNavEnabled(true);
-            OSD_control.point_record_controller = 0;
-            post_record();
+            pen_state += 1;
+            (function (pen_state_old) {
+                setTimeout(function () {
+                    if (pen_state == pen_state_old) {
+                        viewer.setMouseNavEnabled(true);
+                        OSD_control.point_record_controller = 0;
+                        post_record();
+                    }
+                }, 100);
+            })(pen_state);
+            // post_record();
         }
     });
     viewer.gestureSettingsByDeviceType("pen").flickEnabled = false;
