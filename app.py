@@ -371,10 +371,10 @@ def available_slide():
                         annotated += 1
                 if len(tba_result) > 0:
                     data[index]["text"] = "(" + str(annotated) + '/' + str(len(tba_result)) + ") " + data[index]["text"]
-        elif annotation_type == "freehand":
+        elif annotation_type == "freehand" or annotation_type == "freehand_stomache":
             for index in range(len(data)):
-                nuclei_annotation_root = "Data/freehand_annotation_data/"
-                annotation_project_root = nuclei_annotation_root + project + '/'
+                annotation_root = "Data/" + annotation_type + "_annotation_data/"
+                annotation_project_root = annotation_root + project + '/'
                 if not os.path.exists(annotation_project_root + data[index]["text"].split(" ")[1] + '/'):
                     continue
                 if os.path.exists(annotation_project_root + data[index]["text"].split(" ")[1] + '/' +

@@ -245,7 +245,7 @@
             data: data,
         });
         $('#slide_id_select').val("{{ slide_id }}").select2();
-        $.get("available_slide" + info_url + "&annotation_type=freehand", function (data) {
+        $.get("available_slide" + info_url + "&annotation_type=freehand_stomache", function (data) {
             console.log(data);
             $('#slide_id_select').empty().select2({
                 placeholder: 'Please select slideID',
