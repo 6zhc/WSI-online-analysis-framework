@@ -50,7 +50,7 @@
 <script type="text/javascript">
     anno_name = "{{ anno_name }}";
     rand = "{{ rand }}";
-    background_image = 'static/data/anno_data/' + anno_name + '.png';
+    background_image = 'static/data/anno_data/' + anno_name + "{{ image_type }}";
     let mask1 = '{{ image_root }}' + 'mask_' + anno_name + '_nuClick.png' + rand;
     let mask2 = '{{ image_root }}' + 'mask_' + anno_name + '_U-net.png' + rand;
     let mask3 = '{{ image_root }}' + 'mask_' + anno_name + '_nuClick_separate_nuclei.png' + rand;

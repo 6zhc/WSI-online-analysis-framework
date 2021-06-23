@@ -12,6 +12,8 @@ result_root = "Data/re_annotation_data/" + "results/"
 points_root = "Data/re_annotation_data/" + "points/"
 grades_root = "Data/re_annotation_data/" + "grades/"
 
+image_type = '.jpg'
+
 color = [[0, 128, 0, 0], [255, 0, 209, 255], [0, 255, 255, 255], [0, 0, 255, 255], [0, 0, 255, 255],
          [255, 191, 0, 255], [0, 0, 0, 255], [0, 0, 0, 0]]
 
@@ -99,7 +101,7 @@ def boundary_2_point(anno, annotator_id):
 
 def point_2_boundary(anno, mask_name, annotator_id):
     anno_name = anno.split('.')[0]
-    region_image_file_name = region_image_root + anno_name + '.png'
+    region_image_file_name = region_image_root + anno_name + image_type
 
     if not os.path.exists(points_root + 'a' + annotator_id + '/'):
         os.mkdir(points_root + 'a' + annotator_id + '/')
@@ -125,7 +127,10 @@ def point_2_boundary(anno, mask_name, annotator_id):
 
     region_image_file = cv2.imread(region_image_file_name)
     dot = numpy.array(points)
-    result = gen_mask(dot, region_image_file)
+    if len(dot) == 0:
+        result = numpy.zeros([region_image_file.shape[0], region_image_file.shape[1]])
+    else:
+        result = gen_mask(dot, region_image_file)
 
     ret, binary = cv2.threshold(result, 1, 255, cv2.THRESH_BINARY)
     contours, hierarchy = cv2.findContours(cv2.convertScaleAbs(binary), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -158,9 +163,14 @@ def boundary_2_mask(anno, mask_name, annotator_id):
     boundary_file = numpy.loadtxt(boundary_file_name, dtype=numpy.int16, delimiter=',')
     annotation_file = numpy.loadtxt(annotation_file_name, dtype=numpy.int16, delimiter=',')
 
-    mask = numpy.zeros([512, 512, 4])
+    region_image_file_name = region_image_root + anno_name + image_type
+    image_shape = cv2.imread(region_image_file_name).shape
+    mask = numpy.zeros([image_shape[0], image_shape[1], 4])
+    print(annotation_file_name, annotation_file)
 
-    for i in range(len(annotation_file)):
+    for i in range(annotation_file.size):
+        if annotation_file.size == 1:
+            break
         mask[boundary_file == i] = color[annotation_file[i]]
     mask[boundary_file == -1] = [0, 255, 0, 255]
 
@@ -182,9 +192,13 @@ def boundary_2_mask_u_net(anno, annotator_id):
     boundary_file = numpy.loadtxt(boundary_file_name, dtype=numpy.int16, delimiter=',')
     annotation_file = numpy.loadtxt(annotation_file_name, dtype=numpy.int16, delimiter=',')
 
-    mask = numpy.zeros([512, 512, 4])
+    region_image_file_name = region_image_root + anno_name + image_type
+    image_shape = cv2.imread(region_image_file_name).shape
+    mask = numpy.zeros([image_shape[0], image_shape[1], 4])
 
-    for i in range(len(annotation_file)):
+    for i in range(annotation_file.size):
+        if annotation_file.size == 1:
+            break
         try:
             mask[boundary_file == i] = color[annotation_file[i]]
         except:
@@ -210,12 +224,14 @@ def boundary_2_mask_separate_nuclei(anno, mask_name, annotator_id):
     boundary_file = numpy.loadtxt(boundary_file_name, dtype=numpy.int16, delimiter=',')
     annotation_file = numpy.loadtxt(annotation_file_name, dtype=numpy.int16, delimiter=',')
 
-    mask = numpy.zeros([512, 512, 4])
+    region_image_file_name = region_image_root + anno_name + image_type
+    image_shape = cv2.imread(region_image_file_name).shape
+    mask = numpy.zeros([image_shape[0], image_shape[1], 4])
 
-    region_color = ncolors(len(annotation_file))
+    region_color = ncolors(annotation_file.size)
     random.shuffle(region_color)
 
-    for i in range(1, len(annotation_file)):
+    for i in range(1, annotation_file.size):
         mask[boundary_file == i] = region_color[i]
     mask[boundary_file == -1] = [0, 255, 0, 255]
 

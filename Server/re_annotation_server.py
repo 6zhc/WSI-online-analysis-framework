@@ -17,6 +17,9 @@ result_root = "Data/re_annotation_data/" + "results/"
 points_root = "Data/re_annotation_data/" + "points/"
 grades_root = "Data/re_annotation_data/" + "grades/"
 
+first_image_name = "1"
+image_type = ".jpg"
+
 
 def add_re_annotation_sever(app):
     @app.route('/re_annotation')
@@ -29,7 +32,7 @@ def add_re_annotation_sever(app):
             try:
                 anno_name = current_user.slideID[annotator_id + "_" + "re-annotation"]
             except:
-                anno_name = "s178_r1974"
+                anno_name = first_image_name
         current_user.slideID[annotator_id + "_" + "re-annotation"] = anno_name
 
         image_root = request.args.get('image_root', type=str,
@@ -41,7 +44,8 @@ def add_re_annotation_sever(app):
             re_annotation_controller.boundary_2_mask(anno_name, 'nuClick', annotator_id)
             re_annotation_controller.boundary_2_mask_separate_nuclei(anno_name, 'nuClick', annotator_id)
             re_annotation_controller.boundary_2_mask_u_net(anno_name, annotator_id)
-        return render_template('multi-slide.html', anno_name=anno_name, rand=rand, image_root=image_root)
+        return render_template('multi-slide.html', anno_name=anno_name, rand=rand,
+                               image_root=image_root, image_type=image_type)
 
     @login_required
     @app.route('/available_re_annotation_region')
@@ -67,7 +71,7 @@ def add_re_annotation_sever(app):
     @login_required
     def make_mask():
         annotator_id = current_user.get_id()
-        anno_name = request.args.get('anno_name', type=str, default="s178_r1974")
+        anno_name = request.args.get('anno_name', type=str, default=first_image_name)
         mask_name = request.args.get('mask_name', type=str, default="nuClick")
         re_annotation_make_mask(anno_name, annotator_id)
         result = {
@@ -80,7 +84,7 @@ def add_re_annotation_sever(app):
     @login_required
     def update_grades():
         annotator_id = current_user.get_id()
-        anno_name = request.args.get('anno_name', type=str, default="s178_r1974")
+        anno_name = request.args.get('anno_name', type=str, default=first_image_name)
         mask_name = request.args.get('mask_name', type=str, default="nuClick")
         data = {}
         for key, value in request.form.items():
@@ -148,7 +152,7 @@ def add_re_annotation_sever(app):
     @login_required
     def points_grades():
         annotator_id = current_user.get_id()
-        anno_name = request.args.get('anno_name', type=str, default="s178_r1974")
+        anno_name = request.args.get('anno_name', type=str, default=first_image_name)
         mask_name = request.args.get('mask_name', type=str, default="nuClick")
 
         points_file_name = points_root + 'a' + annotator_id + '/' + anno_name + '.txt'
