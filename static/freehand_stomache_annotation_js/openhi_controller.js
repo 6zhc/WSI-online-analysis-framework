@@ -71,6 +71,15 @@ var recording_point = function () {
         case 16:
             color = "#000000";
             break;
+        case 17:
+            color = "#006400";
+            break;
+        case 18:
+            color = "#32CD32";
+            break;
+        case 19:
+            color = "#8FBC8F";
+            break;
         default:
             color = "#FFFFFF";
             break;
@@ -348,9 +357,10 @@ var create_bool_controls = function() {
 
 var create_grading_controls = function () {
     // Generate grading controls
-    var class_name=["0","粘膜固有层","粘膜肌层","粘膜下层","固有肌层","浆膜层","脂肪","pap","tub1","tub2","por1","por2","sig","muc","other","癌症区域","非癌症区域"]
-    var color = ["#8B0000", "#FF00FF","#800080","#4B0082","#8A2BE2","#0000FF","#4169E1","#4682B4","#00FFFF","#00FF00","#008000","#FFFF00","#FFD700","#FFA500", "#FF0000", "#000000"]
-    for (var i = -2; i <= 16; i++) {
+    var class_name=["0","粘膜固有层","粘膜肌层","粘膜下层","固有肌层","浆膜层","脂肪","pap","tub1","tub2","por1","por2","sig","muc","other","癌症区域","非癌症区域","纤维间质","淋巴间质","其他间质"]
+    
+    var color = ["#8B0000", "#FF00FF","#800080","#4B0082","#8A2BE2","#0000FF","#4169E1","#4682B4","#00FFFF","#00FF00","#008000","#FFFF00","#FFD700","#FFA500", "#FF0000", "#000000","#006400","#32CD32","#8FBC8F"]
+    for (var i = -2; i <= 19; i++) {
         // if(i==0)
         //    continue;
         var out_box=document.createElement("p")
@@ -385,7 +395,7 @@ var create_grading_controls = function () {
         out_box.appendChild(style)
         out_box.appendChild(text_box)
         document.getElementById("grading").appendChild(out_box);
-        if(i==0||i==6||i==14||i==16){
+        if(i==0||i==6||i==14||i==19){
             var line=document.createElement("hr");
             document.getElementById("grading").appendChild(line);
         }
