@@ -220,3 +220,47 @@ def add_annotation_sever(app):
             branch_id=branch_id,
             branch_id_find=branch_id_find
         )
+
+
+    @app.route('/freehand_stomache_annotation/_record_status', methods=['GET', 'POST'])
+    def freehand_stomache_annotation_record_status():
+        slide_id = request.args.get('slide_id', default=1, type=int)
+        annotator_id = request.args.get('annotator_id', default=1, type=int)
+        annotation_project = request.args.get('project', default="None", type=str)
+        slide_uuid = request.args.get('slide_uuid', default="", type=str)
+
+        annotation_root_folder = freehand_annotation_data_root + annotation_project + '/' + slide_uuid + '/'
+
+        if not os.path.exists(annotation_root_folder):
+            os.mkdir(annotation_root_folder)
+        annotaion_json = annotation_root_folder + 'a' + str(annotator_id) + '.json'
+
+        req_form = request.form
+        # print(req_form)
+        with open(annotaion_json,'w+') as file_obj:
+            json.dump(req_form,file_obj)
+        return jsonify({})
+    
+
+    @app.route('/freehand_stomache_annotation/_get_status', methods=['GET', 'POST'])
+    def freehand_stomache_annotation_get_status():
+        slide_id = request.args.get('slide_id', default=1, type=int)
+        annotator_id = request.args.get('annotator_id', default=1, type=int)
+        annotation_project = request.args.get('project', default="None", type=str)
+        slide_uuid = request.args.get('slide_uuid', default="", type=str)
+
+        annotation_root_folder = freehand_annotation_data_root + annotation_project + '/' + slide_uuid + '/'
+
+        if not os.path.exists(annotation_root_folder):
+            os.mkdir(annotation_root_folder)
+        annotaion_json = annotation_root_folder + 'a' + str(annotator_id) + '.json'
+        data=[]
+        if not os.path.exists(annotaion_json):
+            req_form = request.form
+            print(req_form)
+            data=req_form
+        else:
+            with open(annotaion_json) as file_obj:
+                data = json.load(file_obj)
+        # print("data:",data)
+        return jsonify(data)
