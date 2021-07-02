@@ -795,7 +795,8 @@ def refresh_npy():
             + '" target="_Blank">v1 </a>' + ')'
             )
         temp.append('<a href="/freehand_annotation?' + 'project=' + str(project_name)  # '&slide_id=' + str(slide_id[0])
-                    + '" target="_Blank">freehand annotate </a>')
+                    + '" target="_Blank">freehand annotate </a>' + '(' + '<a href="/freehand_stomache_annotation?' + 'project=' + str(project_name)  # '&slide_id=' + str(slide_id[0])
+                    + '" target="_Blank">stomach</a>' + ')' )
 
         temp.append("Unavailable")
         temp.append("Unavailable")
