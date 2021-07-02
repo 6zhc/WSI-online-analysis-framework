@@ -3,6 +3,7 @@ import numpy
 import openslide
 import os
 import uuid
+import json
 
 from flask import jsonify, request, render_template
 from flask_login import login_required, current_user
