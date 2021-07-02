@@ -71,6 +71,15 @@ var recording_point = function () {
         case 16:
             color = "#000000";
             break;
+        case 17:
+            color = "#006400";
+            break;
+        case 18:
+            color = "#32CD32";
+            break;
+        case 19:
+            color = "#8FBC8F";
+            break;
         default:
             color = "#FFFFFF";
             break;
@@ -168,6 +177,46 @@ var post_record = function () {
     OSD_control.point_number = 0;
 };
 
+var post_status = function () {
+    console.log(OSD_control.check_box);
+    set_status(OSD_status2num.data_processing);
+    $.post("/freehand_stomache_annotation/_record_status" + info_url, OSD_control.check_box).done(function (data) {
+        console.log(data);
+        OSD_control.check_box = {"癌栓":false,
+                           "出芽":false,
+                           "神经丛浸润":false,
+                           "周围小神经浸润":false,
+                           "静脉浸润":false,
+                           "淋巴管浸润":false};
+    }).fail(function () {
+        set_status(OSD_status2num.ready);
+        OSD_control.data_draw = {"癌栓":false,
+                           "出芽":false,
+                           "神经丛浸润":false,
+                           "周围小神经浸润":false,
+                           "静脉浸润":false,
+                           "淋巴管浸润":false};
+    });
+};
+
+var get_status = function () {
+    set_status(OSD_status2num.data_processing);
+    $.post("/freehand_stomache_annotation/_get_status" + info_url, OSD_control.check_box).done(function (data) {
+        console.log(data);
+        OSD_control.check_box=data
+        console.log("a",OSD_control.check_box)
+        create_bool_controls()
+    }).fail(function () {
+        set_status(OSD_status2num.ready);
+        OSD_control.check_box = {"癌栓":false,
+                           "出芽":false,
+                           "神经丛浸润":false,
+                           "周围小神经浸润":false,
+                           "静脉浸润":false,
+                           "淋巴管浸润":false};
+    });
+};
+
 function showTips(content, height, time) {
     //窗口的宽度
     var windowWidth = $(window).width();
@@ -243,11 +292,75 @@ var getRadioValue = function (name) { //get which item is chosen (name is radio 
     }
 };
 
+
+var getCheckboxValue = function (name) { //get which item is chosen
+    var checkbox_tag = document.getElementsByName(name);
+    var result={"癌栓":false,
+            "出芽":false,
+            "神经丛浸润":false,
+            "周围小神经浸润":false,
+            "静脉浸润":false,
+            "淋巴管浸润":false}
+    for (var i = 0; i < checkbox_tag.length; i++) {
+        if (checkbox_tag[i].checked) {
+            value=checkbox_tag[i].value;
+            result[value]=true;
+        }
+    }
+//     console.log(result)
+    return result
+    
+};
+
+
+var create_bool_controls = function() {
+    var bool_box=["癌栓","出芽","神经丛浸润","周围小神经浸润","静脉浸润","淋巴管浸润"]
+    
+    var checked=OSD_control.check_box
+    console.log("checked:",checked)
+    for (var i = 0; i <= 5; i++) {
+        var name=bool_box[i]
+        var out_box=document.createElement("p")
+        out_box.style.margin="10px 20px"
+        var checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.name = "checkbox";
+        if (checked[name]=="false")
+            checkbox.checked=false;
+        else
+            checkbox.checked=true;
+        checkbox.value = name;
+        checkbox.onchange = function () {
+            OSD_control.check_box = getCheckboxValue("checkbox");
+            post_status();
+        };
+        
+        var text_box=document.createElement("span")
+        var text = document.createTextNode(' ' + bool_box[i]+'\u00A0\u00A0');
+        
+        
+        text_box.appendChild(text)
+        out_box.appendChild(checkbox)
+        
+        out_box.appendChild(text_box)
+        document.getElementById("bool").appendChild(out_box);
+        
+        if(i==5){
+            var line=document.createElement("hr");
+            document.getElementById("bool").appendChild(line);
+        }
+        document.getElementById(i.toString()).style.marginLeft = "10px";
+    }
+    document.getElementById("0").onchange();
+}
+
+
 var create_grading_controls = function () {
     // Generate grading controls
-    var class_name=["0","粘膜固有层","粘膜肌层","粘膜下层","固有肌层","浆膜层","脂肪","pap","tub1","tub2","por1","por2","sig","muc","other","癌症区域","非癌症区域"]
-    var color = ["#8B0000", "#FF00FF","#800080","#4B0082","#8A2BE2","#0000FF","#4169E1","#4682B4","#00FFFF","#00FF00","#008000","#FFFF00","#FFD700","#FFA500", "#FF0000", "#000000"]
-    for (var i = -2; i <= 16; i++) {
+    var class_name=["0","粘膜固有层","粘膜肌层","粘膜下层","固有肌层","浆膜层","脂肪","pap","tub1","tub2","por1","por2","sig","muc","other","癌症区域","非癌症区域","纤维间质","淋巴间质","其他间质"]
+    
+    var color = ["#8B0000", "#FF00FF","#800080","#4B0082","#8A2BE2","#0000FF","#4169E1","#4682B4","#00FFFF","#00FF00","#008000","#FFFF00","#FFD700","#FFA500", "#FF0000", "#000000","#006400","#32CD32","#8FBC8F"]
+    for (var i = -2; i <= 19; i++) {
         // if(i==0)
         //    continue;
         var out_box=document.createElement("p")
@@ -282,7 +395,7 @@ var create_grading_controls = function () {
         out_box.appendChild(style)
         out_box.appendChild(text_box)
         document.getElementById("grading").appendChild(out_box);
-        if(i==0||i==6||i==14||i==16){
+        if(i==0||i==6||i==14||i==19){
             var line=document.createElement("hr");
             document.getElementById("grading").appendChild(line);
         }

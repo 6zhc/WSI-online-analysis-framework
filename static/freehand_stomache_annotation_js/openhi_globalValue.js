@@ -23,6 +23,12 @@ var OSD_control = {
     pt_false: "()",
     scale_bar_controller: 1,
     viewing_position_record_controller: 0,
+    check_box:{"癌栓":false,
+           "出芽":false,
+           "神经丛浸润":false,
+           "周围小神经浸润":false,
+           "静脉浸润":false,
+           "淋巴管浸润":false},
 };
 
 //the value update after OSD animation ans set by openhi_viewer.js

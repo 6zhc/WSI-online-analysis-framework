@@ -45,7 +45,10 @@
             {#                <div class="control_content" id="PS_lv"></div>#}
 
             <h2 class="control_header">DA grading</h2>
-            <div class="control_content" id="grading"></div>
+            <div class="control_content" style="display:flex;flex-direction:row">
+                <div class="control_content" id="grading"></div>
+                <div class="control_content" id="bool"></div>
+            </div>
 
             {#            <div style="padding: 10px 0 10px 0;">#}
             {#                <span class="" style="height: 100%; margin-right: 10px">Click to undo: </span>#}
@@ -363,6 +366,7 @@
 
     update_image_info();
     create_grading_controls();
+    get_status();
     // update_tb_list();
     update_slide_id();
 
@@ -474,6 +478,15 @@
                     break;
                 case 16:
                     color = "#000000";
+                    break;
+                case 17:
+                    color = "#006400";
+                    break;
+                case 18:
+                    color = "#32CD32";
+                    break;
+                case 19:
+                    color = "#8FBC8F";
                     break;
                 default:
                     color = "#FFFFFF";
