@@ -251,6 +251,10 @@ def add_annotation_sever(app):
         slide_uuid = request.args.get('slide_uuid', default="", type=str)
 
         annotation_root_folder = freehand_annotation_data_root + annotation_project + '/' + slide_uuid + '/'
+        annotation_project_folder = freehand_annotation_data_root + annotation_project + '/'
+        
+        if not os.path.exists(annotation_project_folder):
+            os.mkdir(annotation_project_folder)
 
         if not os.path.exists(annotation_root_folder):
             os.mkdir(annotation_root_folder)
