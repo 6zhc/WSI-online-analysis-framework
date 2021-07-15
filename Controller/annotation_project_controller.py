@@ -754,8 +754,9 @@ def refresh_npy():
         missing_slide_id_str = ""
         slide_id_str = ""
         if not slide_id:
-            temp.append('Empty Manifest!')
-            result.append(temp)
+            # temp.append('Empty Manifest!')
+            # result.append(temp)
+            print(project_name, "Empty Manifest!")
             continue
 
         min_slide_id = min(slide_id)
@@ -833,7 +834,7 @@ def check_freehand_annotation(annotation_file):
 
 annotation_project_table = None
 filename = manifest_root + 'table.npy'
+freehand_annotation_flag = {}
 if not os.path.exists(filename):
     refresh_npy()
 annotation_project_table = numpy.load(filename)
-freehand_annotation_flag = {}
