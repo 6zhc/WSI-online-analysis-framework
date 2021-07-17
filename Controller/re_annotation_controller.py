@@ -4,9 +4,17 @@ import cv2
 import random
 from Controller.nuclick.nuclick import gen_mask
 
-annotation_result_root = "/home1/zhc/resnet/annotation_record/whole/" # "/home1/zhc/Dr-Wang-Grading/"
-boundary_result_root = "/home1/zhc/resnet/boundary_record/"
-region_image_root = "/home1/zhc/resnet/anno_data/"
+# annotation_result_root = "/home1/zhc/resnet/annotation_record/whole/" # "/home1/zhc/Dr-Wang-Grading/"
+# boundary_result_root = "/home1/zhc/resnet/boundary_record/"
+# region_image_root = "/home1/zhc/resnet/anno_data/"
+
+# annotation_result_root = "/home1/gzy/NucleiSegmentation/Smear/Categories/"
+# boundary_result_root = "/home1/gzy/NucleiSegmentation/Smear/Masks/"
+# region_image_root = "/home1/gzy/NucleiSegmentation/Smear/Images/"
+
+annotation_result_root = "/home5/sort/annotation/"
+boundary_result_root = "/home5/sort/masks/"
+region_image_root = "/home5/sort/images_small/"
 
 result_root = "Data/re_annotation_data/" + "results/"
 points_root = "Data/re_annotation_data/" + "points/"
@@ -14,8 +22,10 @@ grades_root = "Data/re_annotation_data/" + "grades/"
 
 image_type = '.jpg'
 
-color = [[0, 128, 0, 0], [255, 0, 209, 255], [0, 255, 255, 255], [0, 0, 255, 255], [0, 0, 255, 255],
-         [255, 191, 0, 255], [0, 0, 0, 255], [0, 0, 0, 0]]
+color = [[0, 128, 0, 0], [180, 105, 255, 255], [133, 21, 199, 255], [255, 0, 255, 255], [211, 0, 148, 255],
+         [205, 90, 106, 255], [250, 206, 135, 255], [139, 139, 0, 255], [0, 128, 0, 255], [0, 255, 255, 255],
+         [0, 140, 255, 255], [0, 0, 255, 255], [139, 0, 0, 255], [0, 0, 0, 255],
+         [0, 0, 0, 0]]
 
 import colorsys
 import random
@@ -74,7 +84,9 @@ def boundary_2_point(anno, annotator_id):
     grades = []
 
     for i in range(numpy.max(boundary_file)):
-        if i == 0 or i == 1 or annotation_file[i] == 0 or annotation_file[i] > 6:
+        # if i == 0 or i == 1 or annotation_file[i] == 0 or annotation_file[i] > 6:
+        #     continue
+        if i == 0 or annotation_file[i] == 0 or annotation_file[i] > 60:
             continue
         temp = numpy.argwhere(boundary_file == i)
 

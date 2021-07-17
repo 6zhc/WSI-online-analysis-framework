@@ -3,21 +3,37 @@ from flask import jsonify
 import uuid
 import os
 import numpy
+from PIL import Image
+import cv2
 
 from flask_login import login_required, current_user
 from Controller import re_annotation_controller
 from Controller import thread_controller
 
+from Controller import manifest_controller
+from Model import freehand_annotation_sqlite
+from Model import manifest
 
-annotation_result_root = "/home1/zhc/resnet/annotation_record/whole/" # "/home1/zhc/Dr-Wang-Grading/"
-boundary_result_root = "/home1/zhc/resnet/boundary_record/"
-region_image_root = "/home1/zhc/resnet/anno_data/"
+# annotation_result_root = "/home1/zhc/resnet/annotation_record/whole/" # "/home1/zhc/Dr-Wang-Grading/"
+# boundary_result_root = "/home1/zhc/resnet/boundary_record/"
+# region_image_root = "/home1/zhc/resnet/anno_data/"
+
+# annotation_result_root = "/home1/gzy/NucleiSegmentation/Smear/Categories/"
+# boundary_result_root = "/home1/gzy/NucleiSegmentation/Smear/Masks/"
+# region_image_root = "/home1/gzy/NucleiSegmentation/Smear/Images/"
+
+original_result_root = 'static/data/re_annotation_data/results/'
+annotation_result_root = "/home5/sort/annotation/"
+boundary_result_root = "/home5/sort/masks/"
+region_image_root = "/home5/sort/images_small/"
+
 
 result_root = "Data/re_annotation_data/" + "results/"
 points_root = "Data/re_annotation_data/" + "points/"
 grades_root = "Data/re_annotation_data/" + "grades/"
 
-first_image_name = "1"
+# first_image_name = "1"
+first_image_name = "152031_1"
 image_type = ".jpg"
 
 
@@ -169,3 +185,131 @@ def add_re_annotation_sever(app):
         for item in grades_file:
             grades.append(int(item))
         return jsonify({"grades": grades, "points": points})
+
+    @app.route('/re_annotation/_wipe', methods=['GET', 'POST'])
+    @login_required
+    def re_annotation_wipe():
+        annotator_id = current_user.get_id()
+        anno_name = request.args.get('anno_name', type=str, default=first_image_name)
+        mask_name = request.args.get('mask_name', type=str, default="nuClick")
+        boundary_file_name = result_root + 'a' + annotator_id + '/' + anno_name + "_boundary_" + mask_name + ".txt"
+        annotation_file_name = result_root + 'a' + annotator_id + '/' + anno_name + "_annotation_file_" + mask_name + ".txt"
+
+        draw = request.form
+        num_of_points = int(len(draw) / 3)
+
+        boundary_file = numpy.loadtxt(boundary_file_name, dtype=numpy.int16, delimiter=',')
+        data_x = []
+        data_y = []
+        mask = numpy.zeros(boundary_file.shape, dtype=numpy.uint8)
+        for i in range(num_of_points):
+            data_x.append(int(draw[str(i) + '[x]']))
+            data_y.append(int(draw[str(i) + '[y]']))
+        pts = numpy.vstack((data_x, data_y)).astype(numpy.int32).T
+        cv2.fillPoly(mask, [pts], (255))
+        p_x = numpy.where(mask == 255)[1]
+        p_y = numpy.where(mask == 255)[0]
+
+        for i in range(len(p_x)):
+            boundary_file[p_y[i]][p_x[i]] = 0
+
+        annotation_file = numpy.loadtxt(annotation_file_name, dtype=numpy.int16, delimiter=',')
+        numpy.savetxt(result_root + 'a' + annotator_id + '/' + anno_name + "_boundary_" + "Middle" + ".txt",
+                      boundary_file, fmt='%d', delimiter=",")
+        numpy.savetxt(result_root + 'a' + annotator_id + '/' + anno_name + "_annotation_file_" + "Middle" + ".txt",
+                      annotation_file, fmt='%d', delimiter=",")
+        re_annotation_controller.boundary_2_mask(anno_name, 'Middle', annotator_id)
+        re_annotation_controller.boundary_2_mask_separate_nuclei(anno_name, 'Middle', annotator_id)
+        file_name = original_result_root + 'a' + annotator_id + '/' + "mask_" + anno_name + "_Middle" + ".png" + "?a=" + str(
+            uuid.uuid4())
+        return (file_name)
+
+    @app.route('/re_annotation/_fill', methods=['GET', 'POST'])
+    @login_required
+    def re_annotation_fill():
+        annotator_id = current_user.get_id()
+        anno_name = request.args.get('anno_name', type=str, default=first_image_name)
+        mask_name = request.args.get('mask_name', type=str, default="nuClick")
+        boundary_file_name = result_root + 'a' + annotator_id + '/' + anno_name + "_boundary_" + mask_name + ".txt"
+        annotation_file_name = result_root + 'a' + annotator_id + '/' + anno_name + "_annotation_file_" + mask_name + ".txt"
+
+        draw = request.form
+        num_of_points = int(len(draw) / 3)
+        grade = ''
+
+        boundary_file = numpy.loadtxt(boundary_file_name, dtype=numpy.int16, delimiter=',')
+        data_x = []
+        data_y = []
+        temp = []
+        mask = numpy.zeros(boundary_file.shape, dtype=numpy.uint8)
+        for i in range(num_of_points):
+            data_x.append(int(draw[str(i) + '[x]']))
+            data_y.append(int(draw[str(i) + '[y]']))
+        pts = numpy.vstack((data_x, data_y)).astype(numpy.int32).T
+        cv2.fillPoly(mask, [pts], (255))
+        p_x = numpy.where(mask == 255)[1]
+        p_y = numpy.where(mask == 255)[0]
+
+        for i in range(len(p_x)):
+            temp.append(boundary_file[p_y[i]][p_x[i]] + 2)
+
+        temp = numpy.array(temp)
+        bincount = numpy.bincount(temp)
+        bincount_list = bincount.tolist()
+        max_index = bincount_list.index(max(bincount_list))
+        grade = max_index - 2
+        for i in range(len(p_x)):
+            boundary_file[p_y[i]][p_x[i]] = grade
+
+        annotation_file = numpy.loadtxt(annotation_file_name, dtype=numpy.int16, delimiter=',')
+        numpy.savetxt(result_root + 'a' + annotator_id + '/' + anno_name + "_boundary_" + "Middle" + ".txt",
+                      boundary_file, fmt='%d', delimiter=",")
+        numpy.savetxt(result_root + 'a' + annotator_id + '/' + anno_name + "_annotation_file_" + "Middle" + ".txt",
+                      annotation_file, fmt='%d', delimiter=",")
+        re_annotation_controller.boundary_2_mask(anno_name, 'Middle', annotator_id)
+        re_annotation_controller.boundary_2_mask_separate_nuclei(anno_name, 'Middle', annotator_id)
+        file_name = original_result_root + 'a' + annotator_id + '/' + "mask_" + anno_name + "_Middle" + ".png" + "?a=" + str(
+            uuid.uuid4())
+        return (file_name)
+
+    @app.route('/update_image', methods=['GET', 'POST'])
+    @login_required
+    def update_image():
+        annotator_id = current_user.get_id()
+        anno_name = request.args.get('anno_name', type=str, default=first_image_name)
+        mask_name = request.args.get('mask_name', type=str, default="nuClick")
+        boundary_file_name = result_root + 'a' + annotator_id + '/' + anno_name + "_boundary_" + "Middle" + ".txt"
+
+        result = numpy.loadtxt(boundary_file_name, dtype=numpy.int16, delimiter=',')
+        contours, hierarchy = cv2.findContours(cv2.convertScaleAbs(result), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        result = cv2.drawContours(result, contours, -1, 255, 1)
+        result = result.astype(numpy.int16)
+        result[result == 255] = -1
+
+        numpy.savetxt(result_root + 'a' + annotator_id + '/' + anno_name + "_boundary_" + mask_name + ".txt",
+                      result, fmt='%d', delimiter=",")
+        re_annotation_controller.boundary_2_mask(anno_name, 'nuClick', annotator_id)
+        re_annotation_controller.boundary_2_mask_separate_nuclei(anno_name, 'nuClick', annotator_id)
+        file_name = original_result_root + 'a' + annotator_id + '/' + "mask_" + anno_name + "_nuClick" + ".png" + "?a=" + str(
+            uuid.uuid4())
+        return (file_name)
+
+    @app.route('/get_info')
+    def get_info():
+        anno_name = request.args.get('anno_name', type=str, default=first_image_name)
+        file_path = region_image_root + anno_name + '.jpg'
+        img = Image.open(file_path)
+        dimensions = img.size
+        MPP = 0
+        properties = img.format
+
+        w = dimensions[0]
+        h = dimensions[1]
+        return jsonify(
+            img_width=w,
+            img_height=h,
+            um_per_px=0.25,
+            max_image_zoom=0,  # max_image_zoom,
+            toggle_status=0,  # toggle_status
+            properties=properties
+        )

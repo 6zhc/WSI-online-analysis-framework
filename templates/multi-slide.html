@@ -10,6 +10,12 @@
     <script src="static/popper.min.js"></script>
     <script src="static/jquery.min.js"></script>
     <script src="static/select2.min.js"></script>
+    <script type="text/javascript"
+            src="{{ url_for('static', filename='re_annotation/openhi_globalValue.js') }}"></script>
+    <script type="text/javascript"
+            src="{{ url_for('static', filename='re_annotation/openhi_viewer.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='re_annotation/openhi_controller.js') }}"
+            charset="GBK"></script>
 </head>
 <body oncontextmenu=self.event.returnValue=false>
 <div onchange="update_anno()">
@@ -22,28 +28,29 @@
 </div>
 
 <div id="openseadragon1" style="width:800px;height:800px;float: left;margin: 10px; margin-left: 20px"></div>
-<div id="controller" style="float: left;text-align:center;width: 200px">
-    <dl class="checkBox">
-        <p><input type="radio" name="level" value="0" checked="true" id="type_0">删除细胞</p>
-        <p><input type="radio" name="level" value="1" id="type_1"> 1 级细胞</p>
-        <p><input type="radio" name="level" value="2" id="type_2"> 2 级细胞</p>
-        <p><input type="radio" name="level" value="3" id="type_3"> 3 级细胞</p>
-        <p><input type="radio" name="level" value="4" id="type_4"> 4 级细胞</p>
-        <p><input type="radio" name="level" value="5" id="type_5">上皮细胞</p>
-        <p><input type="radio" name="level" value="6" id="type_6">淋巴细胞</p>
-        <p><input type="radio" name="level" value="-1" id="type_-1">橡皮擦</p>
+<div id="controller" style="float: left;text-align:center;width: 220px">
+    <dl class="checkBox" style="background-color: rgb(157, 255, 255);">
+        <p style="background-color: #1a95e7;height: 30px;">点标注</p>
+        <div id="marker" style="display: flex;flex-direction: column;"></div>
+        <div>
+            <button onclick="undo()" style="margin: 8px">撤销</button>
+        </div>
+        <div>
+            <button onclick="update_points()" style="margin: 8px">保存并刷新</button>
+        </div>
+        <div>
+            <button onclick="make_mask()" style="margin: 8px">生成掩膜</button>
+        </div>
     </dl>
-
-    <div>
-        <button onclick="undo()" style="margin: 8px">撤销</button>
-    </div>
-    <div>
-        <button onclick="update_points()" style="margin: 8px">保存并刷新</button>
-    </div>
-    <div>
-        <button onclick="make_mask()" style="margin: 8px">生成掩膜</button>
-    </div>
     <div id="warning" style="color:#FF0000;background:#FFFF00"></div>
+    <div style="float:left;text-align: center;width: 220px;">
+        <dl class="checkBox" style="background-color: rgb(157, 255, 255);">
+            <p style="background-color: #1a95e7;height: 30px;"><input type="checkbox" name="ckb">修正板</p>
+            <div id="corrector" style="display: flex;flex-direction: column;"></div>
+        </dl>
+        <div id="warning2" style="color:#FF0000;background:#FFFF00"></div>
+    </div>
+
 </div>
 <div id="openseadragon2" style="width:800px;height:800px;float: left;margin: 10px"></div>
 
@@ -107,6 +114,111 @@
         navigatorPosition: "BOTTOM_RIGHT",
     });
 
+    let is_point = 1;
+    var mouse_tracker = new OpenSeadragon.MouseTracker({ //set mouse tracker
+        element: viewer1.container,
+        moveHandler: update_mouse_location,
+        scrollHandler: update_mouse_location,
+        exitHandler: function (e) {
+            if (OSD_control.point_record_controller) {
+                pen_state += 1;
+                (function (pen_state_old) {
+                    setTimeout(function () {
+                        if (pen_state == pen_state_old) {
+                            viewer1.setMouseNavEnabled(true);
+                            OSD_control.point_record_controller = 0;
+                            post_record();
+                        }
+                    }, 100);
+                })(pen_state);
+            }
+        },
+    });
+    if (!is_point)
+        mouse_tracker.setTracking(true);
+
+    viewer1.addHandler('canvas-nonprimary-press', function (e) {
+        if (e.button == 2 && is_point == 0) {
+            OSD_control.point_record_controller = 1;
+            recording_point();
+        }
+        if (e.button == 1 && is_point == 0) {
+            OSD_control.point_mid_record_controller = 1;
+            mid_recording_point();
+        }
+    });
+
+
+    viewer1.addHandler('canvas-nonprimary-release', function (e) {
+        if (e.button == 2 && is_point == 0) {
+            OSD_control.point_record_controller = 0;
+            post_record();
+        }
+        if (e.button == 1 && is_point == 0) {
+            OSD_control.point_mid_record_controller = 0;
+            post_record();
+        }
+    });
+
+
+    let pen_state = 0;
+    viewer1.addHandler('canvas-enter', function (e) {
+        if (e.pointerType == "pen") {
+            pen_state += 1;
+            viewer1.setMouseNavEnabled(false);
+            OSD_control.point_record_controller = 1;
+            update_mouse_location(e);
+        }
+    });
+
+    viewer1.addHandler('canvas-exit', function (e) {
+        if (e.pointerType == "pen") {
+            pen_state += 1;
+            (function (pen_state_old) {
+                setTimeout(function () {
+                    if (pen_state == pen_state_old) {
+                        viewer1.setMouseNavEnabled(true);
+                        OSD_control.point_record_controller = 0;
+                        post_record();
+                    }
+                }, 100);
+            })(pen_state);
+            // post_record();
+        }
+    });
+    viewer1.gestureSettingsByDeviceType("pen").flickEnabled = false;
+
+    update_image_info();
+    create_grading_controls();
+    $('input[name=ckb]').prop("checked", false);
+    if (is_point)
+        console.log("点标注状态")
+    create_corrector_controls();
+    $('input[name=ckb]').change(function () {
+        if ($(this).is(':checked')) {
+            is_point = 0;
+            console.log("修正状态")
+        } else {
+            is_point = 1;
+            console.log("点标注状态")
+        }
+    });
+
+    let update_image = function () {
+        document.getElementById("warning2").innerText = "正在更新图片";
+        $.post("/update_image" + info_url,
+            (data) => {
+                console.log(data);
+                add_mask(viewer1, data);
+                viewer1.clearOverlays();
+                add_points();
+                document.getElementById("warning2").innerText = "";
+                $('input[name=ckb]').prop("checked", true);
+                is_point = 0;
+                console.log("仍在修正状态")
+            })
+    };
+
     let point_x = [];
     let point_y = [];
     let grade = [];
@@ -116,29 +228,18 @@
     let point_flag = 1;
     let adding_flag = 0;
 
-    let red_point = document.createElement("div");
-    red_point.style = "width:8px;height:8px;border-radius:50%;background-color:red;";
-    let green_point = document.createElement("div");
-    green_point.style = "width:8px;height:8px;border-radius:50%;background-color:green;";
-    let orange_point = document.createElement("div");
-    orange_point.style = "width:8px;height:8px;border-radius:50%;background-color:#FFA500;";
-    let sky_blue_point = document.createElement("div");
-    sky_blue_point.style = "width:8px;height:8px;border-radius:50%;background-color:#00BFFF;";
-    let black_point = document.createElement("div");
-    black_point.style = "width:8px;height:8px;border-radius:50%;background-color:black;";
-    let yellow_point = document.createElement("div");
-    yellow_point.style = "width:8px;height:8px;border-radius:50%;background-color:yellow;";
-    let purple_point = document.createElement("div");
-    purple_point.style = "width:8px;height:8px;border-radius:50%;background-color:#D100FF;";
+    let style_sub = "width:8px;height:8px;border-radius:50%;background-color:";
+    let color = ['#FFFFFF', '#FF69B4', '#C71585', '#FF00FF', '#9400D3', '#6A5ACD', '#87CEFA', '#008B8B', '#008000',
+        '#FFFF00', '#FF8C00', '#FF0000', '#00008B', '#000000'];
+    let point = [];
+    for (var i = 0; i <= 13; i++) {
+        let name = i + 1;
+        name = name.toString + "_point";
+        name = document.createElement("div");
+        name.style = style_sub + color[i] + ";";
+        point.push(name)
+    }
 
-    point = [];
-    point.push(green_point);
-    point.push(purple_point);
-    point.push(yellow_point);
-    point.push(red_point);
-    point.push(red_point);
-    point.push(sky_blue_point);
-    point.push(black_point);
 
     let add_points = function () {
         if (!point_flag)
@@ -289,24 +390,26 @@
         inform.position = viewer1.world.getItemAt(0).viewerElementToImageCoordinates(inform.position);
         console.log(inform.position);
         let grade_checked = 0;
-        let radio_obj = document.getElementsByName("level");
+        let radio_obj = document.getElementsByName("grading");
         for (let i = 0; i < radio_obj.length; i++) {
             if (radio_obj[i].checked) {
                 grade_checked = parseInt(radio_obj[i].value);
             }
         }
-        if(grade_checked==-1){
-            for(i=0; i<grade.length; i++){
-                if (point_x[i]>inform.position.x - 10 && point_x[i] < inform.position.x + 10
-                && point_y[i]>inform.position.y - 10 && point_y[i] < inform.position.y + 10)
-                    grade[i] = 0;
+        if (is_point) {
+            if (grade_checked == -1) {
+                for (i = 0; i < grade.length; i++) {
+                    if (point_x[i] > inform.position.x - 10 && point_x[i] < inform.position.x + 10
+                        && point_y[i] > inform.position.y - 10 && point_y[i] < inform.position.y + 10)
+                        grade[i] = 0;
+                }
+                add_points();
+            } else {
+                grade.push(grade_checked);
+                point_x.push(Math.round(inform.position.x));
+                point_y.push(Math.round(inform.position.y));
+                add_points();
             }
-            add_points();
-        }else{
-            grade.push(grade_checked);
-            point_x.push(Math.round(inform.position.x));
-            point_y.push(Math.round(inform.position.y));
-            add_points();
         }
 
     });
