@@ -28,24 +28,24 @@
 </div>
 
 <div id="openseadragon1" style="width:800px;height:800px;float: left;margin: 10px; margin-left: 20px"></div>
-<div id="controller" style="float: left;text-align:center;width: 220px">
+<div id="controller" style="float: left;text-align:center;width: 300px">
     <dl class="checkBox" style="background-color: rgb(157, 255, 255);">
-        <p style="background-color: #1a95e7;height: 30px;">点标注</p>
+        <p style="background-color: #1a95e7;height: 30px;">Point(点标注)</p>
         <div id="marker" style="display: flex;flex-direction: column;"></div>
         <div>
-            <button onclick="undo()" style="margin: 8px">撤销</button>
+            <button onclick="undo()" style="margin: 8px">Undo(撤销)</button>
         </div>
         <div>
-            <button onclick="update_points()" style="margin: 8px">保存并刷新</button>
+            <button onclick="update_points()" style="margin: 8px">save and refresh(保存并刷新)</button>
         </div>
-        <div>
-            <button onclick="make_mask()" style="margin: 8px">生成掩膜</button>
-        </div>
+        {#        <div>#}
+        {#            <button onclick="make_mask()" style="margin: 8px">生成掩膜</button>#}
+        {#        </div>#}
     </dl>
     <div id="warning" style="color:#FF0000;background:#FFFF00"></div>
-    <div style="float:left;text-align: center;width: 220px;">
+    <div style="float:left;text-align: center;width: 300px;">
         <dl class="checkBox" style="background-color: rgb(157, 255, 255);">
-            <p style="background-color: #1a95e7;height: 30px;"><input type="checkbox" name="ckb">修正板</p>
+            <p style="background-color: #1a95e7;height: 30px;"><input type="checkbox" name="ckb">Corrector(修正板)</p>
             <div id="corrector" style="display: flex;flex-direction: column;"></div>
         </dl>
         <div id="warning2" style="color:#FF0000;background:#FFFF00"></div>

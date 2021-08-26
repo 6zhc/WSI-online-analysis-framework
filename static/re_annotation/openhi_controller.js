@@ -111,6 +111,7 @@ var getRadioValue = function (name) { //get which item is chosen (name is radio 
 var create_corrector_controls = function () {
     // Generate corrector controls
     var class_name = ["橡皮擦", "填补笔"]
+    var eng_name = ["eraser", "pen"]
     var color = ["#FFFFFF", "#000000"]
 
     for (var i = 0; i < 2; i++) {
@@ -132,7 +133,7 @@ var create_corrector_controls = function () {
         s.fillRect(0, 0, 15, 15)
 
         var text_box = document.createElement("span")
-        var text = document.createTextNode(' ' + class_name[i] + '\u00A0\u00A0');
+        var text = document.createTextNode(' ' + eng_name[i] + "(" + class_name[i] + ")" + '\u00A0\u00A0');
 
         text_box.appendChild(text)
         out_box.appendChild(radio)
@@ -151,6 +152,21 @@ var create_grading_controls = function () {
 
     var class_name = ["删除细胞", "伯基特淋巴瘤细胞", "淋巴瘤细胞", "横纹肌肉瘤", "神经母细胞瘤细胞", "原幼淋巴细胞", "原粒细胞",
         "异常早幼粒细胞", "幼单核细胞", "原幼单核细胞", "幼巨核细胞", "原巨核细胞", "有核细胞", "不计入"];
+    var eng_name = ["Remove cells",
+        "Burkitt lymphoma",
+        "Lymphoma cell",
+        "Rhabdomyosarcoma",
+        "Neuroblastoma cells",
+        "Proto-juvenile lymphocytes",
+        "The original granulocyte",
+        "Abnormal promyelocytes",
+        "Juvenile monocyte",
+        "Prokaryotic mononuclear cells",
+        "Young megakaryocyte progen",
+        "Megakaryocyte",
+        "Nucleated cells",
+        "Not take into accountUndo",
+        "Save and refresh"]
     var color = ['#FFFFFF', '#FF69B4', '#C71585', '#FF00FF', '#9400D3', '#6A5ACD', '#87CEFA', '#008B8B', '#008000',
         '#FFFF00', '#FF8C00', '#FF0000', '#00008B', '#000000'];
     for (var i = 0; i <= 13; i++) {
@@ -169,7 +185,7 @@ var create_grading_controls = function () {
         s.fillRect(0, 0, 15, 15)
 
         var text_box = document.createElement("span")
-        var text = document.createTextNode(' ' + class_name[i] + '\u00A0\u00A0');
+        var text = document.createTextNode(' ' + eng_name[i] + "(" + class_name[i] + ")" + '\u00A0\u00A0');
 
         text_box.appendChild(text)
         out_box.appendChild(radio)

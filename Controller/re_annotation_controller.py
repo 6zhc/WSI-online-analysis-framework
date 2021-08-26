@@ -124,6 +124,15 @@ def point_2_boundary(anno, mask_name, annotator_id):
 
     points_file_name = points_root + 'a' + annotator_id + '/' + anno_name + '.txt'
     grades_file_name = grades_root + 'a' + annotator_id + '/' + anno_name + '.txt'
+
+    # points_file_name = "static/data/re_annotation_data/" + "points/" + 'a' + annotator_id + '/' + anno_name + '.txt'
+    # grades_file_name = "static/data/re_annotation_data/" + "grades/" + 'a' + annotator_id + '/' + anno_name + '.txt'
+    # command = "/home1/zhc/.conda/envs/openHI/bin/python3.6 " \
+    #           "/home1/zhc/wsi-procesing-framework/Controller/nuclick/demo.py " \
+    #           + region_image_file_name + ' ' + points_file_name + ' ' + grades_file_name + ' ' + anno_name + ' ' \
+    #           + annotator_id + ' ' + mask_name
+    # print(command)
+    # os.system(command)
     points_file = open(points_file_name).readlines()
     grades_file = open(grades_file_name).readlines()
 

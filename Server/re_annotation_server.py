@@ -251,13 +251,16 @@ def add_re_annotation_sever(app):
         p_y = numpy.where(mask == 255)[0]
 
         for i in range(len(p_x)):
-            temp.append(boundary_file[p_y[i]][p_x[i]] + 2)
+            if boundary_file[p_y[i]][p_x[i]] == 0 or boundary_file[p_y[i]][p_x[i]] == -1:
+                continue
+            temp.append(boundary_file[p_y[i]][p_x[i]])
+
 
         temp = numpy.array(temp)
         bincount = numpy.bincount(temp)
         bincount_list = bincount.tolist()
         max_index = bincount_list.index(max(bincount_list))
-        grade = max_index - 2
+        grade = max_index
         for i in range(len(p_x)):
             boundary_file[p_y[i]][p_x[i]] = grade
 
