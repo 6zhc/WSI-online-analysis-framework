@@ -3,7 +3,7 @@ Pillow==7.1.0
 Flask==1.1.1
 mysql-connector==2.2.9
 openslide-python==1.1.1
-opencv-python==4.1.1.26
+opencv-python==4.2.0.32
 segmentation_models==0.2.1
 flask-login==0.5.0
 albumentations==0.4.5
